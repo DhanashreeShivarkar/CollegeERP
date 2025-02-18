@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./layout/Navbar";
 import Footer from "./layout/Footer";
 import LoginModal from "./auth/LoginModal";
+import { authService } from "../api/auth";
+import { getDashboardRoute } from "../utils/roles";
 
 interface Feature {
   title: string;
@@ -16,10 +18,36 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ onLoginSuccess }) => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleLoginSuccess = (userData: any) => {
     console.log("Home - Login successful:", userData);
     onLoginSuccess(userData);
+  };
+
+  const handleOtpVerify = async (otp: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await authService.verifyOtp(userId, otp);
+
+      if (response.user) {
+        onLoginSuccess(response.user);
+        const dashboardRoute = getDashboardRoute(
+          response.user.designation.code
+        );
+        navigate(dashboardRoute);
+      } else {
+        setError("Invalid OTP verification response");
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.message || "OTP verification failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const features: Feature[] = [
@@ -50,28 +78,10 @@ const Home: React.FC<HomeProps> = ({ onLoginSuccess }) => {
   return (
     <div className="h-screen flex flex-col">
       <Navbar onLoginClick={() => setIsLoginOpen(true)} />
-
       <main className="flex-1 overflow-auto pt-16">
-        {" "}
-        {/* Added pt-16 for navbar offset */}
-        {/* Hero Section - Reduced padding */}
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
-          <div className="container mx-auto text-center px-4">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Modern Education Management Solution
-            </h1>
-            <p className="text-lg md:text-xl mb-6">
-              Streamline your educational institution's operations
-            </p>
-            <button
-              onClick={() => setIsLoginOpen(true)}
-              className="bg-white text-blue-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition"
-            >
-              Get Started →
-            </button>
-          </div>
+          {/* ...existing hero section JSX... */}
         </section>
-        {/* Features Section - Reduced padding */}
         <section className="py-8 bg-gray-50">
           <div className="container mx-auto px-4">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
@@ -92,9 +102,7 @@ const Home: React.FC<HomeProps> = ({ onLoginSuccess }) => {
           </div>
         </section>
       </main>
-
       <Footer />
-
       <LoginModal
         open={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
