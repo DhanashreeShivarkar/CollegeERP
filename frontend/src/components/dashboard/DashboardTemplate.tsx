@@ -13,6 +13,7 @@ import {
   Divider,
   useTheme,
   Button,
+  ListItemButton,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -45,20 +46,33 @@ interface DashboardTemplateProps {
 
 const DRAWER_WIDTH = 240;
 
-const DashboardTemplate = ({
+const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   title,
   user,
   menuItems,
   children,
-}: DashboardTemplateProps) => {
+}) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
-      {/* Top Navigation Bar */}
-      <AppBar position="fixed">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        maxHeight: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      {/* AppBar */}
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          height: "64px",
+        }}
+      >
         <Toolbar>
           {/* Menu Toggle Button */}
           <IconButton
@@ -87,61 +101,79 @@ const DashboardTemplate = ({
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar Navigation Drawer */}
+      {/* Modified Drawer - Now temporary and positioned correctly */}
       <Drawer
         variant="temporary"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        ModalProps={{
+          keepMounted: true, // Better mobile performance
+        }}
         sx={{
-          width: DRAWER_WIDTH,
+          display: { xs: "block" },
           "& .MuiDrawer-paper": {
             width: DRAWER_WIDTH,
-            boxSizing: "border-box",
-            backgroundColor: theme.palette.primary.main,
+            mt: "64px", // Height of AppBar
+            height: "calc(100% - 64px)",
+            bgcolor: "primary.main",
             color: "white",
           },
         }}
       >
-        <Toolbar>
-          <Typography variant="h6" color="inherit">
-            Menu
-          </Typography>
-        </Toolbar>
-        <Divider sx={{ bgcolor: "rgba(255,255,255,0.12)" }} />
-        <List>
-          {/* Dynamic Menu Items */}
-          {menuItems.map((item, index) => (
-            <ListItem
-              component="li"
-              key={index}
-              onClick={() => {
-                item.onClick();
-                setDrawerOpen(false);
-              }}
-              sx={{
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                },
-              }}
-            >
-              <ListItemIcon sx={{ color: "inherit" }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-        </List>
+        <Box
+          sx={{
+            overflow: "auto",
+            "&:hover": {
+              overflowY: "auto",
+            },
+          }}
+        >
+          <List>
+            {menuItems.map((item, index) => (
+              <ListItem
+                key={index}
+                disablePadding
+                onClick={() => {
+                  item.onClick();
+                  setDrawerOpen(false);
+                }}
+              >
+                <ListItemButton
+                  sx={{
+                    py: 1.5,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.08)",
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ color: "white", minWidth: 40 }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      fontSize: "0.9rem",
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </Drawer>
 
-      {/* Main Content Area */}
+      {/* Main Content - Modified to ensure footer stays at bottom */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          mt: 8,
-          backgroundColor: "#f5f5f5",
-          minHeight: "100vh",
+          height: "100vh",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
+        <Toolbar /> {/* Spacer for AppBar */}
         {children}
       </Box>
     </Box>

@@ -7,7 +7,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import Home from "./components/Home";
-import Dashboard from "./components/dashboard/Dashboard";
 import AdminDashboard from "./components/dashboard/AdminDashboard";
 import TeacherDashboard from "./components/dashboard/TeacherDashboard";
 import StudentDashboard from "./components/dashboard/StudentDashboard";
@@ -20,6 +19,7 @@ import LibraryDashboard from "./components/dashboard/LibraryDashboard";
 import HostelDashboard from "./components/dashboard/HostelDashboard";
 import PlacementDashboard from "./components/dashboard/TeacherDashboard"; // Ensure this file exists
 import SuperAdminDashboard from "./components/dashboard/SuperAdminDashboard";
+import { SettingsProvider } from "./context/SettingsContext";
 
 interface User {
   user_id: string;
@@ -95,132 +95,134 @@ const App = () => {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            user ? (
-              <Navigate to={getDashboardRoute(user.designation?.code)} />
-            ) : (
-              <Home onLoginSuccess={handleLoginSuccess} />
-            )
-          }
-        />
+    <SettingsProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              user ? (
+                <Navigate to={getDashboardRoute(user.designation?.code)} />
+              ) : (
+                <Home onLoginSuccess={handleLoginSuccess} />
+              )
+            }
+          />
 
-        {/* Admin Routes */}
-        <Route
-          path="/admin-dashboard"
-          element={
-            isAuthorized(ROLES.ADMIN) ? (
-              <AdminDashboard user={user} />
-            ) : (
-              <Navigate to="/" state={{ from: "/admin-dashboard" }} />
-            )
-          }
-        />
+          {/* Admin Routes */}
+          <Route
+            path="/admin-dashboard"
+            element={
+              isAuthorized(ROLES.ADMIN) ? (
+                <AdminDashboard user={user} />
+              ) : (
+                <Navigate to="/" state={{ from: "/admin-dashboard" }} />
+              )
+            }
+          />
 
-        {/* Separate routes for Admin and Superadmin */}
-        <Route
-          path="/superadmin-dashboard"
-          element={
-            isAuthorized(ROLES.SUPERADMIN) ? (
-              <SuperAdminDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
+          {/* Separate routes for Admin and Superadmin */}
+          <Route
+            path="/superadmin-dashboard"
+            element={
+              isAuthorized(ROLES.SUPERADMIN) ? (
+                <SuperAdminDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
 
-        {/* Academic Routes */}
-        <Route
-          path="/coe-dashboard"
-          element={
-            isAuthorized(ROLES.COE) ? (
-              <CoeDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
-        <Route
-          path="/hod-dashboard"
-          element={
-            isAuthorized(ROLES.HOD) ? (
-              <HodDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
-        <Route
-          path="/faculty-dashboard"
-          element={
-            isAuthorized(ROLES.FACULTY) ? (
-              <FacultyDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
+          {/* Academic Routes */}
+          <Route
+            path="/coe-dashboard"
+            element={
+              isAuthorized(ROLES.COE) ? (
+                <CoeDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/hod-dashboard"
+            element={
+              isAuthorized(ROLES.HOD) ? (
+                <HodDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/faculty-dashboard"
+            element={
+              isAuthorized(ROLES.FACULTY) ? (
+                <FacultyDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
 
-        {/* Student Route */}
-        <Route
-          path="/student-dashboard"
-          element={
-            isAuthorized(ROLES.STUDENT) ? (
-              <StudentDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
+          {/* Student Route */}
+          <Route
+            path="/student-dashboard"
+            element={
+              isAuthorized(ROLES.STUDENT) ? (
+                <StudentDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
 
-        {/* Administrative Routes */}
-        <Route
-          path="/finance-dashboard"
-          element={
-            isAuthorized(ROLES.FINANCE) ? (
-              <FinanceDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
-        <Route
-          path="/library-dashboard"
-          element={
-            isAuthorized(ROLES.LIBRARY) ? (
-              <LibraryDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
-        <Route
-          path="/hostel-dashboard"
-          element={
-            isAuthorized(ROLES.WARDEN) ? (
-              <HostelDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
-        <Route
-          path="/placement-dashboard"
-          element={
-            isAuthorized(ROLES.PLACEMENT) ? (
-              <PlacementDashboard user={user} />
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
+          {/* Administrative Routes */}
+          <Route
+            path="/finance-dashboard"
+            element={
+              isAuthorized(ROLES.FINANCE) ? (
+                <FinanceDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/library-dashboard"
+            element={
+              isAuthorized(ROLES.LIBRARY) ? (
+                <LibraryDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/hostel-dashboard"
+            element={
+              isAuthorized(ROLES.WARDEN) ? (
+                <HostelDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/placement-dashboard"
+            element={
+              isAuthorized(ROLES.PLACEMENT) ? (
+                <PlacementDashboard user={user} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
+    </SettingsProvider>
   );
 };
 
