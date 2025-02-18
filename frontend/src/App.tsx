@@ -1,0 +1,227 @@
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import Home from "./components/Home";
+import Dashboard from "./components/dashboard/Dashboard";
+import AdminDashboard from "./components/dashboard/AdminDashboard";
+import TeacherDashboard from "./components/dashboard/TeacherDashboard";
+import StudentDashboard from "./components/dashboard/StudentDashboard";
+import { ROLES, getDashboardRoute } from "./utils/roles";
+import CoeDashboard from "./components/dashboard/CoeDashboard";
+import HodDashboard from "./components/dashboard/HodDashboard";
+import FacultyDashboard from "./components/dashboard/FacultyDashboard";
+import FinanceDashboard from "./components/dashboard/FinanceDashboard";
+import LibraryDashboard from "./components/dashboard/LibraryDashboard";
+import HostelDashboard from "./components/dashboard/HostelDashboard";
+import PlacementDashboard from "./components/dashboard/TeacherDashboard"; // Ensure this file exists
+import SuperAdminDashboard from "./components/dashboard/SuperAdminDashboard";
+
+interface User {
+  user_id: string;
+  username: string;
+  email: string;
+  designation: string;
+  permissions: any;
+}
+
+const App = () => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const handleLoginSuccess = (userData: any) => {
+    console.log("=== Setting User Data ===");
+    console.log("User Data:", userData);
+
+    // Ensure designation data is properly structured
+    const processedUserData = {
+      ...userData,
+      designation: {
+        ...userData.designation,
+        code: userData.designation?.code?.toUpperCase(),
+      },
+    };
+
+    console.log("Processed User Data:", processedUserData);
+
+    // Store in localStorage and state
+    localStorage.setItem("user", JSON.stringify(processedUserData));
+    setUser(processedUserData);
+  };
+
+  useEffect(() => {
+    const initializeAuth = () => {
+      try {
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          console.log("Restored session for:", parsedUser.username);
+          setUser(parsedUser);
+        }
+      } catch (error) {
+        console.error("Session restoration failed:", error);
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  const isAuthorized = (requiredRole: string) => {
+    console.log("Checking authorization for:", requiredRole);
+
+    if (!user?.designation?.code) {
+      console.log("No user session found");
+      return false;
+    }
+
+    const userRole = user.designation.code.toUpperCase();
+    const isSuperAdmin = userRole === "SUPERADMIN";
+    const isAuthorized =
+      isSuperAdmin || userRole === requiredRole.toUpperCase();
+
+    console.log(`User ${user.username} authorization:`, isAuthorized);
+    return isAuthorized;
+  };
+
+  if (loading) {
+    return <div>Loading...</div>; // Or your loading component
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            user ? (
+              <Navigate to={getDashboardRoute(user.designation?.code)} />
+            ) : (
+              <Home onLoginSuccess={handleLoginSuccess} />
+            )
+          }
+        />
+
+        {/* Admin Routes */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            isAuthorized(ROLES.ADMIN) ? (
+              <AdminDashboard user={user} />
+            ) : (
+              <Navigate to="/" state={{ from: "/admin-dashboard" }} />
+            )
+          }
+        />
+
+        {/* Separate routes for Admin and Superadmin */}
+        <Route
+          path="/superadmin-dashboard"
+          element={
+            isAuthorized(ROLES.SUPERADMIN) ? (
+              <SuperAdminDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* Academic Routes */}
+        <Route
+          path="/coe-dashboard"
+          element={
+            isAuthorized(ROLES.COE) ? (
+              <CoeDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/hod-dashboard"
+          element={
+            isAuthorized(ROLES.HOD) ? (
+              <HodDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/faculty-dashboard"
+          element={
+            isAuthorized(ROLES.FACULTY) ? (
+              <FacultyDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* Student Route */}
+        <Route
+          path="/student-dashboard"
+          element={
+            isAuthorized(ROLES.STUDENT) ? (
+              <StudentDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* Administrative Routes */}
+        <Route
+          path="/finance-dashboard"
+          element={
+            isAuthorized(ROLES.FINANCE) ? (
+              <FinanceDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/library-dashboard"
+          element={
+            isAuthorized(ROLES.LIBRARY) ? (
+              <LibraryDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/hostel-dashboard"
+          element={
+            isAuthorized(ROLES.WARDEN) ? (
+              <HostelDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/placement-dashboard"
+          element={
+            isAuthorized(ROLES.PLACEMENT) ? (
+              <PlacementDashboard user={user} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+export default App;
