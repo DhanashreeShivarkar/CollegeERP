@@ -1,0 +1,155 @@
+[
+  {
+    "model": "accounts.designation",
+    "pk": 1,
+    "fields": {
+      "NAME": "Super Admin",
+      "CODE": "SUPERADMIN",
+      "DESCRIPTION": "Manages the entire ERP system",
+      "PERMISSIONS": {
+        "all_modules": {
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true
+        }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 2,
+    "fields": {
+      "NAME": "Admin",
+      "CODE": "ADMIN",
+      "DESCRIPTION": "Oversees institution operations",
+      "PERMISSIONS": {
+        "users": { "read": true, "create": true, "update": true },
+        "academics": { "read": true, "create": true, "update": true },
+        "staff": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 3,
+    "fields": {
+      "NAME": "Controller of Examinations",
+      "CODE": "COE",
+      "DESCRIPTION": "Manages examinations and results",
+      "PERMISSIONS": {
+        "exams": {
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true
+        },
+        "results": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 4,
+    "fields": {
+      "NAME": "Department Head",
+      "CODE": "HOD",
+      "DESCRIPTION": "Manages department operations",
+      "PERMISSIONS": {
+        "department": { "read": true, "create": true, "update": true },
+        "faculty": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 5,
+    "fields": {
+      "NAME": "Faculty",
+      "CODE": "FACULTY",
+      "DESCRIPTION": "Teaches and manages classes",
+      "PERMISSIONS": {
+        "attendance": { "read": true, "create": true, "update": true },
+        "marks": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 6,
+    "fields": {
+      "NAME": "Student",
+      "CODE": "STUDENT",
+      "DESCRIPTION": "Enrolled student",
+      "PERMISSIONS": {
+        "academics": { "read": true },
+        "attendance": { "read": true },
+        "results": { "read": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 7,
+    "fields": {
+      "NAME": "Finance Admin",
+      "CODE": "FINANCE",
+      "DESCRIPTION": "Manages financial operations",
+      "PERMISSIONS": {
+        "fees": { "read": true, "create": true, "update": true },
+        "payroll": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 8,
+    "fields": {
+      "NAME": "Library Admin",
+      "CODE": "LIBRARY",
+      "DESCRIPTION": "Manages library operations",
+      "PERMISSIONS": {
+        "library": {
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true
+        }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 9,
+    "fields": {
+      "NAME": "Hostel Warden",
+      "CODE": "WARDEN",
+      "DESCRIPTION": "Manages hostel operations",
+      "PERMISSIONS": {
+        "hostel": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 10,
+    "fields": {
+      "NAME": "Placement Officer",
+      "CODE": "PLACEMENT",
+      "DESCRIPTION": "Manages placements",
+      "PERMISSIONS": {
+        "placements": { "read": true, "create": true, "update": true }
+      },
+      "IS_ACTIVE": true
+    }
+  }
+]

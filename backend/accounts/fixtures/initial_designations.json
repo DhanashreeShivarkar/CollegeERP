@@ -1,0 +1,119 @@
+[
+  {
+    "model": "accounts.designation",
+    "pk": 1,
+    "fields": {
+      "NAME": "Super Admin",
+      "CODE": "SUPERADMIN",
+      "DESCRIPTION": "Has complete access to all system features",
+      "PERMISSIONS": { "all": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 3,
+    "fields": {
+      "NAME": "Institute Admin",
+      "CODE": "INSTITUTE-ADMIN",
+      "DESCRIPTION": "Institute level administrative access",
+      "PERMISSIONS": { "institute": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 4,
+    "fields": {
+      "NAME": "HOD",
+      "CODE": "HOD",
+      "DESCRIPTION": "Head of Department",
+      "PERMISSIONS": { "department": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 5,
+    "fields": {
+      "NAME": "Principal",
+      "CODE": "PRINCIPAL",
+      "DESCRIPTION": "College Principal",
+      "PERMISSIONS": { "college": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 6,
+    "fields": {
+      "NAME": "Teacher",
+      "CODE": "TEACHER",
+      "DESCRIPTION": "Teaching Staff",
+      "PERMISSIONS": { "teaching": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 7,
+    "fields": {
+      "NAME": "Finance",
+      "CODE": "FINANCE",
+      "DESCRIPTION": "Finance Department Staff",
+      "PERMISSIONS": { "finance": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 8,
+    "fields": {
+      "NAME": "Exam Controller",
+      "CODE": "EXAM_CONTROLLER",
+      "DESCRIPTION": "Examination Department Staff",
+      "PERMISSIONS": { "exams": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 9,
+    "fields": {
+      "NAME": "Librarian",
+      "CODE": "LIBRARIAN",
+      "DESCRIPTION": "Library Staff",
+      "PERMISSIONS": { "library": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.designation",
+    "pk": 10,
+    "fields": {
+      "NAME": "Support Staff",
+      "CODE": "SUPPORT_STAFF",
+      "DESCRIPTION": "General Support Staff",
+      "PERMISSIONS": { "support": true },
+      "IS_ACTIVE": true,
+      "CREATED_AT": "2024-01-01T00:00:00Z",
+      "UPDATED_AT": "2024-01-01T00:00:00Z"
+    }
+  }
+]

@@ -1,0 +1,843 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Add new enum for user types
+enum USER_TYPE {
+  SUPER_ADMIN
+  INSTITUTE_ADMIN
+  HOD
+  PROFESSOR
+  ASSISTANT_PROFESSOR
+  TEACHER
+  STUDENT
+  LIBRARIAN
+  ACCOUNTANT
+  FEES_COLLECTOR
+  CLERK
+  ADMISSION_STAFF
+  EXAMINATION_STAFF
+}
+
+// Add new enums for faculty
+enum GENDER {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum FACULTY_STATUS {
+  ACTIVE
+  RESIGNED
+  RETIRED
+}
+
+enum STUDENT_STATUS {
+  ACTIVE
+  GRADUATED
+  DROPPED
+}
+
+// Add new enum for user roles in permission system
+enum USER_ROLE_TYPE {
+  STUDENT
+  TEACHER
+  HOD
+  PRINCIPAL
+  ADMIN
+  STAFF
+  OTHER
+}
+
+// Add new enums for ID generation
+enum COURSE_CODE {
+  BT  // B.Tech
+  MT  // M.Tech
+  DIP // Diploma
+  PHD // PhD
+}
+
+enum ADMISSION_YEAR_TYPE {
+  F  // First Year
+  S  // Second Year
+  T  // Third Year
+}
+
+enum EMPLOYEE_TYPE {
+  T  // Teacher
+  A  // Admin
+  L  // Librarian
+  C  // Clerk
+  O  // Other
+}
+
+// User model for audit tracking
+model User {
+  ID              BigInt     @id @default(autoincrement())
+  FIRST_NAME      String     @db.VarChar(100)
+  LAST_NAME       String     @db.VarChar(100)
+  USER_ID         String     @unique @db.VarChar(50)
+  EMAIL_ID        String     @unique @db.VarChar(255)
+  PASSWORD        String     @db.VarChar(255)
+  USER_TYPE       USER_TYPE  @default(STUDENT)  // Add this field
+  LAST_LOGIN      DateTime?
+  LAST_LOGIN_IP   String?    @db.VarChar(45)
+  
+  // Add new fields for ID generation
+  USER_PREFIX     String?    @db.VarChar(2)    // BT, MT, EM etc
+  USER_YEAR       Int?                          // 2023, 2024 etc
+  USER_TYPE_CODE  String?    @db.VarChar(1)    // F, S, T etc
+  USER_NUMBER     Int?                          // 001, 002 etc
+
+  @@index([USER_PREFIX, USER_YEAR, USER_TYPE_CODE, USER_NUMBER])
+
+  // Audit columns
+  CREATED_BY      BigInt?
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt?
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  // Audit relations - self referencing for User table
+  CREATED_BY_USER User?  @relation("USER_CREATED_BY", fields: [CREATED_BY], references: [ID])
+  UPDATED_BY_USER User?  @relation("USER_UPDATED_BY", fields: [UPDATED_BY], references: [ID])
+  DELETED_BY_USER User?  @relation("USER_DELETED_BY", fields: [DELETED_BY], references: [ID])
+  
+  // Inverse relations for self-referencing
+  USERS_CREATED   User[] @relation("USER_CREATED_BY")
+  USERS_UPDATED   User[] @relation("USER_UPDATED_BY")
+  USERS_DELETED   User[] @relation("USER_DELETED_BY")
+
+  // Other audit relations
+  CREATED_UNIVERSITIES University[] @relation("CREATED_BY_UNIVERSITY")
+  UPDATED_UNIVERSITIES University[] @relation("UPDATED_BY_UNIVERSITY")
+  DELETED_UNIVERSITIES University[] @relation("DELETED_BY_UNIVERSITY")
+  // ... similar relations for other entities
+
+  @@map("USERS")
+}
+
+// Academic Hierarchy Models
+model University {
+  ID              BigInt     @id @default(autoincrement())
+  UNIVERSITY_NAME String     @db.VarChar(255)
+  ADDRESS         String     @db.Text
+  CONTACT_NUMBER  String     @db.VarChar(15)
+  EMAIL           String     @unique @db.VarChar(255)
+  WEBSITE         String?    @db.VarChar(255)
+  ESTD_YEAR       Int
+  UNIVERSITY_CODE String     @unique @db.VarChar(50)
+  STATUS          UNIVERSITY_STATUS @default(ACTIVE)
+  INSTITUTES      Institute[]
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  // Audit relations
+  CREATED_BY_USER User @relation("CREATED_BY_UNIVERSITY", fields: [CREATED_BY], references: [ID])
+  UPDATED_BY_USER User @relation("UPDATED_BY_UNIVERSITY", fields: [UPDATED_BY], references: [ID])
+  DELETED_BY_USER User? @relation("DELETED_BY_UNIVERSITY", fields: [DELETED_BY], references: [ID])
+
+  @@map("UNIVERSITIES")
+}
+
+model Institute {
+  ID              BigInt     @id @default(autoincrement())
+  UNIVERSITY_ID   BigInt
+  INSTITUTE_NAME  String     @db.VarChar(255)
+  ADDRESS         String     @db.Text
+  CONTACT_NUMBER  String     @db.VarChar(15)
+  EMAIL           String     @unique @db.VarChar(255)
+  WEBSITE         String?    @db.VarChar(255)
+  ESTD_YEAR       Int
+  INSTITUTE_CODE  String     @unique @db.VarChar(50)
+  STATUS          INSTITUTE_STATUS @default(ACTIVE)
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  // Relations
+  UNIVERSITY      University @relation(fields: [UNIVERSITY_ID], references: [ID])
+  PROGRAMS        Program[]
+  DEPARTMENTS     Department[]
+  FACULTY         MASTER_FACULTY[]
+  STUDENTS        MASTER_STUDENT[]
+  
+  @@map("INSTITUTES")
+}
+
+model Program {
+  ID              BigInt     @id @default(autoincrement())
+  INSTITUTE_ID    BigInt
+  PROGRAM_NAME    String     @db.VarChar(255)
+  PROGRAM_CODE    String     @unique @db.VarChar(20)
+  DURATION_YEARS  Int
+  LEVEL           PROGRAM_LEVEL
+  TYPE            PROGRAM_TYPE
+  IS_ACTIVE       Boolean    @default(true)
+  INSTITUTE       Institute  @relation(fields: [INSTITUTE_ID], references: [ID])
+  BRANCHES        Branch[]
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  @@map("PROGRAMS")
+}
+
+model Branch {
+  ID              BigInt     @id @default(autoincrement())
+  PROGRAM_ID      BigInt
+  BRANCH_NAME     String     @db.VarChar(255)
+  BRANCH_CODE     String     @unique @db.VarChar(20)
+  PROGRAM         Program    @relation(fields: [PROGRAM_ID], references: [ID])
+  YEARS           Year[]
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  @@map("BRANCHES")
+}
+
+model Year {
+  ID              BigInt     @id @default(autoincrement())
+  BRANCH_ID       BigInt
+  YEAR_NAME       String     @db.VarChar(50)
+  BRANCH          Branch     @relation(fields: [BRANCH_ID], references: [ID])
+  SEMESTERS       Semester[]
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  @@map("YEARS")
+}
+
+model Semester {
+  ID              BigInt     @id @default(autoincrement())
+  YEAR_ID         BigInt
+  SEMESTER_NAME   String     @db.VarChar(50)
+  YEAR            Year       @relation(fields: [YEAR_ID], references: [ID])
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  @@map("SEMESTERS")
+}
+
+// Administrative Hierarchy Models
+model Department {
+  ID              BigInt     @id @default(autoincrement())
+  INSTITUTE_ID    BigInt
+  DEPARTMENT_NAME String     @db.VarChar(255)
+  DEPARTMENT_CODE String     @unique @db.VarChar(50)
+  STATUS          DEPARTMENT_STATUS @default(ACTIVE)
+  INSTITUTE       Institute  @relation(fields: [INSTITUTE_ID], references: [ID])
+  STAFF           Staff[]
+  FACULTY         MASTER_FACULTY[]
+  STUDENTS        MASTER_STUDENT[]
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  @@map("DEPARTMENTS")
+}
+
+model Staff {
+  ID              BigInt     @id @default(autoincrement())
+  DEPARTMENT_ID   BigInt
+  STAFF_NAME      String     @db.VarChar(255)
+  EMAIL           String     @unique @db.VarChar(255)
+  CONTACT_NUMBER  String     @db.VarChar(15)
+  ROLE            STAFF_ROLE
+  DEPARTMENT      Department @relation(fields: [DEPARTMENT_ID], references: [ID])
+  
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+  
+  @@map("STAFF")
+}
+
+// Faculty related models
+model MASTER_FACULTY {
+  ID              BigInt         @id @default(autoincrement())
+  FIRST_NAME      String         @db.VarChar(100)
+  LAST_NAME       String         @db.VarChar(100)
+  EMAIL           String         @unique @db.VarChar(255)
+  PHONE_NUMBER    String         @db.VarChar(15)
+  DATE_OF_BIRTH   DateTime       @db.Date
+  GENDER          GENDER
+  ADDRESS         String         @db.Text
+  AADHAAR_NUMBER  String         @unique @db.VarChar(12)
+  EMPLOYEE_ID     String         @unique @db.VarChar(20)
+  JOINING_DATE    DateTime       @db.Date
+  INSTITUTE_ID    BigInt
+  DEPARTMENT_ID   BigInt
+  ROLE_ID         BigInt
+  STATUS          FACULTY_STATUS @default(ACTIVE)
+
+  // Add fields for ID generation
+  EMPLOYEE_TYPE   EMPLOYEE_TYPE
+  
+  // Add unique constraint for sequential numbering
+  @@unique([EMPLOYEE_TYPE, JOINING_DATE])
+
+  // Relations
+  INSTITUTE       Institute      @relation(fields: [INSTITUTE_ID], references: [ID])
+  DEPARTMENT      Department     @relation(fields: [DEPARTMENT_ID], references: [ID])
+  FACULTY_TYPE    MASTER_FACULTY_TYPE @relation(fields: [TYPE_ID], references: [ID])
+  PERMISSIONS     FACULTY_PERMISSION_MAPPING[]
+
+  // Update relations
+  PROGRAM_ID      BigInt
+  PROGRAM         MASTER_PROGRAM     @relation(fields: [PROGRAM_ID], references: [ID])
+  DEPARTMENT      MASTER_DEPARTMENT  @relation(fields: [DEPARTMENT_ID], references: [ID])
+  ASSIGNMENTS     ASSIGNMENT[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_FACULTY")
+}
+
+// New faculty type management model
+model MASTER_FACULTY_TYPE {
+  ID              BigInt     @id @default(autoincrement())
+  TYPE_NAME       String     @unique @db.VarChar(100)
+  DESCRIPTION     String?    @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+  
+  // Relations
+  FACULTIES       MASTER_FACULTY[]
+  PERMISSIONS     FACULTY_PERMISSION_MAPPING[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_FACULTY_TYPES")
+}
+
+// New faculty permission mapping model
+model FACULTY_PERMISSION_MAPPING {
+  ID              BigInt     @id @default(autoincrement())
+  FACULTY_ID      BigInt?
+  TYPE_ID         BigInt?
+  PERMISSION_ID   BigInt
+  IS_GRANTED      Boolean    @default(true)
+  START_DATE      DateTime?
+  END_DATE        DateTime?
+  
+  // Relations
+  FACULTY         MASTER_FACULTY? @relation(fields: [FACULTY_ID], references: [ID])
+  FACULTY_TYPE    MASTER_FACULTY_TYPE? @relation(fields: [TYPE_ID], references: [ID])
+  PERMISSION      MASTER_PERMISSION @relation(fields: [PERMISSION_ID], references: [ID])
+  
+  // Audit columns
+  ASSIGNED_BY     BigInt
+  ASSIGNED_AT     DateTime   @default(now())
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@unique([FACULTY_ID, PERMISSION_ID])
+  @@unique([TYPE_ID, PERMISSION_ID])
+  @@map("FACULTY_PERMISSION_MAPPINGS")
+}
+
+// Student related models
+model MASTER_STUDENT {
+  ID              BigInt         @id @default(autoincrement())
+  FIRST_NAME      String         @db.VarChar(100)
+  LAST_NAME       String         @db.VarChar(100)
+  EMAIL           String         @unique @db.VarChar(255)
+  PHONE_NUMBER    String         @db.VarChar(15)
+  DATE_OF_BIRTH   DateTime       @db.Date
+  GENDER          GENDER
+  ADDRESS         String         @db.Text
+  AADHAAR_NUMBER  String         @unique @db.VarChar(12)
+  ENROLLMENT_NO   String         @unique @db.VarChar(20)
+  ADMISSION_DATE  DateTime       @db.Date
+  INSTITUTE_ID    BigInt
+  DEPARTMENT_ID   BigInt
+  COURSE_ID       BigInt
+  CURRENT_SEMESTER Int
+  STATUS          STUDENT_STATUS @default(ACTIVE)
+
+  // Add fields for ID generation
+  COURSE_CODE     COURSE_CODE
+  ADMISSION_TYPE  ADMISSION_YEAR_TYPE
+  
+  // Add unique constraint for sequential numbering
+  @@unique([COURSE_CODE, ADMISSION_DATE, ADMISSION_TYPE])
+
+  // Relations
+  INSTITUTE       Institute      @relation(fields: [INSTITUTE_ID], references: [ID])
+  DEPARTMENT      Department     @relation(fields: [DEPARTMENT_ID], references: [ID])
+
+  // Update relations
+  PROGRAM_ID      BigInt
+  BRANCH_ID       BigInt
+  PROGRAM         MASTER_PROGRAM @relation(fields: [PROGRAM_ID], references: [ID])
+  BRANCH          MASTER_BRANCH  @relation(fields: [BRANCH_ID], references: [ID])
+  EXAM_RESULTS    EXAM_RESULT[]
+  FEE_TRANSACTIONS FEE_TRANSACTION[]
+  ATTENDANCE      ATTENDANCE[]
+  DOCUMENTS       DOCUMENT_MASTER[]
+  ASSIGNMENTS     ASSIGNMENT_SUBMISSION[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_STUDENTS")
+}
+
+// New permission management models
+model MASTER_PERMISSION {
+  ID                  BigInt     @id @default(autoincrement())
+  PERMISSION_NAME     String     @unique @db.VarChar(255)
+  PERMISSION_DESCRIPTION String?  @db.Text
+  IS_ACTIVE          Boolean    @default(true)
+  USER_PERMISSIONS   USER_PERMISSION_MAPPING[]
+  FACULTY_PERMISSIONS FACULTY_PERMISSION_MAPPING[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_PERMISSIONS")
+}
+
+model USER_PERMISSION_MAPPING {
+  ID              BigInt     @id @default(autoincrement())
+  USER_ID         BigInt
+  ROLE            USER_ROLE_TYPE
+  PERMISSION_ID   BigInt
+  IS_GRANTED      Boolean    @default(true)
+  START_DATE      DateTime?
+  END_DATE        DateTime?
+  
+  // Relations
+  PERMISSION      MASTER_PERMISSION @relation(fields: [PERMISSION_ID], references: [ID])
+  
+  // Audit columns
+  ASSIGNED_BY     BigInt
+  ASSIGNED_AT     DateTime   @default(now())
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@unique([USER_ID, PERMISSION_ID])
+  @@map("USER_PERMISSION_MAPPINGS")
+  @@index([USER_ID])
+  @@index([PERMISSION_ID])
+  @@index([ROLE])
+  @@index([IS_GRANTED])
+  @@index([START_DATE])
+  @@index([END_DATE])
+}
+
+// Enums
+enum UNIVERSITY_STATUS {
+  ACTIVE
+  INACTIVE
+}
+
+enum INSTITUTE_STATUS {
+  ACTIVE
+  INACTIVE
+}
+
+enum DEPARTMENT_STATUS {
+  ACTIVE
+  INACTIVE
+}
+
+enum PROGRAM_LEVEL {
+  UG
+  PG
+  DIP
+}
+
+enum PROGRAM_TYPE {
+  FT
+  PT
+}
+
+enum STAFF_ROLE {
+  HOD
+  PROFESSOR
+  ASST_PROFESSOR
+  ADMIN
+  OTHER
+}
+
+// Update MASTER_PROGRAM model
+model MASTER_PROGRAM {
+  ID              BigInt     @id @default(autoincrement())
+  PROGRAM_NAME    String     @db.VarChar(100)
+  DURATION_YEARS  Int
+  DESCRIPTION     String?    @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+  
+  // Relations
+  BRANCHES        MASTER_BRANCH[]
+  STUDENTS        MASTER_STUDENT[]
+  FACULTY         MASTER_FACULTY[]
+  SUBJECTS        MASTER_SUBJECT[]
+  EXAMS           EXAM_MASTER[]
+  FEES            FEE_MASTER[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_PROGRAMS")
+}
+
+// Update MASTER_BRANCH model
+model MASTER_BRANCH {
+  ID              BigInt     @id @default(autoincrement())
+  BRANCH_NAME     String     @db.VarChar(100)
+  PROGRAM_ID      BigInt
+  DESCRIPTION     String?    @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+  
+  // Relations
+  PROGRAM         MASTER_PROGRAM @relation(fields: [PROGRAM_ID], references: [ID])
+  STUDENTS        MASTER_STUDENT[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_BRANCHES")
+}
+
+// Update MASTER_DEPARTMENT model
+model MASTER_DEPARTMENT {
+  ID              BigInt     @id @default(autoincrement())
+  DEPARTMENT_NAME String     @db.VarChar(100)
+  DESCRIPTION     String?    @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+  
+  // Relations
+  FACULTY         MASTER_FACULTY[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_DEPARTMENTS")
+}
+
+// Academic Management Models
+model MASTER_SUBJECT {
+  ID              BigInt     @id @default(autoincrement())
+  SUBJECT_NAME    String     @db.VarChar(255)
+  PROGRAM_ID      BigInt
+  SEMESTER        Int
+  CREDIT_HOURS    Int
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  PROGRAM         MASTER_PROGRAM @relation(fields: [PROGRAM_ID], references: [ID])
+  EXAM_RESULTS    EXAM_RESULT[]
+  ATTENDANCE      ATTENDANCE[]
+  ASSIGNMENTS     ASSIGNMENT[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("MASTER_SUBJECTS")
+}
+
+model EXAM_MASTER {
+  ID              BigInt     @id @default(autoincrement())
+  EXAM_NAME       String     @db.VarChar(255)
+  PROGRAM_ID      BigInt
+  SEMESTER        Int
+  EXAM_DATE       DateTime   @db.Date
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  PROGRAM         MASTER_PROGRAM @relation(fields: [PROGRAM_ID], references: [ID])
+  RESULTS         EXAM_RESULT[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("EXAM_MASTERS")
+}
+
+model EXAM_RESULT {
+  ID              BigInt     @id @default(autoincrement())
+  STUDENT_ID      BigInt
+  EXAM_ID         BigInt
+  SUBJECT_ID      BigInt
+  MARKS_OBTAINED  Decimal    @db.Decimal(5,2)
+  GRADE           String     @db.VarChar(5)
+  REMARKS         String?    @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  STUDENT         MASTER_STUDENT @relation(fields: [STUDENT_ID], references: [ID])
+  EXAM            EXAM_MASTER @relation(fields: [EXAM_ID], references: [ID])
+  SUBJECT         MASTER_SUBJECT @relation(fields: [SUBJECT_ID], references: [ID])
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("EXAM_RESULTS")
+}
+
+model FEE_MASTER {
+  ID              BigInt     @id @default(autoincrement())
+  PROGRAM_ID      BigInt
+  FEE_NAME        String     @db.VarChar(255)
+  AMOUNT          Decimal    @db.Decimal(10,2)
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  PROGRAM         MASTER_PROGRAM @relation(fields: [PROGRAM_ID], references: [ID])
+  TRANSACTIONS    FEE_TRANSACTION[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("FEE_MASTERS")
+}
+
+model FEE_TRANSACTION {
+  ID              BigInt     @id @default(autoincrement())
+  STUDENT_ID      BigInt
+  FEE_ID          BigInt
+  AMOUNT_PAID     Decimal    @db.Decimal(10,2)
+  PAYMENT_DATE    DateTime   @default(now())
+  PAYMENT_METHOD  String     @db.VarChar(50)
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  STUDENT         MASTER_STUDENT @relation(fields: [STUDENT_ID], references: [ID])
+  FEE             FEE_MASTER @relation(fields: [FEE_ID], references: [ID])
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("FEE_TRANSACTIONS")
+}
+
+model ATTENDANCE {
+  ID              BigInt     @id @default(autoincrement())
+  STUDENT_ID      BigInt
+  SUBJECT_ID      BigInt
+  ATTENDANCE_DATE DateTime   @db.Date
+  STATUS          String     @db.VarChar(10)
+  REMARKS         String?    @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  STUDENT         MASTER_STUDENT @relation(fields: [STUDENT_ID], references: [ID])
+  SUBJECT         MASTER_SUBJECT @relation(fields: [SUBJECT_ID], references: [ID])
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("ATTENDANCE")
+}
+
+model DOCUMENT_MASTER {
+  ID              BigInt     @id @default(autoincrement())
+  STUDENT_ID      BigInt
+  DOCUMENT_NAME   String     @db.VarChar(255)
+  FILE_PATH       String     @db.Text
+  UPLOAD_DATE     DateTime   @default(now())
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  STUDENT         MASTER_STUDENT @relation(fields: [STUDENT_ID], references: [ID])
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("DOCUMENT_MASTERS")
+}
+
+model ASSIGNMENT {
+  ID              BigInt     @id @default(autoincrement())
+  SUBJECT_ID      BigInt
+  FACULTY_ID      BigInt
+  TITLE           String     @db.VarChar(255)
+  DESCRIPTION     String     @db.Text
+  DEADLINE        DateTime
+  FILE_PATH       String     @db.Text
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  SUBJECT         MASTER_SUBJECT @relation(fields: [SUBJECT_ID], references: [ID])
+  FACULTY         MASTER_FACULTY @relation(fields: [FACULTY_ID], references: [ID])
+  SUBMISSIONS     ASSIGNMENT_SUBMISSION[]
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  UPDATED_BY      BigInt
+  UPDATED_AT      DateTime   @updatedAt
+  DELETED_BY      BigInt?
+  DELETED_AT      DateTime?
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("ASSIGNMENTS")
+}
+
+model ASSIGNMENT_SUBMISSION {
+  ID              BigInt     @id @default(autoincrement())
+  ASSIGNMENT_ID   BigInt
+  STUDENT_ID      BigInt
+  FILE_PATH       String     @db.Text
+  SUBMISSION_DATE DateTime   @default(now())
+  IS_ACTIVE       Boolean    @default(true)
+
+  // Relations
+  ASSIGNMENT      ASSIGNMENT @relation(fields: [ASSIGNMENT_ID], references: [ID])
+  STUDENT         MASTER_STUDENT @relation(fields: [STUDENT_ID], references: [ID])
+
+  // Audit columns
+  CREATED_BY      BigInt
+  CREATED_AT      DateTime   @default(now())
+  IS_DELETED      Boolean    @default(false)
+
+  @@map("ASSIGNMENT_SUBMISSIONS")
+}
