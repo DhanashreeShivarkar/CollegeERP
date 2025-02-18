@@ -1,91 +1,121 @@
 from django.shortcuts import render
 from django.core.mail import send_mail
 from django.conf import settings
-from django.utils import timezone  # Add this import
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from .models import CustomUser
-from django.db import transaction
-import traceback
-import json
+from rest_framework.decorators import api_view
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class LoginView(APIView):
     def post(self, request):
-        try:
-            print("\n=== Login Debug ===")
-            user_id = request.data.get('user_id', '').strip().upper()
-            password = request.data.get('password', '').strip()
-            
-            try:
-                user = CustomUser.objects.get(USER_ID=user_id)
-                
-                # Check if account is locked
-                is_locked, lock_message = user.is_account_locked()
-                if is_locked:
-                    return Response({
-                        'status': 'error',
-                        'message': lock_message,
-                        'locked': True,
-                        'reason': user.LOCK_REASON,
-                        'attempts': user.FAILED_LOGIN_ATTEMPTS,
-                        'last_attempt': user.LAST_LOGIN_ATTEMPT
-                    }, status=status.HTTP_403_FORBIDDEN)
+        print("==== Login Request ====")
+        print(f"Request Data: {request.data}")
+        print(f"Request Headers: {request.headers}")
+        print(f"Request Method: {request.method}")
+        print(f"Request Path: {request.path}")
+        
+        user_id = request.data.get('user_id')
+        password = request.data.get('password')
 
-                # Check password
-                if not user.check_password(password):
-                    user.increment_failed_attempts()
-                    attempts_left = 3
-                    if user.FAILED_LOGIN_ATTEMPTS < 3:
-                        attempts_left = 3 - user.FAILED_LOGIN_ATTEMPTS
-                    elif user.FAILED_LOGIN_ATTEMPTS < 5:
-                        attempts_left = 5 - user.FAILED_LOGIN_ATTEMPTS
-                    elif user.FAILED_LOGIN_ATTEMPTS < 8:
-                        attempts_left = 8 - user.FAILED_LOGIN_ATTEMPTS
-                    
-                    return Response({
-                        'status': 'error',
-                        'message': f'Invalid credentials. {attempts_left} attempts remaining before next lockout.',
-                        'attempts': user.FAILED_LOGIN_ATTEMPTS,
-                        'last_attempt': user.LAST_LOGIN_ATTEMPT
-                    }, status=status.HTTP_401_UNAUTHORIZED)
-
-                # Success - generate and send OTP
-                otp = user.generate_otp()
-                if not otp:
-                    raise Exception("Failed to generate OTP")
-
-                print(f"Generated OTP: {otp}")
-
-                # Send email
-                send_mail(
-                    'Login Verification',
-                    f'Your verification code is: {otp}',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [user.EMAIL],
-                    fail_silently=False
-                )
-
-                return Response({
-                    'status': 'success',
-                    'message': 'OTP sent successfully',
-                    'user_id': user.USER_ID,
-                    'email': user.EMAIL
-                })
-
-            except CustomUser.DoesNotExist:
-                return Response({
-                    'status': 'error',
-                    'message': 'Invalid credentials'
-                }, status=status.HTTP_401_UNAUTHORIZED)
-
-        except Exception as e:
-            print(f"Login error: {str(e)}")
-            print(traceback.format_exc())
+        if not user_id or not password:
+            print(f"Missing credentials - user_id: {bool(user_id)}, password: {bool(password)}")
             return Response({
                 'status': 'error',
-                'message': 'An error occurred during login'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'message': 'Please provide both USER_ID and PASSWORD'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            print(f"Looking for user with ID: {user_id.upper()}")
+            user = CustomUser.objects.get(USER_ID=user_id.upper())
+            
+            print(f"Login attempt for user: {user.USER_ID}")
+            print(f"Failed attempts: {user.FAILED_LOGIN_ATTEMPTS}")
+            print(f"Last failed login: {user.LAST_FAILED_LOGIN}")
+            print(f"Permanent lock: {user.PERMANENT_LOCK}")
+
+            if not user.IS_ACTIVE:
+                return Response({
+                    'status': 'error',
+                    'message': 'Account is not active'
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Check account lock status
+            is_locked, lock_message = user.is_account_locked()
+            if is_locked:
+                return Response({
+                    'status': 'error',
+                    'message': lock_message
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Verify password
+            if not user.check_password(password):
+                user.increment_failed_attempts()
+                
+                remaining_attempts = 0
+                if user.FAILED_LOGIN_ATTEMPTS < 3:
+                    remaining_attempts = 3 - user.FAILED_LOGIN_ATTEMPTS
+                elif user.FAILED_LOGIN_ATTEMPTS < 5:
+                    remaining_attempts = 5 - user.FAILED_LOGIN_ATTEMPTS
+                elif user.FAILED_LOGIN_ATTEMPTS < 8:
+                    remaining_attempts = 8 - user.FAILED_LOGIN_ATTEMPTS
+                
+                message = "Invalid credentials. "
+                if remaining_attempts > 0:
+                    message += f"{remaining_attempts} attempts remaining before next level of account lock."
+                else:
+                    message += "Account will be locked due to too many failed attempts."
+                
+                return Response({
+                    'status': 'error',
+                    'message': message
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Reset failed attempts on successful login
+            user.reset_failed_attempts()
+
+            # Generate and send OTP
+            otp = user.generate_otp()
+            
+            try:
+                send_mail(
+                    subject='Login Verification OTP - College ERP',
+                    message=(
+                        f'Dear {user.FIRST_NAME},\n\n'
+                        f'Your verification OTP is: {otp}\n'
+                        f'This OTP will expire in 3 minutes.\n\n'
+                        f'If you did not attempt to login, please secure your account.\n\n'
+                        f'Best regards,\n'
+                        f'College ERP Team'
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.EMAIL],
+                    fail_silently=False,
+                )
+                
+                return Response({
+                    'status': 'success',
+                    'message': 'Login successful. Please verify OTP sent to your email.',
+                    'user_id': user.USER_ID,
+                    'email': user.EMAIL[:3] + '*' * (len(user.EMAIL.split('@')[0]) - 3) + '@' + user.EMAIL.split('@')[1]
+                }, status=status.HTTP_200_OK)
+                
+            except Exception as e:
+                user.OTP_SECRET = None
+                user.save()
+                return Response({
+                    'status': 'error',
+                    'message': 'Failed to send verification OTP. Please try again.'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except CustomUser.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Invalid USER_ID'
+            }, status=status.HTTP_404_NOT_FOUND)
 
 class SendOTPView(APIView):
     def post(self, request):
@@ -95,7 +125,7 @@ class SendOTPView(APIView):
                 'status': 'error',
                 'message': 'Please provide USER_ID'
             }, status=status.HTTP_400_BAD_REQUEST)
-
+        
         try:
             user = CustomUser.objects.get(USER_ID=user_id)
             
@@ -143,7 +173,7 @@ class SendOTPView(APIView):
                     'status': 'error',
                     'message': 'Failed to send OTP email. Please try again.'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                
+        
         except CustomUser.DoesNotExist:
             return Response({
                 'status': 'error',
@@ -152,191 +182,171 @@ class SendOTPView(APIView):
 
 class VerifyOTPView(APIView):
     def post(self, request):
-        print("\n=== OTP Verification Request ===")
-        print(f"Request Data: {request.data}")
+        user_id = request.data.get('user_id')
+        otp = request.data.get('otp')
         
+        if not user_id or not otp:
+            return Response({
+                'status': 'error',
+                'message': 'Both user_id and OTP are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            user_id = request.data.get('user_id', '').strip()
-            otp = request.data.get('otp', '').strip()
-
-            if not user_id or not otp:
-                return Response({
-                    'status': 'error',
-                    'message': 'Both user_id and OTP are required'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            with transaction.atomic():
-                user = CustomUser.objects.select_for_update().get(USER_ID=user_id.upper())
-                # Use clear_on_success=True for login OTP
-                is_valid, message = user.verify_otp(otp, clear_on_success=True)
-                
-                if is_valid:
-                    # Update login info
-                    user.update_login_info(request.META.get('REMOTE_ADDR'))
-                    
-                    # Include complete designation details
-                    designation = user.DESIGNATION
-                    return Response({
-                        'status': 'success',
-                        'message': message,
-                        'user': {
-                            'user_id': user.USER_ID,
-                            'username': user.USERNAME,
-                            'email': user.EMAIL,
-                            'designation': {
-                                'id': designation.DESIGNATION_ID,
-                                'name': designation.NAME,
-                                'code': designation.CODE,
-                                'permissions': designation.PERMISSIONS
-                            } if designation else None
-                        }
-                    })
+            user = CustomUser.objects.get(USER_ID=user_id)
+            is_valid, message = user.verify_otp(otp)
+            
+            if is_valid:
+                # Update login info
+                user.update_login_info(request.META.get('REMOTE_ADDR'))
                 
                 return Response({
-                    'status': 'error',
-                    'message': message
-                }, status=status.HTTP_400_BAD_REQUEST)
-                
+                    'status': 'success',
+                    'message': message,
+                    'user': {
+                        'user_id': user.USER_ID,
+                        'username': user.USERNAME,
+                        'email': user.EMAIL,
+                        'designation': {
+                            'code': user.DESIGNATION.CODE,
+                            'name': user.DESIGNATION.NAME,
+                        },
+                        'first_name': user.FIRST_NAME,
+                        'last_name': user.LAST_NAME,
+                        'is_superuser': user.IS_SUPERUSER,
+                        'permissions': user.DESIGNATION.PERMISSIONS
+                    }
+                }, status=status.HTTP_200_OK)
+            
+            return Response({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         except CustomUser.DoesNotExist:
             return Response({
                 'status': 'error',
                 'message': 'Invalid user'
             }, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            print(f"OTP verification error: {str(e)}")
-            return Response({
-                'status': 'error',
-                'message': 'Verification failed'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class RequestPasswordResetView(APIView):
     def post(self, request):
-        try:
-            user_id = request.data.get('user_id', '').strip().upper()
-            
-            try:
-                user = CustomUser.objects.get(USER_ID=user_id)
-                otp = user.generate_otp()
-                
-                if otp:
-                    send_mail(
-                        'Password Reset OTP',
-                        f'Your OTP for password reset is: {otp}',
-                        settings.DEFAULT_FROM_EMAIL,
-                        [user.EMAIL],
-                        fail_silently=False,
-                    )
-                    return Response({
-                        'status': 'success',
-                        'message': 'OTP sent to your registered email',
-                        'email': user.EMAIL
-                    })
-                else:
-                    return Response({
-                        'status': 'error',
-                        'message': 'Failed to generate OTP'
-                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                    
-            except CustomUser.DoesNotExist:
-                return Response({
-                    'status': 'error',
-                    'message': 'User not found'
-                }, status=status.HTTP_404_NOT_FOUND)
-                
-        except Exception as e:
-            print(f"Password reset error: {str(e)}")
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
             return Response({
                 'status': 'error',
-                'message': 'Failed to process request'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'message': 'Please provide USER_ID'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(USER_ID=user_id.upper())
+            
+            if not user.IS_ACTIVE:
+                return Response({
+                    'status': 'error',
+                    'message': 'Account is not active'
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Generate and send OTP
+            otp = user.generate_otp()
+            
+            try:
+                send_mail(
+                    subject='Password Reset OTP - College ERP',
+                    message=(
+                        f'Dear {user.FIRST_NAME},\n\n'
+                        f'Your password reset OTP is: {otp}\n'
+                        f'This OTP will expire in 3 minutes.\n\n'
+                        f'If you did not request a password reset, please ignore this email.\n\n'
+                        f'Best regards,\n'
+                        f'College ERP Team'
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.EMAIL],
+                    fail_silently=False,
+                )
+                
+                return Response({
+                    'status': 'success',
+                    'message': 'Password reset OTP sent successfully',
+                    'email': user.EMAIL[:3] + '*' * (len(user.EMAIL.split('@')[0]) - 3) + '@' + user.EMAIL.split('@')[1]
+                }, status=status.HTTP_200_OK)
+                
+            except Exception as e:
+                user.OTP_SECRET = None
+                user.save()
+                return Response({
+                    'status': 'error',
+                    'message': 'Failed to send OTP email'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except CustomUser.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'User not found'
+            }, status=status.HTTP_404_NOT_FOUND)
 
 class VerifyResetOTPView(APIView):
     def post(self, request):
-        try:
-            user_id = request.data.get('user_id', '').strip().upper()
-            otp = request.data.get('otp', '').strip()
-            
-            try:
-                user = CustomUser.objects.get(USER_ID=user_id)
-                # Don't clear OTP after verification
-                is_valid, message = user.verify_otp(otp, clear_on_success=False)
-                
-                return Response({
-                    'status': 'success' if is_valid else 'error',
-                    'message': message,
-                    'verified': is_valid
-                })
-                
-            except CustomUser.DoesNotExist:
-                return Response({
-                    'status': 'error',
-                    'message': 'User not found'
-                }, status=status.HTTP_404_NOT_FOUND)
-                
-        except Exception as e:
-            print(f"OTP verification error: {str(e)}")
+        user_id = request.data.get('user_id')
+        otp = request.data.get('otp')
+        
+        if not user_id or not otp:
             return Response({
                 'status': 'error',
-                'message': 'Failed to verify OTP'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'message': 'Please provide both USER_ID and OTP'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(USER_ID=user_id.upper())
+            is_valid, message = user.verify_otp(otp)
+            
+            return Response({
+                'status': 'success' if is_valid else 'error',
+                'message': message,
+                'verified': is_valid
+            }, status=status.HTTP_200_OK if is_valid else status.HTTP_400_BAD_REQUEST)
+            
+        except CustomUser.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'User not found'
+            }, status=status.HTTP_404_NOT_FOUND)
 
 class ResetPasswordView(APIView):
     def post(self, request):
-        try:
-            user_id = request.data.get('user_id', '').strip().upper()
-            otp = request.data.get('otp', '').strip()
-            new_password = request.data.get('new_password', '').strip()
-            
-            try:
-                with transaction.atomic():
-                    user = CustomUser.objects.select_for_update().get(USER_ID=user_id)
-                    
-                    # First check if password is in history
-                    try:
-                        if not user.check_password_history(new_password):
-                            return Response({
-                                'status': 'error',
-                                'message': 'Cannot reuse any of your last 5 passwords'
-                            }, status=status.HTTP_400_BAD_REQUEST)
-                    except Exception as e:
-                        print(f"Password history check error: {str(e)}")
-                        return Response({
-                            'status': 'error',
-                            'message': str(e)
-                        }, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    # Then verify OTP
-                    is_valid, message = user.verify_otp(otp, clear_on_success=True)
-                    if not is_valid:
-                        return Response({
-                            'status': 'error',
-                            'message': message
-                        }, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    # If both checks pass, reset password
-                    user.set_password(new_password)
-                    user.PASSWORD_CHANGED_AT = timezone.now()
-                    user.FAILED_LOGIN_ATTEMPTS = 0
-                    user.IS_LOCKED = False
-                    user.LOCKED_UNTIL = None
-                    user.OTP_VERIFIED = False
-                    user.save()
-                    
-                    return Response({
-                        'status': 'success',
-                        'message': 'Password reset successful'
-                    })
-                    
-            except CustomUser.DoesNotExist:
-                return Response({
-                    'status': 'error',
-                    'message': 'User not found'
-                }, status=status.HTTP_404_NOT_FOUND)
-                
-        except Exception as e:
-            print(f"Password reset error: {str(e)}")
-            print(traceback.format_exc())  # Add this for better error tracking
+        user_id = request.data.get('user_id')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+        
+        if not all([user_id, otp, new_password]):
             return Response({
                 'status': 'error',
-                'message': 'Failed to reset password'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'message': 'Please provide USER_ID, OTP and new password'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(USER_ID=user_id.upper())
+            is_valid, message = user.verify_otp(otp)
+            
+            if not is_valid:
+                return Response({
+                    'status': 'error',
+                    'message': message
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Set new password
+            user.set_password(new_password)
+            user.OTP_SECRET = None  # Clear OTP after successful password reset
+            user.save()
+            
+            return Response({
+                'status': 'success',
+                'message': 'Password reset successful'
+            }, status=status.HTTP_200_OK)
+            
+        except CustomUser.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'User not found'
+            }, status=status.HTTP_404_NOT_FOUND)

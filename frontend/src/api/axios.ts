@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8000",
@@ -7,14 +7,11 @@ const axiosInstance = axios.create({
   },
 });
 
-axiosInstance.interceptors.request.use((config) => {
-  // Clean up URL by removing extra spaces
-  if (config.url) {
-    config.url = config.url.trim();
-  }
-
-  const fullUrl = `${config.baseURL}/${config.url}`;
-  console.log("Making request to:", fullUrl);
+axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  console.log(
+    `${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
+    config.data
+  );
   return config;
 });
 

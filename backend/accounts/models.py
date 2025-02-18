@@ -187,6 +187,14 @@ class PASSWORD_HISTORY(models.Model):
         ordering = ['-CREATED_AT']
 
 class CustomUser(AbstractUser):
+    # Disable default fields completely
+    last_login = None  
+    date_joined = None
+    
+    # Use our uppercase versions
+    LAST_LOGIN = models.DateTimeField(null=True, blank=True, db_column='LAST_LOGIN')
+    DATE_JOINED = models.DateTimeField(default=timezone.now, db_column='DATE_JOINED')
+    
     # Required fields for Django auth
     USERNAME_FIELD = 'USERNAME'
     EMAIL_FIELD = 'EMAIL'
@@ -244,10 +252,15 @@ class CustomUser(AbstractUser):
         db_column='UPDATED_AT'
     )
     LAST_LOGIN = models.DateTimeField(null=True, blank=True, db_column='LAST_LOGIN')
+    DATE_JOINED = models.DateTimeField(
+        default=timezone.now,  # Change from auto_now_add to default
+        db_column='DATE_JOINED'
+    )
 
     # Security and Login tracking fields
     LAST_LOGIN_IP = models.GenericIPAddressField(null=True, blank=True, db_column='LAST_LOGIN_IP')
     LAST_LOGIN_ATTEMPT = models.DateTimeField(null=True, blank=True, db_column='LAST_LOGIN_ATTEMPT')
+    LAST_FAILED_LOGIN = models.DateTimeField(null=True, blank=True, db_column='LAST_FAILED_LOGIN')  # Add this field
     FAILED_LOGIN_ATTEMPTS = models.IntegerField(default=0, db_column='FAILED_LOGIN_ATTEMPTS')
     IS_LOCKED = models.BooleanField(default=False, db_column='IS_LOCKED')
     LOCKED_UNTIL = models.DateTimeField(null=True, blank=True, db_column='LOCKED_UNTIL')
@@ -374,45 +387,84 @@ class CustomUser(AbstractUser):
         return self.IS_SUPERUSER
 
     def increment_failed_attempts(self):
-        self.FAILED_LOGIN_ATTEMPTS += 1
-        self.LAST_LOGIN_ATTEMPT = timezone.now()
+        self.FAILED_LOGIN_ATTEMPTS = (self.FAILED_LOGIN_ATTEMPTS or 0) + 1
+        self.LAST_FAILED_LOGIN = timezone.now()
         
+        # Update lock status based on attempts
         if self.FAILED_LOGIN_ATTEMPTS >= 8:
-            self.IS_LOCKED = True
             self.PERMANENT_LOCK = True
-            self.LOCK_REASON = "Account permanently locked due to excessive failed attempts"
+            self.LOCK_REASON = "Too many failed login attempts (8+). Administrative unlock required."
         elif self.FAILED_LOGIN_ATTEMPTS >= 5:
-            self.IS_LOCKED = True
-            self.LOCKED_UNTIL = timezone.now() + timedelta(hours=6)
-            self.LOCK_REASON = "Account locked for 6 hours due to 5+ failed attempts"
+            self.LOCKED_UNTIL = timezone.now() + timezone.timedelta(hours=6)
         elif self.FAILED_LOGIN_ATTEMPTS >= 3:
-            self.IS_LOCKED = True
-            self.LOCKED_UNTIL = timezone.now() + timedelta(hours=1)
-            self.LOCK_REASON = "Account locked for 1 hour due to 3+ failed attempts"
-        
-        self.save()
+            self.LOCKED_UNTIL = timezone.now() + timezone.timedelta(hours=1)
+            
+        self.save(update_fields=[
+            'FAILED_LOGIN_ATTEMPTS', 
+            'LAST_FAILED_LOGIN',
+            'PERMANENT_LOCK',
+            'LOCK_REASON',
+            'LOCKED_UNTIL'
+        ])
 
     def reset_failed_attempts(self):
+        if self.PERMANENT_LOCK:
+            return False  # Can't reset if permanently locked
+            
         self.FAILED_LOGIN_ATTEMPTS = 0
-        self.IS_LOCKED = False
+        self.LAST_FAILED_LOGIN = None
         self.LOCKED_UNTIL = None
-        self.PERMANENT_LOCK = False
-        self.LOCK_REASON = None
-        self.save()
+        self.save(update_fields=[
+            'FAILED_LOGIN_ATTEMPTS',
+            'LAST_FAILED_LOGIN',
+            'LOCKED_UNTIL'
+        ])
+        return True
 
     def is_account_locked(self):
+        """
+        Check account lock status with different conditions:
+        - 3 failed attempts: 1 hour lock
+        - 5 failed attempts: 6 hours lock
+        - 8 or more attempts: permanent lock (admin unlock required)
+        """
         if self.PERMANENT_LOCK:
             return True, "Account is permanently locked. Please contact administrator."
-            
-        if not self.IS_LOCKED:
-            return False, None
-        
-        if self.LOCKED_UNTIL and timezone.now() > self.LOCKED_UNTIL:
-            self.reset_failed_attempts()
-            return False, None
-            
-        time_remaining = self.LOCKED_UNTIL - timezone.now() if self.LOCKED_UNTIL else None
-        return True, f"Account is locked. Try again in {time_remaining.seconds//3600} hours and {(time_remaining.seconds//60)%60} minutes."
+
+        if not self.FAILED_LOGIN_ATTEMPTS or not self.LAST_FAILED_LOGIN:
+            return False, "Account is not locked."
+
+        current_time = timezone.now()
+
+        # Check for permanent lock (8+ attempts)
+        if self.FAILED_LOGIN_ATTEMPTS >= 8:
+            self.PERMANENT_LOCK = True
+            self.LOCK_REASON = "Too many failed login attempts (8+). Administrative unlock required."
+            self.save(update_fields=['PERMANENT_LOCK', 'LOCK_REASON'])
+            return True, "Account has been permanently locked due to too many failed attempts. Please contact administrator."
+
+        # Check for 6-hour lock (5-7 attempts)
+        if self.FAILED_LOGIN_ATTEMPTS >= 5:
+            lock_duration = timezone.timedelta(hours=6)
+            lock_end_time = self.LAST_FAILED_LOGIN + lock_duration
+            if current_time < lock_end_time:
+                remaining_time = lock_end_time - current_time
+                hours = int(remaining_time.total_seconds() // 3600)
+                minutes = int((remaining_time.total_seconds() % 3600) // 60)
+                return True, f"Account is locked for {hours}h {minutes}m due to multiple failed attempts."
+
+        # Check for 1-hour lock (3-4 attempts)
+        if self.FAILED_LOGIN_ATTEMPTS >= 3:
+            lock_duration = timezone.timedelta(hours=1)
+            lock_end_time = self.LAST_FAILED_LOGIN + lock_duration
+            if current_time < lock_end_time:
+                remaining_time = lock_end_time - current_time
+                minutes = int(remaining_time.total_seconds() // 60)
+                return True, f"Account is locked for {minutes} minutes due to failed attempts."
+
+        # Reset failed attempts if lock period has expired
+        self.reset_failed_attempts()
+        return False, "Account is not locked."
 
     def update_login_info(self, ip_address):
         self.LAST_LOGIN_IP = ip_address
