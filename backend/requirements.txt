@@ -6,4 +6,8 @@ gunicorn>=20.0,<21.0
 Pillow>=8.0,<9.0
 django-environ>=0.4,<0.5
 # Install required packages
-pip install django djangorestframework django-cors-headers psycopg2-binary python-dotenv django-rest-knox drf-yasg Pillow celery redis
+# pip install django djangorestframework django-cors-headers psycopg2-binary python-dotenv django-rest-knox drf-yasg Pillow celery redis
+# pip install djangorestframework
+# pip install django-cors-headers
+# pip install djangorestframework-simplejwt
+# python -m pip install Pillow
