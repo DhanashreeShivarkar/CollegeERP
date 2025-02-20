@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/Home";
 import AdminDashboard from "./components/dashboard/AdminDashboard";
 import TeacherDashboard from "./components/dashboard/TeacherDashboard";
@@ -218,6 +212,8 @@ const App = () => {
               )
             }
           />
+
+          <Route path="/dashboard/*" element={<SuperAdminDashboard />} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

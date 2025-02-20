@@ -88,9 +88,8 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value, color }) => (
   </Card>
 );
 
-const AdminDashboard: React.FC<{ user: any }> = ({ user }) => {
+const AdminDashboard = ({ user }: any) => {
   const navigate = useNavigate();
-  // Update state initialization to check localStorage
   const [currentView, setCurrentView] = useState(() => {
     return localStorage.getItem("adminDashboardView") || "dashboard";
   });
@@ -166,9 +165,22 @@ const AdminDashboard: React.FC<{ user: any }> = ({ user }) => {
   // Update the dashboard menu item to use handleMenuClick
   const menuItems = [
     {
-      icon: <Assignment />,
-      text: "Dashboard",
-      onClick: () => handleMenuClick("dashboard"),
+      icon: "bi-gear-fill",
+      text: "Settings",
+      onClick: () => handleMenuClick("settings"),
+    },
+    {
+      icon: "bi-people-fill",
+      text: "Users",
+      onClick: () => handleMenuClick("users"),
+      subItems: [
+        {
+          icon: "bi-person-plus",
+          text: "Add User",
+          onClick: () => navigate("/add-user"),
+          path: "/add-user",
+        },
+      ],
     },
     {
       icon: <SupervisorAccount />,

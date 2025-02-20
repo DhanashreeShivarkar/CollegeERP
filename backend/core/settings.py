@@ -41,7 +41,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'accounts.apps.AccountsConfig',  # Make sure this matches your app configuration
+    'core.apps.CoreConfig',
+    'accounts.apps.AccountsConfig',
+    'academic.apps.AcademicConfig',
+    'student.apps.StudentConfig',
+    'faculty.apps.FacultyConfig',# Make sure this matches your app configuration
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

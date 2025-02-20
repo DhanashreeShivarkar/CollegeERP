@@ -3,7 +3,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-class AuditModel(models.Model):
+class SchemaModel(models.Model):
+    class Meta:
+        abstract = True
+
+class AuditModel(SchemaModel):
     """
     Abstract base class for audit fields that can be inherited by any model
     """

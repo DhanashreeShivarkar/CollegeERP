@@ -7,6 +7,54 @@ generator client {
   provider = "prisma-client-js"
 }
 
+PostgreSQL Schemas:
+├── ADMIN_SCHEMA
+│   ├── USERS
+│   ├── DESIGNATIONS
+│   ├── UNIVERSITIES
+│   ├── INSTITUTES
+│   ├── PROGRAMS
+│   └── BRANCHES
+│
+├── ACADEMIC_SCHEMA
+│   ├── ACADEMIC_YEARS
+│   ├── ACADEMIC_TERMS
+│   ├── COURSES
+│   ├── CURRICULUM
+│   └── EXAMINATIONS
+│
+├── STUDENT_SCHEMA
+│   ├── STUDENTS
+│   ├── STUDENT_PARENTS
+│   ├── STUDENT_ACADEMICS
+│   └── STUDENT_RESULTS
+│
+└── FACULTY_SCHEMA
+    ├── FACULTY
+    ├── FACULTY_QUALIFICATIONS
+    ├── FACULTY_EXPERIENCE
+    └── FACULTY_RESEARCH
+
+USER_ID (in USERS table):
+This is the primary authentication ID
+Used for login/security purposes
+Common for all users regardless of their role
+Format example: "U2023001"
+
+STUDENT_ID (in STUDENTS table):
+This is for academic/institutional tracking
+Used for maintaining student-specific records
+Helps in querying student-only data efficiently
+Usually matches college roll number system
+Format example: "2023BTCS001"
+
+FACULTY_ID (in FACULTY table):
+This is for employment/institutional tracking
+Used for maintaining faculty-specific records
+Helps in querying faculty-only data efficiently
+Usually matches employee ID system
+Format example: "FAC2023001"
+
 // Add new enum for user types
 enum USER_TYPE {
   SUPER_ADMIN
@@ -97,13 +145,20 @@ model User {
   @@index([USER_PREFIX, USER_YEAR, USER_TYPE_CODE, USER_NUMBER])
 
   // Audit columns
-  CREATED_BY      BigInt?
-  CREATED_AT      DateTime   @default(now())
-  UPDATED_BY      BigInt?
-  UPDATED_AT      DateTime   @updatedAt
-  DELETED_BY      BigInt?
-  DELETED_AT      DateTime?
-  IS_DELETED      Boolean    @default(false)
+  CREATED_BY        BigInt?
+  CREATED_AT        DateTime   @default(now())
+  CREATED_FROM_IP   String?    @db.VarChar(45)
+  UPDATED_BY        BigInt?
+  UPDATED_AT        DateTime   @updatedAt
+  UPDATED_FROM_IP   String?    @db.VarChar(45)
+  UPDATE_COUNTER    Int        @default(0)
+  DELETED_BY        BigInt?
+  DELETED_AT        DateTime?
+  DELETED_FROM_IP   String?    @db.VarChar(45)
+  IS_DELETED        Boolean    @default(false)
+  LAST_ACTION       String?    @db.VarChar(255)
+  LAST_ACTION_AT    DateTime?
+  REMARKS           String?    @db.Text
 
   // Audit relations - self referencing for User table
   CREATED_BY_USER User?  @relation("USER_CREATED_BY", fields: [CREATED_BY], references: [ID])
