@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import MasterTableListView, CountryViewSet
+from .views import MasterTableListView, CountryViewSet, StateViewSet
 
 router = DefaultRouter()
 router.register(r'master/countries', CountryViewSet, basename='country')
+router.register(r'master/states', StateViewSet)
 
 app_name = 'accounts'
 

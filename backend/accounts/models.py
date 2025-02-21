@@ -81,6 +81,8 @@ class DESIGNATION(AuditModel):
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
     CREATED_AT = models.DateTimeField(auto_now_add=True, db_column='CREATED_AT')
     UPDATED_AT = models.DateTimeField(auto_now=True, db_column='UPDATED_AT')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'DESIGNATIONS'
@@ -510,6 +512,8 @@ class UNIVERSITY(AuditModel):
     WEBSITE = models.URLField(null=True, blank=True, db_column='WEBSITE')
     ESTD_YEAR = models.IntegerField(db_column='ESTD_YEAR')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'UNIVERSITIES'
@@ -535,6 +539,8 @@ class INSTITUTE(AuditModel):
     WEBSITE = models.URLField(null=True, blank=True, db_column='WEBSITE')
     ESTD_YEAR = models.IntegerField(db_column='ESTD_YEAR')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'INSTITUTES'
@@ -579,6 +585,8 @@ class PROGRAM(AuditModel):
         default=""
     )
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'PROGRAMS'
@@ -605,6 +613,8 @@ class BRANCH(AuditModel):
         default=""
     )
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'BRANCHES'
@@ -620,6 +630,8 @@ class COUNTRY(AuditModel):
     CODE = models.CharField(max_length=3, unique=True, db_column='CODE')
     PHONE_CODE = models.CharField(max_length=5, db_column='PHONE_CODE')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', null=True)  # Changed
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', null=True)  # Changed
 
     class Meta:
         db_table = 'COUNTRIES'
@@ -640,6 +652,10 @@ class STATE(AuditModel):
     NAME = models.CharField(max_length=100, db_column='NAME')
     CODE = models.CharField(max_length=3, db_column='CODE')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', null=True)  # Changed
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', null=True)  # Changed
+    CREATED_AT = models.DateTimeField(auto_now_add=True, db_column='CREATED_AT')
+    UPDATED_AT = models.DateTimeField(auto_now=True, db_column='UPDATED_AT')
 
     class Meta:
         db_table = 'STATES'
@@ -661,6 +677,8 @@ class CITY(AuditModel):
     NAME = models.CharField(max_length=100, db_column='NAME')
     CODE = models.CharField(max_length=5, db_column='CODE')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'CITIES'
@@ -677,6 +695,8 @@ class CURRENCY(AuditModel):
     CODE = models.CharField(max_length=3, unique=True, db_column='CODE')
     SYMBOL = models.CharField(max_length=5, db_column='SYMBOL')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'CURRENCIES'
@@ -691,6 +711,8 @@ class LANGUAGE(AuditModel):
     NAME = models.CharField(max_length=50, db_column='NAME')
     CODE = models.CharField(max_length=5, unique=True, db_column='CODE')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'LANGUAGES'
@@ -712,6 +734,8 @@ class CATEGORY(AuditModel):
         db_column='RESERVATION_PERCENTAGE'
     )
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
 
     class Meta:
         db_table = 'CATEGORIES'

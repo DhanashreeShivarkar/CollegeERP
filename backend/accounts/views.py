@@ -17,6 +17,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework.permissions import AllowAny
+from .models import STATE
+from .serializers import StateSerializer
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -407,53 +409,46 @@ class CountryViewSet(viewsets.ModelViewSet):
     serializer_class = CountrySerializer
     permission_classes = [IsAuthenticated]
     
-    def create(self, request, *args, **kwargs):
-        try:
-            # Get the user instance
-            user = request.user  # This is the CustomUser instance
-            
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            
-            # Pass the entire user instance
-            country = serializer.save(
-                CREATED_BY=user,  # Pass the user instance, not just the ID
-                UPDATED_BY=user   # Pass the user instance, not just the ID
-            )
-            
-            return Response({
-                'status': 'success',
-                'message': 'Country created successfully',
-                'data': CountrySerializer(country).data
-            }, status=status.HTTP_201_CREATED)
-            
-        except Exception as e:
-            print(f"Error creating country: {str(e)}")  # Add debug logging
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-    
-    def update(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            user = request.user  # Get the user instance
-            
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            
-            # Pass the user instance for UPDATED_BY
-            country = serializer.save(UPDATED_BY=user)
-            
-            return Response({
-                'status': 'success',
-                'message': 'Country updated successfully',
-                'data': CountrySerializer(country).data
-            })
-            
-        except Exception as e:
-            print(f"Error updating country: {str(e)}")  # Add debug logging
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+
+    def list(self, request, *args, **kwargs):
+        countries = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(countries, many=True)
+        return Response(serializer.data)
+
+class StateViewSet(viewsets.ModelViewSet):
+    queryset = STATE.objects.all()
+    serializer_class = StateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+
+    def list(self, request, *args, **kwargs):
+        states = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(states, many=True)
+        return Response(serializer.data)
+
+# Remove or comment out the placeholder ViewSets that are not implemented yet:
+# class CityViewSet(viewsets.ModelViewSet):
+# class CurrencyViewSet(viewsets.ModelViewSet):
+# class LanguageViewSet(viewsets.ModelViewSet):
+# class UniversityViewSet(viewsets.ModelViewSet):
+# class InstituteViewSet(viewsets.ModelViewSet):
+# class ProgramViewSet(viewsets.ModelViewSet):
+# class BranchViewSet(viewsets.ModelViewSet):
+# class DesignationViewSet(viewsets.ModelViewSet):
+# class CategoryViewSet(viewsets.ModelViewSet):

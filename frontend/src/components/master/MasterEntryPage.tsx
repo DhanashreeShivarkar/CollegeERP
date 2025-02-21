@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import MasterTableList from "./MasterTableList";
 import CountryEntry from "./masterPages/CountryEntry";
+import StateEntry from "./masterPages/StateEntry"; // Add this import
 
 const MasterEntryPage: React.FC = () => {
   const { tableName } = useParams();
@@ -13,7 +14,8 @@ const MasterEntryPage: React.FC = () => {
     switch (tableName?.toLowerCase()) {
       case "country":
         return <CountryEntry />;
-      // Add other cases for different tables
+      case "state":
+        return <StateEntry />; // Add state case
       default:
         return <div>Form not implemented for {tableName}</div>;
     }
