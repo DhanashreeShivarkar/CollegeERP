@@ -83,14 +83,26 @@ const OTPModal: React.FC<OTPModalProps> = ({
     setError("");
 
     try {
+      // Use authService instead of direct axios call
       const response = await authService.verifyOtp(userId, otp);
-      if (response.status === "success" && response.user) {
-        onVerificationSuccess(response.user);
+
+      if (response.status === "success") {
+        // Store tokens and user data
+        if (response.token) {
+          localStorage.setItem("token", response.token);
+        }
+        if (response.refresh) {
+          localStorage.setItem("refreshToken", response.refresh);
+        }
+        if (response.user) {
+          localStorage.setItem("user", JSON.stringify(response.user));
+          onVerificationSuccess(response.user);
+        }
       } else {
         setError(response.message || "Verification failed");
       }
     } catch (err: any) {
-      setError(err.message || "Verification failed");
+      setError(err.response?.data?.message || "Failed to verify OTP");
       setOtp(""); // Clear OTP on error
     } finally {
       setLoading(false);

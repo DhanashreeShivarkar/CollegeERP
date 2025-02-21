@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./layout/Navbar";
+import { Navbar } from "./layout/Navbar";
 import Footer from "./layout/Footer";
 import LoginModal from "./auth/LoginModal";
-import { authService } from "../api/auth";
 import { getDashboardRoute } from "../utils/roles";
 
 interface Feature {
@@ -18,36 +17,12 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ onLoginSuccess }) => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string>("");
   const navigate = useNavigate();
 
   const handleLoginSuccess = (userData: any) => {
-    console.log("Home - Login successful:", userData);
     onLoginSuccess(userData);
-  };
-
-  const handleOtpVerify = async (otp: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await authService.verifyOtp(userId, otp);
-
-      if (response.user) {
-        onLoginSuccess(response.user);
-        const dashboardRoute = getDashboardRoute(
-          response.user.designation.code
-        );
-        navigate(dashboardRoute);
-      } else {
-        setError("Invalid OTP verification response");
-      }
-    } catch (error: any) {
-      setError(error.response?.data?.message || "OTP verification failed");
-    } finally {
-      setIsLoading(false);
-    }
+    const dashboardRoute = getDashboardRoute(userData.designation.code);
+    navigate(dashboardRoute);
   };
 
   const features: Feature[] = [
@@ -76,32 +51,59 @@ const Home: React.FC<HomeProps> = ({ onLoginSuccess }) => {
   ];
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="vh-100 d-flex flex-column overflow-hidden">
       <Navbar onLoginClick={() => setIsLoginOpen(true)} />
-      <main className="flex-1 overflow-auto pt-16">
-        <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
-          {/* ...existing hero section JSX... */}
-        </section>
-        <section className="py-8 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
-              Key Features
-            </h2>
-            <div className="grid md:grid-cols-4 gap-6">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition"
-                >
-                  <div className="text-3xl mb-3">{feature.icon}</div>
-                  <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
-                </div>
-              ))}
+
+      {/* Hero Section */}
+      <section className="bg-primary text-white py-2">
+        <div className="container">
+          <div className="row align-items-center g-3">
+            <div className="col-lg-6">
+              <h1 className="display-6 fw-bold mb-2">
+                Smart College Management System
+              </h1>
+              <p className="lead mb-3 fs-6">
+                Streamline your educational institution with our comprehensive
+                ERP solution
+              </p>
+              <button
+                className="btn btn-light px-4"
+                onClick={() => setIsLoginOpen(true)}
+              >
+                Get Started
+              </button>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-3 bg-light flex-grow-1">
+        <div className="container">
+          <div className="text-center mb-3">
+            <h2 className="h4 fw-bold mb-1">Key Features</h2>
+            <p className="text-muted small mb-3">
+              Manage your institution efficiently
+            </p>
+          </div>
+          <div className="row g-3">
+            {features.map((feature, index) => (
+              <div key={index} className="col-sm-6 col-lg-3">
+                <div className="card h-100 border-0 shadow-sm">
+                  <div className="card-body p-3 text-center">
+                    <div className="h4 mb-2">{feature.icon}</div>
+                    <h3 className="h6 fw-bold mb-1">{feature.title}</h3>
+                    <p className="card-text text-muted small mb-0">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <Footer />
       <LoginModal
         open={isLoginOpen}

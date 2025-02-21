@@ -13,10 +13,8 @@ import DashboardTemplate from "./DashboardTemplate";
 
 const FacultyDashboard: React.FC<DashboardProps> = ({ user }) => {
   const menuItems = [
-    { icon: <DashIcon />, text: "Overview", onClick: () => {} },
-    { icon: <Class />, text: "Classes", onClick: () => {} },
-    { icon: <Assessment />, text: "Marks", onClick: () => {} },
-    { icon: <Schedule />, text: "Schedule", onClick: () => {} },
+    { icon: "bi-book", text: "Courses", onClick: () => {} },
+    { icon: "bi-calendar3", text: "Schedule", onClick: () => {} },
   ];
 
   const quickActions = [

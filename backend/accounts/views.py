@@ -9,8 +9,18 @@ from .models import CustomUser
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import COUNTRY
+from .serializers import CountrySerializer
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework.permissions import AllowAny
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]  # Allow unauthenticated access
+    
     def post(self, request):
         print("==== Login Request ====")
         print(f"Request Data: {request.data}")
@@ -117,7 +127,10 @@ class LoginView(APIView):
                 'message': 'Invalid USER_ID'
             }, status=status.HTTP_404_NOT_FOUND)
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SendOTPView(APIView):
+    permission_classes = [AllowAny]  # Allow unauthenticated access
+    
     def post(self, request):
         user_id = request.data.get('user_id')
         if not user_id:
@@ -134,11 +147,15 @@ class SendOTPView(APIView):
                     'status': 'error',
                     'message': 'Account is not active'
                 }, status=status.HTTP_403_FORBIDDEN)
-
-            if user.is_account_locked():
+ 
+            # Check account lock status and get detailed message
+            is_locked, lock_message = user.is_account_locked()
+            if is_locked:
                 return Response({
                     'status': 'error',
-                    'message': 'Account is locked. Please try again later.'
+                    'message': lock_message,
+                    'locked': True,
+                    'lockTime': user.LOCK_EXPIRY.isoformat() if user.LOCK_EXPIRY else None
                 }, status=status.HTTP_403_FORBIDDEN)
 
             otp = user.generate_otp()
@@ -181,6 +198,8 @@ class SendOTPView(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]  # Allow unauthenticated access
+    
     def post(self, request):
         user_id = request.data.get('user_id')
         otp = request.data.get('otp')
@@ -199,9 +218,18 @@ class VerifyOTPView(APIView):
                 # Update login info
                 user.update_login_info(request.META.get('REMOTE_ADDR'))
                 
+                # Generate tokens manually
+                refresh = RefreshToken()
+                refresh[api_settings.USER_ID_CLAIM] = user.USER_ID
+                refresh['user_id'] = user.USER_ID  # Add custom claims
+                refresh['username'] = user.USERNAME
+                refresh['is_superuser'] = user.IS_SUPERUSER
+                
                 return Response({
                     'status': 'success',
                     'message': message,
+                    'token': str(refresh.access_token),
+                    'refresh': str(refresh),
                     'user': {
                         'user_id': user.USER_ID,
                         'username': user.USERNAME,
@@ -227,6 +255,12 @@ class VerifyOTPView(APIView):
                 'status': 'error',
                 'message': 'Invalid user'
             }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Token generation error: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': 'An error occurred during authentication'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class RequestPasswordResetView(APIView):
     def post(self, request):
@@ -350,3 +384,38 @@ class ResetPasswordView(APIView):
                 'status': 'error',
                 'message': 'User not found'
             }, status=status.HTTP_404_NOT_FOUND)
+
+class MasterTableListView(APIView):
+    def get(self, request):
+        master_tables = [
+            {"name": "country", "display_name": "Country", "endpoint": "http://localhost:8000/api/master/countries/"},
+            {"name": "state", "display_name": "State", "endpoint": "http://localhost:8000/api/master/states/"},
+            {"name": "city", "display_name": "City", "endpoint": "http://localhost:8000/api/master/cities/"},
+            {"name": "currency", "display_name": "Currency", "endpoint": "http://localhost:8000/api/master/currencies/"},
+            {"name": "language", "display_name": "Language", "endpoint": "http://localhost:8000/api/master/languages/"},
+            {"name": "university", "display_name": "University", "endpoint": "http://localhost:8000/api/master/universities/"},
+            {"name": "institute", "display_name": "Institute", "endpoint": "http://localhost:8000/api/master/institutes/"},
+            {"name": "program", "display_name": "Program", "endpoint": "http://localhost:8000/api/master/programs/"},
+            {"name": "branch", "display_name": "Branch", "endpoint": "http://localhost:8000/api/master/branches/"},
+            {"name": "designation", "display_name": "Designation", "endpoint": "http://localhost:8000/api/master/designations/"},
+            {"name": "category", "display_name": "Category", "endpoint": "http://localhost:8000/api/master/categories/"}
+        ]
+        return Response(master_tables)
+
+class CountryViewSet(viewsets.ModelViewSet):
+    queryset = COUNTRY.objects.all()
+    serializer_class = CountrySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        # Get the current user from the request
+        user = self.request.user
+        serializer.save(
+            CREATED_BY=user.USER_ID,
+            UPDATED_BY=user.USER_ID
+        )
+
+    def perform_update(self, serializer):
+        # Get the current user from the request
+        user = self.request.user
+        serializer.save(UPDATED_BY=user.USER_ID)
