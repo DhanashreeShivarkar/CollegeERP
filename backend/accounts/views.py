@@ -19,6 +19,9 @@ from rest_framework_simplejwt.settings import api_settings
 from rest_framework.permissions import AllowAny
 from .models import STATE
 from .serializers import StateSerializer
+from .models import CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY
+from .serializers import (CitySerializer, CurrencySerializer, 
+                        LanguageSerializer, DesignationSerializer, CategorySerializer)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -395,10 +398,6 @@ class MasterTableListView(APIView):
             {"name": "city", "display_name": "City", "endpoint": "http://localhost:8000/api/master/cities/"},
             {"name": "currency", "display_name": "Currency", "endpoint": "http://localhost:8000/api/master/currencies/"},
             {"name": "language", "display_name": "Language", "endpoint": "http://localhost:8000/api/master/languages/"},
-            {"name": "university", "display_name": "University", "endpoint": "http://localhost:8000/api/master/universities/"},
-            {"name": "institute", "display_name": "Institute", "endpoint": "http://localhost:8000/api/master/institutes/"},
-            {"name": "program", "display_name": "Program", "endpoint": "http://localhost:8000/api/master/programs/"},
-            {"name": "branch", "display_name": "Branch", "endpoint": "http://localhost:8000/api/master/branches/"},
             {"name": "designation", "display_name": "Designation", "endpoint": "http://localhost:8000/api/master/designations/"},
             {"name": "category", "display_name": "Category", "endpoint": "http://localhost:8000/api/master/categories/"}
         ]
@@ -442,13 +441,150 @@ class StateViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(states, many=True)
         return Response(serializer.data)
 
-# Remove or comment out the placeholder ViewSets that are not implemented yet:
-# class CityViewSet(viewsets.ModelViewSet):
-# class CurrencyViewSet(viewsets.ModelViewSet):
-# class LanguageViewSet(viewsets.ModelViewSet):
-# class UniversityViewSet(viewsets.ModelViewSet):
-# class InstituteViewSet(viewsets.ModelViewSet):
-# class ProgramViewSet(viewsets.ModelViewSet):
-# class BranchViewSet(viewsets.ModelViewSet):
-# class DesignationViewSet(viewsets.ModelViewSet):
-# class CategoryViewSet(viewsets.ModelViewSet):
+class CityViewSet(viewsets.ModelViewSet):
+    queryset = CITY.objects.all()
+    serializer_class = CitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+
+    def list(self, request, *args, **kwargs):
+        cities = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(cities, many=True)
+        return Response(serializer.data)
+
+class CurrencyViewSet(viewsets.ModelViewSet):
+    queryset = CURRENCY.objects.all()
+    serializer_class = CurrencySerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+
+    def list(self, request, *args, **kwargs):
+        currencies = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(currencies, many=True)
+        return Response(serializer.data)
+
+class LanguageViewSet(viewsets.ModelViewSet):
+    queryset = LANGUAGE.objects.all()
+    serializer_class = LanguageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+
+    def list(self, request, *args, **kwargs):
+        languages = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(languages, many=True)
+        return Response(serializer.data)
+
+class DesignationViewSet(viewsets.ModelViewSet):
+    queryset = DESIGNATION.objects.all()
+    serializer_class = DesignationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+
+    def list(self, request, *args, **kwargs):
+        designations = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(designations, many=True)
+        return Response(serializer.data)
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = CATEGORY.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            # Validate required fields
+            required_fields = {
+                'NAME': 'Category name',
+                'CODE': 'Category code',
+                'RESERVATION_PERCENTAGE': 'Reservation percentage'
+            }
+            
+            missing_fields = [
+                field_name for field, field_name in required_fields.items() 
+                if field not in request.data
+            ]
+            
+            if missing_fields:
+                return Response({
+                    'error': 'Missing required fields',
+                    'message': f"Please provide: {', '.join(missing_fields)}",
+                    'fields': missing_fields
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create category with proper error handling
+            serializer = self.get_serializer(data=request.data)
+            
+            try:
+                serializer.is_valid(raise_exception=True)
+            except serializers.ValidationError as e:
+                # Get the first validation error
+                error_detail = e.detail
+                if isinstance(error_detail, dict) and 'error' in error_detail:
+                    # If it's our custom formatted error, return as is
+                    return Response(error_detail, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    # Format other validation errors
+                    field = list(error_detail.keys())[0]
+                    return Response({
+                        'error': 'Validation error',
+                        'message': str(error_detail[field][0]),
+                        'field': field
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            self.perform_create(serializer)
+            
+            return Response({
+                'status': 'success',
+                'message': 'Category created successfully',
+                'data': serializer.data
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response({
+                'error': 'Server error',
+                'message': 'An unexpected error occurred while creating the category',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            CREATED_BY=self.request.user.USERNAME,
+            UPDATED_BY=self.request.user.USERNAME
+        )
+
+    def list(self, request, *args, **kwargs):
+        categories = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)

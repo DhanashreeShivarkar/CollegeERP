@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import MasterTableList from "./MasterTableList";
 import CountryEntry from "./masterPages/CountryEntry";
-import StateEntry from "./masterPages/StateEntry"; // Add this import
+import StateEntry from "./masterPages/StateEntry";
+import CityEntry from "./masterPages/CityEntry";
+import CurrencyEntry from "./masterPages/CurrencyEntry";
+import LanguageEntry from "./masterPages/LanguageEntry";
+import DesignationEntry from "./masterPages/DesignationEntry";
+import CategoryEntry from "./masterPages/CategoryEntry";
 
 const MasterEntryPage: React.FC = () => {
   const { tableName } = useParams();
@@ -15,7 +20,17 @@ const MasterEntryPage: React.FC = () => {
       case "country":
         return <CountryEntry />;
       case "state":
-        return <StateEntry />; // Add state case
+        return <StateEntry />;
+      case "city":
+        return <CityEntry />;
+      case "currency":
+        return <CurrencyEntry />;
+      case "language":
+        return <LanguageEntry />;
+      case "designation":
+        return <DesignationEntry />;
+      case "category":
+        return <CategoryEntry />;
       default:
         return <div>Form not implemented for {tableName}</div>;
     }

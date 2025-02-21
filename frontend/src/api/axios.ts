@@ -28,23 +28,34 @@ function getCsrfToken() {
 }
 
 // Request interceptor
-axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  // Add CSRF token to headers
-  const csrfToken = getCsrfToken();
-  if (csrfToken) {
-    config.headers["X-CSRFToken"] = csrfToken;
+axiosInstance.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    // Add CSRF token to headers
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      config.headers["X-CSRFToken"] = csrfToken;
+    }
+
+    // Add Authorization token to headers
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Log request for debugging
+    console.log("Request:", {
+      method: config.method?.toUpperCase(),
+      url: `${config.baseURL}${config.url}`,
+      data: config.data,
+      headers: config.headers,
+    });
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-
-  // Log request for debugging
-  console.log("Request:", {
-    method: config.method?.toUpperCase(),
-    url: `${config.baseURL}${config.url}`,
-    data: config.data,
-    headers: config.headers,
-  });
-
-  return config;
-});
+);
 
 // Response interceptor for better error handling
 axiosInstance.interceptors.response.use(
@@ -56,6 +67,14 @@ axiosInstance.interceptors.response.use(
       url: error.config?.url,
       method: error.config?.method,
     });
+
+    // Handle token expiration
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+
     return Promise.reject(error);
   }
 );

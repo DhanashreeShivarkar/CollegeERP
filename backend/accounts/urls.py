@@ -1,11 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import MasterTableListView, CountryViewSet, StateViewSet
 
 router = DefaultRouter()
-router.register(r'master/countries', CountryViewSet, basename='country')
-router.register(r'master/states', StateViewSet)
+router.register(r'master/countries', views.CountryViewSet, basename='country')
+router.register(r'master/states', views.StateViewSet, basename='state')
+router.register(r'master/cities', views.CityViewSet, basename='city')
+router.register(r'master/currencies', views.CurrencyViewSet, basename='currency')
+router.register(r'master/languages', views.LanguageViewSet, basename='language')
+router.register(r'master/designations', views.DesignationViewSet, basename='designation')
+router.register(r'master/categories', views.CategoryViewSet, basename='category')
 
 app_name = 'accounts'
 
@@ -17,5 +21,5 @@ urlpatterns = [
     path('auth/request-password-reset/', views.RequestPasswordResetView.as_view(), name='request-password-reset'),
     path('auth/verify-reset-otp/', views.VerifyResetOTPView.as_view(), name='verify-reset-otp'),
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
-    path('master/tables/', MasterTableListView.as_view(), name='master-tables'),
+    path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
 ]
