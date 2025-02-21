@@ -9,6 +9,7 @@ router.register(r'master/countries', CountryViewSet, basename='country')
 app_name = 'accounts'
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('auth/login/', views.LoginView.as_view(), name='login'),  # Updated path
     path('auth/send-otp/', views.SendOTPView.as_view(), name='send-otp'),  # Updated path
     path('auth/verify-otp/', views.VerifyOTPView.as_view(), name='verify-otp'),  # Updated path
@@ -16,5 +17,4 @@ urlpatterns = [
     path('auth/verify-reset-otp/', views.VerifyResetOTPView.as_view(), name='verify-reset-otp'),
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
     path('master/tables/', MasterTableListView.as_view(), name='master-tables'),
-    path('', include(router.urls)),
 ]

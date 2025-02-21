@@ -4,7 +4,7 @@ from .models import COUNTRY, CustomUser
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = COUNTRY
-        fields = ['COUNTRY_ID', 'NAME', 'CODE', 'PHONE_CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+        fields = ['COUNTRY_ID', 'NAME', 'CODE', 'PHONE_CODE', 'IS_ACTIVE']
         read_only_fields = ['COUNTRY_ID']
 
 class LoginSerializer(serializers.Serializer):

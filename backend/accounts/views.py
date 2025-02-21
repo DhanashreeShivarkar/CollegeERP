@@ -407,15 +407,53 @@ class CountryViewSet(viewsets.ModelViewSet):
     serializer_class = CountrySerializer
     permission_classes = [IsAuthenticated]
     
-    def perform_create(self, serializer):
-        # Get the current user from the request
-        user = self.request.user
-        serializer.save(
-            CREATED_BY=user.USER_ID,
-            UPDATED_BY=user.USER_ID
-        )
-
-    def perform_update(self, serializer):
-        # Get the current user from the request
-        user = self.request.user
-        serializer.save(UPDATED_BY=user.USER_ID)
+    def create(self, request, *args, **kwargs):
+        try:
+            # Get the user instance
+            user = request.user  # This is the CustomUser instance
+            
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            
+            # Pass the entire user instance
+            country = serializer.save(
+                CREATED_BY=user,  # Pass the user instance, not just the ID
+                UPDATED_BY=user   # Pass the user instance, not just the ID
+            )
+            
+            return Response({
+                'status': 'success',
+                'message': 'Country created successfully',
+                'data': CountrySerializer(country).data
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            print(f"Error creating country: {str(e)}")  # Add debug logging
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            user = request.user  # Get the user instance
+            
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            
+            # Pass the user instance for UPDATED_BY
+            country = serializer.save(UPDATED_BY=user)
+            
+            return Response({
+                'status': 'success',
+                'message': 'Country updated successfully',
+                'data': CountrySerializer(country).data
+            })
+            
+        except Exception as e:
+            print(f"Error updating country: {str(e)}")  # Add debug logging
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)

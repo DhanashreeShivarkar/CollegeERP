@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
-import axios from "axios";
+import axiosInstance from "../../../api/axios";  // Update import
 import { useNavigate } from "react-router-dom";
 
 interface CountryFormData {
@@ -52,25 +52,27 @@ const CountryEntry: React.FC = () => {
     setError("");
 
     try {
-      const token = localStorage.getItem("token"); // Match the key used in OTPModal
+      const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-      if (!token) {
-        setError("Authentication required. Please login again.");
+      if (!token || !user?.user_id) {
+        setError("Authentication required");
+        navigate("/login");
         return;
       }
 
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         "/api/master/countries/",
         {
           ...formData,
-          CREATED_BY: user.user_id,
-          UPDATED_BY: user.user_id,
+          CODE: formData.CODE.toUpperCase(),
+          PHONE_CODE: formData.PHONE_CODE.startsWith('+') 
+            ? formData.PHONE_CODE 
+            : `+${formData.PHONE_CODE}`,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         }
       );
@@ -86,12 +88,11 @@ const CountryEntry: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Error:", err);
+      setError(err.response?.data?.message || "Failed to create country");
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        setError("Session expired. Please login again.");
-      } else {
-        setError(err.response?.data?.message || "Failed to create country.");
+        navigate("/login");
       }
     } finally {
       setLoading(false);
