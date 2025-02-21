@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { DashboardNavbar } from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import Sidebar from "../layout/Sidebar";
@@ -24,6 +24,16 @@ const DashboardHome = () => (
 
 const SuperAdminDashboard = ({ user }: any) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear session storage
+    sessionStorage.clear();
+    // Clear local storage if you're using it
+    localStorage.clear();
+    // Navigate to home/login page
+    navigate("/", { replace: true });
+  };
 
   return (
     <div className="vh-100 d-flex flex-column overflow-hidden">
@@ -31,7 +41,7 @@ const SuperAdminDashboard = ({ user }: any) => {
         <DashboardNavbar
           user={user}
           title="Super Admin Portal"
-          onLogout={() => {}}
+          onLogout={handleLogout}
         />
       </div>
 

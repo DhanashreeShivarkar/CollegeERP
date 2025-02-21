@@ -1,6 +1,10 @@
-from django.urls import path
-from .views import MasterTableListView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import CountryViewSet
 
-urlpatterns = [
-    path('tables/', MasterTableListView.as_view(), name='master-tables'),
-]
+router = DefaultRouter()
+router.register(r'countries', CountryViewSet, basename='country')
+
+app_name = 'master'
+
+urlpatterns = router.urls

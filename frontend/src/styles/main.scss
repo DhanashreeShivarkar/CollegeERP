@@ -21,17 +21,17 @@
 }
 
 // 1. Include functions first (so you can manipulate colors, SVGs, calc, etc)
-@import "bootstrap/scss/functions";
+@import "~bootstrap/scss/functions";
 
 // 2. Include any default variable overrides here
 $primary: #0d6efd;
 $secondary: #6c757d;
 
 // 3. Include remainder of required Bootstrap stylesheets
-@import "bootstrap/scss/variables";
+@import "~bootstrap/scss/variables";
 @import "bootstrap/scss/variables-dark";
 @import "bootstrap/scss/maps";
-@import "bootstrap/scss/mixins";
+@import "~bootstrap/scss/mixins";
 
 // 4. Include any optional Bootstrap components as needed
 @import "bootstrap/scss/root";
@@ -361,3 +361,4 @@ footer {
 }
 
 // Add any other custom styles below
+// Add any custom styles or Bootstrap overrides here

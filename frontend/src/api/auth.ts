@@ -17,6 +17,8 @@ export interface VerifyOTPResponse {
   status: "success" | "error";
   message: string;
   user?: User;
+  token?: string; // Add this for access token
+  refresh?: string; // Add this for refresh token
 }
 
 export interface OtpSendResponse {
@@ -24,6 +26,8 @@ export interface OtpSendResponse {
   message: string;
   user_id?: string;
   email?: string;
+  locked?: boolean;
+  lockTime?: string;
 }
 
 export interface PasswordResetResponse {
@@ -115,3 +119,5 @@ export const authService = {
     return response.data;
   },
 };
+
+export default authService;

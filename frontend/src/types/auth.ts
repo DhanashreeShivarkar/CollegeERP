@@ -9,7 +9,14 @@ export interface User {
   user_id: string;
   username: string;
   email: string;
-  designation: Designation;
+  designation: {
+    code: string;
+    name: string;
+  };
+  first_name: string;
+  last_name: string;
+  is_superuser: boolean;
+  permissions: string[];
 }
 
 export interface LoginResponse {

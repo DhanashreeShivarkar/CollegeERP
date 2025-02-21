@@ -78,8 +78,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
         setPassword("");
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message;
-      setError(errorMessage);
+      setError(err.message || 'Failed to login. Please check your credentials.');
+      console.error('Login error:', err);
       setPassword("");
     } finally {
       setLoading(false);
