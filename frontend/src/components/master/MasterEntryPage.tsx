@@ -8,6 +8,7 @@ import CurrencyEntry from "./masterPages/CurrencyEntry";
 import LanguageEntry from "./masterPages/LanguageEntry";
 import DesignationEntry from "./masterPages/DesignationEntry";
 import CategoryEntry from "./masterPages/CategoryEntry";
+import MasterTableView from "./MasterTableView";
 
 const MasterEntryPage: React.FC = () => {
   const { tableName } = useParams();
@@ -91,14 +92,8 @@ const MasterEntryPage: React.FC = () => {
 
                 {selectedAction === "create" && renderCreateForm()}
 
-                {selectedAction === "update" && (
-                  <div>
-                    <h4>
-                      {tableName.charAt(0).toUpperCase() + tableName.slice(1)}{" "}
-                      List
-                    </h4>
-                    {/* Add your update list component here */}
-                  </div>
+                {selectedAction === "update" && tableName && (
+                  <MasterTableView tableName={tableName} />
                 )}
               </div>
             </div>
