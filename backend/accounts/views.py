@@ -403,124 +403,82 @@ class MasterTableListView(APIView):
         ]
         return Response(master_tables)
 
-class CountryViewSet(viewsets.ModelViewSet):
-    queryset = COUNTRY.objects.all()
-    serializer_class = CountrySerializer
+class BaseModelViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    
+
     def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
+        print(f"=== Debug Create by {self.request.user.USERNAME} ===")
+        # Pass values directly to serializer save
+        instance = serializer.save()
+        instance.CREATED_BY = str(self.request.user.USERNAME)
+        instance.UPDATED_BY = str(self.request.user.USERNAME)
+        instance.save()
 
     def perform_update(self, serializer):
-        serializer.save(UPDATED_BY=self.request.user.USERNAME)
+        print(f"=== Debug Update by {self.request.user.USERNAME} ===")
+        # Update existing instance
+        instance = serializer.save()
+        instance.UPDATED_BY = str(self.request.user.USERNAME)
+        instance.save()
+
+# Update all ViewSets to inherit from BaseModelViewSet
+class CountryViewSet(BaseModelViewSet):
+    queryset = COUNTRY.objects.all()
+    serializer_class = CountrySerializer
 
     def list(self, request, *args, **kwargs):
         countries = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(countries, many=True)
         return Response(serializer.data)
 
-class StateViewSet(viewsets.ModelViewSet):
+class StateViewSet(BaseModelViewSet):
     queryset = STATE.objects.all()
     serializer_class = StateSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
-
-    def perform_update(self, serializer):
-        serializer.save(UPDATED_BY=self.request.user.USERNAME)
 
     def list(self, request, *args, **kwargs):
         states = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(states, many=True)
         return Response(serializer.data)
 
-class CityViewSet(viewsets.ModelViewSet):
+class CityViewSet(BaseModelViewSet):
     queryset = CITY.objects.all()
     serializer_class = CitySerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
-
-    def perform_update(self, serializer):
-        serializer.save(UPDATED_BY=self.request.user.USERNAME)
 
     def list(self, request, *args, **kwargs):
         cities = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(cities, many=True)
         return Response(serializer.data)
 
-class CurrencyViewSet(viewsets.ModelViewSet):
+class CurrencyViewSet(BaseModelViewSet):
     queryset = CURRENCY.objects.all()
     serializer_class = CurrencySerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
-
-    def perform_update(self, serializer):
-        serializer.save(UPDATED_BY=self.request.user.USERNAME)
 
     def list(self, request, *args, **kwargs):
         currencies = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(currencies, many=True)
         return Response(serializer.data)
 
-class LanguageViewSet(viewsets.ModelViewSet):
+class LanguageViewSet(BaseModelViewSet):
     queryset = LANGUAGE.objects.all()
     serializer_class = LanguageSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
-
-    def perform_update(self, serializer):
-        serializer.save(UPDATED_BY=self.request.user.USERNAME)
 
     def list(self, request, *args, **kwargs):
         languages = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(languages, many=True)
         return Response(serializer.data)
 
-class DesignationViewSet(viewsets.ModelViewSet):
+class DesignationViewSet(BaseModelViewSet):
     queryset = DESIGNATION.objects.all()
     serializer_class = DesignationSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
-
-    def perform_update(self, serializer):
-        serializer.save(UPDATED_BY=self.request.user.USERNAME)
 
     def list(self, request, *args, **kwargs):
         designations = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(designations, many=True)
         return Response(serializer.data)
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(BaseModelViewSet):
     queryset = CATEGORY.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -577,12 +535,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
                 'message': 'An unexpected error occurred while creating the category',
                 'detail': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def perform_create(self, serializer):
-        serializer.save(
-            CREATED_BY=self.request.user.USERNAME,
-            UPDATED_BY=self.request.user.USERNAME
-        )
 
     def list(self, request, *args, **kwargs):
         categories = self.queryset.filter(IS_ACTIVE=True)

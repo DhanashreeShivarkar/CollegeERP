@@ -11,10 +11,8 @@ class AuditModel(SchemaModel):
     """
     Abstract base class for audit fields that can be inherited by any model
     """
-    CREATED_BY = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name='%(class)s_created',
+    CREATED_BY = models.CharField(
+        max_length=50,
         db_column='CREATED_BY',
         null=True, 
         blank=True 
@@ -23,10 +21,8 @@ class AuditModel(SchemaModel):
         auto_now_add=True,
         db_column='CREATED_AT'
     )
-    UPDATED_BY = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name='%(class)s_updated',
+    UPDATED_BY = models.CharField(
+        max_length=50,
         db_column='UPDATED_BY',
         null=True, 
         blank=True 
@@ -35,12 +31,10 @@ class AuditModel(SchemaModel):
         auto_now=True,
         db_column='UPDATED_AT'
     )
-    DELETED_BY = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    DELETED_BY = models.CharField(  # Changed from ForeignKey to CharField
+        max_length=50,
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
-        related_name='%(class)s_deleted',
         db_column='DELETED_BY'
     )
     DELETED_AT = models.DateTimeField(
@@ -53,38 +47,20 @@ class AuditModel(SchemaModel):
         db_column='IS_DELETED'
     )
 
-    def save(self, *args, **kwargs):
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        
-        request = getattr(self, 'request', None)
-        if request and hasattr(request, '_audit_user'):
-            user = request._audit_user
-        else:
-            # Get the system user for automated operations
-            user = User.objects.filter(USERNAME='system').first()
-            if not user:
-                user = User.objects.create(
-                    USER_ID='SYSTEM',
-                    USERNAME='system',
-                    EMAIL='system@example.com',
-                    IS_ACTIVE=True,
-                    IS_STAFF=True,
-                    IS_SUPERUSER=True
-                )
-
-        if not self.pk:  # New instance
-            self.CREATED_BY = user
+    def save(self, force_insert=False, force_update=False, *args, **kwargs):
+        if not self.pk and not self.CREATED_BY:  # Only set if not already set
+            self.CREATED_BY = 'system'
             self.CREATED_AT = timezone.now()
         
-        self.UPDATED_BY = user
+        if not self.UPDATED_BY:  # Only set if not already set
+            self.UPDATED_BY = 'system'
         self.UPDATED_AT = timezone.now()
 
         if self.IS_DELETED and not self.DELETED_AT:
-            self.DELETED_BY = user
+            self.DELETED_BY = self.UPDATED_BY or 'system'
             self.DELETED_AT = timezone.now()
 
-        super().save(*args, **kwargs)
+        super().save(force_insert=force_insert, force_update=force_update, *args, **kwargs)
 
     def delete(self, using=None, keep_parents=False):
         """Soft delete the instance"""
