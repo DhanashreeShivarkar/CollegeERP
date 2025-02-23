@@ -1,4 +1,4 @@
-# 🎓 College ERP System
+# 🎓 SynchronikERP System
 
 A comprehensive **Enterprise Resource Planning (ERP)** system designed for educational institutions to streamline administrative and academic processes efficiently.
 
@@ -75,4 +75,3 @@ For any inquiries, feel free to reach out:
 🌍 Website: [SynchronikERP](http://synchronik.co.in/)
 
 > *Made with ❤️ by the Synchronik ERP Team*
-```
