@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import MasterTableList from "./MasterTableList";
 import CountryEntry from "./masterPages/CountryEntry";
+import StateEntry from "./masterPages/StateEntry";
+import CityEntry from "./masterPages/CityEntry";
+import CurrencyEntry from "./masterPages/CurrencyEntry";
+import LanguageEntry from "./masterPages/LanguageEntry";
+import DesignationEntry from "./masterPages/DesignationEntry";
+import CategoryEntry from "./masterPages/CategoryEntry";
+import MasterTableView from "./MasterTableView";
 
 const MasterEntryPage: React.FC = () => {
   const { tableName } = useParams();
@@ -13,7 +20,18 @@ const MasterEntryPage: React.FC = () => {
     switch (tableName?.toLowerCase()) {
       case "country":
         return <CountryEntry />;
-      // Add other cases for different tables
+      case "state":
+        return <StateEntry />;
+      case "city":
+        return <CityEntry />;
+      case "currency":
+        return <CurrencyEntry />;
+      case "language":
+        return <LanguageEntry />;
+      case "designation":
+        return <DesignationEntry />;
+      case "category":
+        return <CategoryEntry />;
       default:
         return <div>Form not implemented for {tableName}</div>;
     }
@@ -74,14 +92,8 @@ const MasterEntryPage: React.FC = () => {
 
                 {selectedAction === "create" && renderCreateForm()}
 
-                {selectedAction === "update" && (
-                  <div>
-                    <h4>
-                      {tableName.charAt(0).toUpperCase() + tableName.slice(1)}{" "}
-                      List
-                    </h4>
-                    {/* Add your update list component here */}
-                  </div>
+                {selectedAction === "update" && tableName && (
+                  <MasterTableView tableName={tableName} />
                 )}
               </div>
             </div>
