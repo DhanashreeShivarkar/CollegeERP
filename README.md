@@ -1,4 +1,3 @@
-```markdown
 # 🎓 College ERP System
 
 A comprehensive **Enterprise Resource Planning (ERP)** system designed for educational institutions to streamline administrative and academic processes efficiently.
@@ -45,8 +44,6 @@ cd frontend
 npm install
 npm start
 ```
-
----
 
 ## ✨ Features
 
