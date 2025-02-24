@@ -10,6 +10,7 @@ router.register(r'master/currencies', views.CurrencyViewSet, basename='currency'
 router.register(r'master/languages', views.LanguageViewSet, basename='language')
 router.register(r'master/designations', views.DesignationViewSet, basename='designation')
 router.register(r'master/categories', views.CategoryViewSet, basename='category')
+router.register(r'master/institutes', views.InstituteSaveView, basename='institute')
 
 app_name = 'accounts'
 
