@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, INSTITUTE
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,9 +75,3 @@ class CategorySerializer(serializers.ModelSerializer):
                 })
 
         return data
-
-class InstituteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = INSTITUTE
-        fields = ['UNIVERSITY_ID','INSTITUTE_ID', 'INSTITUTE_NAME', 'ADDRESS','CONTACT_NUMBER','EMAIL', 'WEBSITE','ESTD_YEAR', 'INSTITUTE_CODE', 'CREATED_BY', 'UPDATED_BY' ]
-        read_only_fields = ['INSTITUTE_ID']
