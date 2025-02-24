@@ -21,7 +21,7 @@ from .models import STATE
 from .serializers import StateSerializer
 from .models import CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY
 from .serializers import (CitySerializer, CurrencySerializer, 
-                        LanguageSerializer, DesignationSerializer, CategorySerializer)
+                        LanguageSerializer, DesignationSerializer, CategorySerializer, InstituteSerializer)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -399,7 +399,7 @@ class MasterTableListView(APIView):
             {"name": "currency", "display_name": "Currency", "endpoint": "http://localhost:8000/api/master/currencies/"},
             {"name": "language", "display_name": "Language", "endpoint": "http://localhost:8000/api/master/languages/"},
             {"name": "designation", "display_name": "Designation", "endpoint": "http://localhost:8000/api/master/designations/"},
-            {"name": "category", "display_name": "Category", "endpoint": "http://localhost:8000/api/master/categories/"}
+            {"name": "category", "display_name": "Category", "endpoint": "http://localhost:8000/api/master/categories/"},
         ]
         return Response(master_tables)
 
@@ -540,3 +540,38 @@ class CategoryViewSet(BaseModelViewSet):
         categories = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(categories, many=True)
         return Response(serializer.data)
+    
+class InstituteSaveView(APIView):
+    permission_classes = [IsAuthenticated]  # Only authenticated users can save institute data
+
+    def post(self, request):
+        print("==== Institute Save Request ====")
+        print(f"Request Data: {request.data}")
+        
+        # Validate and serialize the data
+        serializer = InstituteSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                # Save the institute data to the database
+                serializer.save()
+                return Response({
+                    'status': 'success',
+                    'message': 'Institute data saved successfully.',
+                    'data': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            
+            except Exception as e:
+                print(f"Error saving institute data: {str(e)}")
+                return Response({
+                    'status': 'error',
+                    'message': 'Failed to save institute data. Please try again.'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        else:
+            print("Invalid Institute Data:", serializer.errors)
+            return Response({
+                'status': 'error',
+                'message': 'Invalid data',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
