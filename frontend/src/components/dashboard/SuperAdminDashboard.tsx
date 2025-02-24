@@ -4,7 +4,6 @@ import { DashboardNavbar } from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import Sidebar from "../layout/Sidebar";
 import MasterEntryPage from "../master/MasterEntryPage";
-import InstituteForm from "../master/InstituteForm";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -58,7 +57,6 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/home" element={<DashboardHome />} />
             <Route path="/master" element={<MasterEntryPage />} />
             <Route path="/master/:tableName" element={<MasterEntryPage />} />
-            <Route path="/master" element={<InstituteForm />} />
             {/* Add other routes here */}
           </Routes>
         </div>
