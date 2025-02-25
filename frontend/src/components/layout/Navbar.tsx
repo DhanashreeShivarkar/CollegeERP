@@ -1,5 +1,100 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTheme as useMUITheme } from "@mui/material/styles";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Badge,
+  Menu,
+  MenuItem,
+  Box,
+  Avatar,
+  Tooltip,
+  Fade,
+  InputBase,
+  styled,
+  alpha,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import SettingsIcon from "@mui/icons-material/Settings";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useSettings } from "../../context/SettingsContext";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+
+// Styled components
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(3),
+    width: "auto",
+  },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+    [theme.breakpoints.up("md")]: {
+      width: "20ch",
+      "&:focus": {
+        width: "30ch",
+      },
+    },
+  },
+}));
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}));
 
 interface NavbarProps {
   onLoginClick: () => void;
@@ -63,122 +158,184 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
   title,
   onLogout,
 }) => {
-  const navigate = useNavigate();
+  const theme = useMUITheme();
+  const { darkMode, toggleDarkMode } = useSettings();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notificationEl, setNotificationEl] = useState<null | HTMLElement>(
+    null
+  );
+
+  const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationClick = (event: React.MouseEvent<HTMLElement>) => {
+    setNotificationEl(event.currentTarget);
+  };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom py-1">
-      <div className="container-fluid px-3">
-        <span className="navbar-brand d-flex align-items-center">
-          <i className="bi bi-building-fill text-primary"></i>
-          <span className="ms-2 small fw-bold">SynchronikERP</span>
-        </span>
+    <AppBar
+      position="static"
+      elevation={0}
+      sx={{
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        height: "64px", // Fixed height for navbar
+        "& .MuiToolbar-root": {
+          minHeight: "64px",
+          height: "64px",
+        },
+      }}
+    >
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        {/* Logo Section */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box
+            component="img"
+            src="/logo.svg" // Updated to use SVG logo
+            alt="SynchronikERP Logo"
+            sx={{
+              height: 40, // Adjusted height for SVG
+              mr: 2,
+              filter:
+                theme.palette.mode === "dark"
+                  ? "invert(0.85) hue-rotate(180deg) contrast(0.8) saturate(1.2)" // Adjusted for better visibility in dark mode
+                  : "none",
+              transition: "filter 0.3s ease", // Smooth transition for theme changes
+              "&:hover": {
+                filter:
+                  theme.palette.mode === "dark"
+                    ? "invert(1) hue-rotate(180deg) contrast(0.9) saturate(1.2)" // Brighter on hover in dark mode
+                    : "brightness(1.1)", // Slightly brighter on hover in light mode
+              },
+            }}
+          />
+          <Box
+            sx={{
+              display: { xs: "none", md: "block" },
+              borderLeft: `2px solid ${theme.palette.divider}`,
+              pl: 2,
+            }}
+          >
+            <Box
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                letterSpacing: "-0.5px",
+              }}
+            >
+              SynchronikERP
+            </Box>
+            <Box
+              sx={{
+                fontSize: "0.75rem",
+                color: theme.palette.text.secondary,
+                letterSpacing: "0.5px",
+              }}
+            >
+              {title}
+            </Box>
+          </Box>
+        </Box>
 
-        <ul className="navbar-nav ms-auto d-flex align-items-center">
-          {/* Search */}
-          <li className="nav-item me-3">
-            <div className="input-group input-group-sm">
-              <span className="input-group-text border-0 bg-light">
-                <i className="bi bi-search"></i>
-              </span>
-              <input
-                type="text"
-                className="form-control form-control-sm border-0 bg-light"
-                placeholder="Search..."
-                style={{ maxWidth: "150px" }}
-              />
-            </div>
-          </li>
+        {/* Search Bar */}
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search…"
+            inputProps={{ "aria-label": "search" }}
+          />
+        </Search>
+
+        {/* Right Section */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Dark Mode Toggle */}
+          <Tooltip title={darkMode ? "Light mode" : "Dark mode"}>
+            <IconButton onClick={toggleDarkMode} color="inherit">
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Tooltip>
 
           {/* Notifications */}
-          <li className="nav-item dropdown me-2">
-            <button
-              className="btn btn-sm btn-link nav-link p-0 position-relative"
-              data-bs-toggle="dropdown"
+          <Tooltip title="Notifications">
+            <IconButton
+              onClick={handleNotificationClick}
+              size="large"
+              color="inherit"
             >
-              <i className="bi bi-bell fs-5"></i>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                3
-              </span>
-            </button>
-            <ul className="dropdown-menu dropdown-menu-end shadow-sm py-1">
-              <li>
-                <h6 className="dropdown-header">Notifications</h6>
-              </li>
-              <li>
-                <a className="dropdown-item py-2" href="#">
-                  <i className="bi bi-info-circle me-2 text-primary"></i>System
-                  Update
-                </a>
-              </li>
-              <li>
-                <a className="dropdown-item py-2" href="#">
-                  <i className="bi bi-exclamation-circle me-2 text-warning"></i>
-                  Pending Tasks
-                </a>
-              </li>
-              <li>
-                <hr className="dropdown-divider my-1" />
-              </li>
-              <li>
-                <a
-                  className="dropdown-item small text-muted text-center"
-                  href="#"
-                >
-                  View All
-                </a>
-              </li>
-            </ul>
-          </li>
+              <Badge badgeContent={3} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
 
-          {/* User Menu */}
-          <li className="nav-item dropdown">
-            <button
-              className="btn btn-sm btn-link nav-link p-0 d-flex align-items-center"
-              data-bs-toggle="dropdown"
+          {/* Settings */}
+          <Tooltip title="Settings">
+            <IconButton size="large" color="inherit">
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+
+          {/* Profile */}
+          <Box
+            sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+            onClick={handleProfileClick}
+          >
+            <StyledBadge
+              overlap="circular"
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              variant="dot"
             >
-              <i className="bi bi-person-circle fs-5"></i>
-              <span className="ms-2 d-none d-md-inline small">
-                {user?.name || "Admin"}
-                <div className="small text-muted">{title}</div>
-              </span>
-              <i className="bi bi-chevron-down small ms-2"></i>
-            </button>
-            <ul className="dropdown-menu dropdown-menu-end shadow-sm py-1">
-              <li>
-                <span className="dropdown-item-text small text-muted ps-3">
-                  Signed in as <br />
-                  <strong>{user?.email}</strong>
-                </span>
-              </li>
-              <li>
-                <hr className="dropdown-divider my-1" />
-              </li>
-              <li>
-                <a className="dropdown-item py-2" href="#">
-                  <i className="bi bi-person me-2"></i>Profile
-                </a>
-              </li>
-              <li>
-                <a className="dropdown-item py-2" href="#">
-                  <i className="bi bi-gear me-2"></i>Settings
-                </a>
-              </li>
-              <li>
-                <hr className="dropdown-divider my-1" />
-              </li>
-              <li>
-                <button
-                  className="dropdown-item py-2 text-danger"
-                  onClick={onLogout}
-                >
-                  <i className="bi bi-box-arrow-right me-2"></i>
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </nav>
+              <Avatar
+                alt={user?.name || "User"}
+                src={user?.avatar}
+                sx={{ width: 35, height: 35 }}
+              />
+            </StyledBadge>
+            <Box sx={{ ml: 1, display: { xs: "none", md: "block" } }}>
+              <Box sx={{ fontWeight: 500 }}>{user?.name || "Admin"}</Box>
+              <Box
+                sx={{
+                  fontSize: "0.75rem",
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                {user?.role}
+              </Box>
+            </Box>
+            <KeyboardArrowDownIcon sx={{ ml: 0.5 }} />
+          </Box>
+
+          {/* Profile Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+            TransitionComponent={Fade}
+            sx={{ mt: 1 }}
+          >
+            <MenuItem>Profile</MenuItem>
+            <MenuItem>My Account</MenuItem>
+            <MenuItem onClick={onLogout}>Logout</MenuItem>
+          </Menu>
+
+          {/* Notifications Menu */}
+          <Menu
+            anchorEl={notificationEl}
+            open={Boolean(notificationEl)}
+            onClose={() => setNotificationEl(null)}
+            TransitionComponent={Fade}
+            sx={{ mt: 1 }}
+          >
+            <MenuItem>New Message</MenuItem>
+            <MenuItem>System Update</MenuItem>
+            <MenuItem>Task Complete</MenuItem>
+          </Menu>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };

@@ -14,6 +14,9 @@ import HostelDashboard from "./components/dashboard/HostelDashboard";
 import PlacementDashboard from "./components/dashboard/TeacherDashboard"; // Ensure this file exists
 import SuperAdminDashboard from "./components/dashboard/SuperAdminDashboard";
 import { SettingsProvider } from "./context/SettingsContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import CssBaseline from "@mui/material/CssBaseline";
+import "./styles/globals.css";
 
 interface User {
   user_id: string;
@@ -89,136 +92,139 @@ const App = () => {
   }
 
   return (
-    <SettingsProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              user ? (
-                <Navigate to={getDashboardRoute(user.designation?.code)} />
-              ) : (
-                <Home onLoginSuccess={handleLoginSuccess} />
-              )
-            }
-          />
+    <ThemeProvider>
+      <CssBaseline />
+      <SettingsProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                user ? (
+                  <Navigate to={getDashboardRoute(user.designation?.code)} />
+                ) : (
+                  <Home onLoginSuccess={handleLoginSuccess} />
+                )
+              }
+            />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin-dashboard"
-            element={
-              isAuthorized(ROLES.ADMIN) ? (
-                <AdminDashboard user={user} />
-              ) : (
-                <Navigate to="/" state={{ from: "/admin-dashboard" }} />
-              )
-            }
-          />
+            {/* Admin Routes */}
+            <Route
+              path="/admin-dashboard"
+              element={
+                isAuthorized(ROLES.ADMIN) ? (
+                  <AdminDashboard user={user} />
+                ) : (
+                  <Navigate to="/" state={{ from: "/admin-dashboard" }} />
+                )
+              }
+            />
 
-          {/* Separate routes for Admin and Superadmin */}
-          <Route
-            path="/superadmin-dashboard"
-            element={
-              isAuthorized(ROLES.SUPERADMIN) ? (
-                <SuperAdminDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
+            {/* Separate routes for Admin and Superadmin */}
+            <Route
+              path="/superadmin-dashboard"
+              element={
+                isAuthorized(ROLES.SUPERADMIN) ? (
+                  <SuperAdminDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
 
-          {/* Academic Routes */}
-          <Route
-            path="/coe-dashboard"
-            element={
-              isAuthorized(ROLES.COE) ? (
-                <CoeDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
-          <Route
-            path="/hod-dashboard"
-            element={
-              isAuthorized(ROLES.HOD) ? (
-                <HodDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
-          <Route
-            path="/faculty-dashboard"
-            element={
-              isAuthorized(ROLES.FACULTY) ? (
-                <FacultyDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
+            {/* Academic Routes */}
+            <Route
+              path="/coe-dashboard"
+              element={
+                isAuthorized(ROLES.COE) ? (
+                  <CoeDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/hod-dashboard"
+              element={
+                isAuthorized(ROLES.HOD) ? (
+                  <HodDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/faculty-dashboard"
+              element={
+                isAuthorized(ROLES.FACULTY) ? (
+                  <FacultyDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
 
-          {/* Student Route */}
-          <Route
-            path="/student-dashboard"
-            element={
-              isAuthorized(ROLES.STUDENT) ? (
-                <StudentDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
+            {/* Student Route */}
+            <Route
+              path="/student-dashboard"
+              element={
+                isAuthorized(ROLES.STUDENT) ? (
+                  <StudentDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
 
-          {/* Administrative Routes */}
-          <Route
-            path="/finance-dashboard"
-            element={
-              isAuthorized(ROLES.FINANCE) ? (
-                <FinanceDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
-          <Route
-            path="/library-dashboard"
-            element={
-              isAuthorized(ROLES.LIBRARY) ? (
-                <LibraryDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
-          <Route
-            path="/hostel-dashboard"
-            element={
-              isAuthorized(ROLES.WARDEN) ? (
-                <HostelDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
-          <Route
-            path="/placement-dashboard"
-            element={
-              isAuthorized(ROLES.PLACEMENT) ? (
-                <PlacementDashboard user={user} />
-              ) : (
-                <Navigate to="/" />
-              )
-            }
-          />
+            {/* Administrative Routes */}
+            <Route
+              path="/finance-dashboard"
+              element={
+                isAuthorized(ROLES.FINANCE) ? (
+                  <FinanceDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/library-dashboard"
+              element={
+                isAuthorized(ROLES.LIBRARY) ? (
+                  <LibraryDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/hostel-dashboard"
+              element={
+                isAuthorized(ROLES.WARDEN) ? (
+                  <HostelDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/placement-dashboard"
+              element={
+                isAuthorized(ROLES.PLACEMENT) ? (
+                  <PlacementDashboard user={user} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
 
-          <Route path="/dashboard/*" element={<SuperAdminDashboard />} />
+            <Route path="/dashboard/*" element={<SuperAdminDashboard />} />
 
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </BrowserRouter>
-    </SettingsProvider>
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </BrowserRouter>
+      </SettingsProvider>
+    </ThemeProvider>
   );
 };
 

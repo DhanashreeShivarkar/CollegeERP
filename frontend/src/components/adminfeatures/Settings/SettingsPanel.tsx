@@ -20,9 +20,15 @@ const TabPanel = (props: TabPanelProps) => {
       hidden={value !== index}
       id={`settings-tabpanel-${index}`}
       {...other}
-      sx={{ p: 3 }}
+      sx={{
+        p: 3,
+        height: "calc(100vh - 160px)", // Fixed height for consistency
+        overflowY: "auto", // Makes content scrollable if it exceeds the height
+      }}
     >
-      {value === index && children}
+      {value === index && (
+        <Box sx={{ maxWidth: "1200px", margin: "0 auto" }}>{children}</Box>
+      )}
     </Box>
   );
 };
@@ -35,13 +41,21 @@ const SettingsPanel = () => {
   };
 
   return (
-    <Paper sx={{ height: "100%", overflow: "hidden" }}>
+    <Paper
+      sx={{
+        height: "100%",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
           value={value}
           onChange={handleChange}
           variant="scrollable"
           scrollButtons="auto"
+          sx={{ minHeight: "48px" }} // Fixed height for tabs
         >
           <Tab label="General" />
           <Tab label="Theme" />

@@ -3,6 +3,8 @@ import { Table, Button, Form, Row, Col } from "react-bootstrap";
 import axiosInstance from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import EditModal from "./EditModal";
+import { Paper } from "@mui/material";
+import { useSettings } from "../../context/SettingsContext";
 
 interface MasterData {
   [key: string]: any;
@@ -26,6 +28,7 @@ const getEndpointName = (tableName: string): string => {
 
 const MasterTableView: React.FC<MasterTableViewProps> = ({ tableName }) => {
   const navigate = useNavigate();
+  const { darkMode } = useSettings();
   const [data, setData] = useState<MasterData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -173,7 +176,15 @@ const MasterTableView: React.FC<MasterTableViewProps> = ({ tableName }) => {
   if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
-    <div>
+    <Paper
+      elevation={3}
+      sx={{
+        p: 2,
+        backgroundColor: (theme) =>
+          theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff",
+        color: (theme) => theme.palette.text.primary,
+      }}
+    >
       <div className="d-flex justify-content-between mb-3">
         <h4>{tableName.charAt(0).toUpperCase() + tableName.slice(1)} List</h4>
         {selectedItems.length > 0 && (
@@ -183,7 +194,13 @@ const MasterTableView: React.FC<MasterTableViewProps> = ({ tableName }) => {
         )}
       </div>
 
-      <Table striped bordered hover responsive>
+      <Table
+        striped
+        bordered
+        hover
+        responsive
+        className={darkMode ? "table-dark" : ""}
+      >
         <thead>
           <tr>
             <th>
@@ -191,17 +208,42 @@ const MasterTableView: React.FC<MasterTableViewProps> = ({ tableName }) => {
                 type="checkbox"
                 checked={selectAll}
                 onChange={handleSelectAll}
+                style={{
+                  backgroundColor: darkMode ? "#2d2d2d" : "",
+                  color: darkMode ? "#e0e0e0" : "",
+                }}
               />
             </th>
             {getColumnHeaders().map((header) => (
-              <th key={header}>{header.replace(/_/g, " ")}</th>
+              <th
+                key={header}
+                style={{
+                  backgroundColor: darkMode ? "#2d2d2d" : "",
+                  color: darkMode ? "#e0e0e0" : "",
+                }}
+              >
+                {header.replace(/_/g, " ")}
+              </th>
             ))}
-            <th>Actions</th>
+            <th
+              style={{
+                backgroundColor: darkMode ? "#2d2d2d" : "",
+                color: darkMode ? "#e0e0e0" : "",
+              }}
+            >
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
           {data.map((item) => (
-            <tr key={item[`${tableName.toUpperCase()}_ID`]}>
+            <tr
+              key={item[`${tableName.toUpperCase()}_ID`]}
+              style={{
+                backgroundColor: darkMode ? "#1e1e1e" : "",
+                color: darkMode ? "#e0e0e0" : "",
+              }}
+            >
               <td>
                 <Form.Check
                   type="checkbox"
@@ -250,7 +292,7 @@ const MasterTableView: React.FC<MasterTableViewProps> = ({ tableName }) => {
           relatedData={relatedData}
         />
       )}
-    </div>
+    </Paper>
   );
 };
 

@@ -1,0 +1,42 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <!-- Enhanced gradient background -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#1a237e"/>
+            <stop offset="100%" style="stop-color:#0288d1"/>
+        </linearGradient>
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <!-- Main circle with gradient -->
+    <circle cx="100" cy="100" r="90" fill="url(#bgGradient)"/>
+    
+    <!-- Rotating inner element -->
+    <g transform="rotate(45 100 100)">
+        <path d="M 70 70 L 130 70 L 130 130 L 70 130 Z" 
+              stroke="#ffffff" 
+              stroke-width="4" 
+              fill="none" 
+              stroke-linejoin="round"
+              filter="url(#glow)"/>
+              
+        <!-- Dynamic intersecting lines -->
+        <line x1="100" y1="70" x2="100" y2="130" stroke="#ffffff" stroke-width="4" filter="url(#glow)"/>
+        <line x1="70" y1="100" x2="130" y2="100" stroke="#ffffff" stroke-width="4" filter="url(#glow)"/>
+    </g>
+    
+    <!-- Connection points with glow -->
+    <circle cx="70" cy="70" r="5" fill="#ffffff" filter="url(#glow)"/>
+    <circle cx="130" cy="70" r="5" fill="#ffffff" filter="url(#glow)"/>
+    <circle cx="70" cy="130" r="5" fill="#ffffff" filter="url(#glow)"/>
+    <circle cx="130" cy="130" r="5" fill="#ffffff" filter="url(#glow)"/>
+    
+    <!-- Center point -->
+    <circle cx="100" cy="100" r="8" fill="#ffffff" filter="url(#glow)"/>
+</svg>
