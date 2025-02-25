@@ -4,6 +4,9 @@ import { DashboardNavbar } from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import Sidebar from "../layout/Sidebar";
 import MasterEntryPage from "../master/MasterEntryPage";
+import UniversityMaster from "../master/UniversityMaster";
+import InstituteMaster from "../master/InstituteMaster";
+import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -37,7 +40,9 @@ const SuperAdminDashboard = ({ user }: any) => {
 
   return (
     <div className="vh-100 d-flex flex-column overflow-hidden">
-      <div style={{ height: "48px" }}>
+      <div style={{ height: "64px" }}>
+        {" "}
+        {/* Updated height to match navbar */}
         <DashboardNavbar
           user={user}
           title="Super Admin Portal"
@@ -57,6 +62,9 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/home" element={<DashboardHome />} />
             <Route path="/master" element={<MasterEntryPage />} />
             <Route path="/master/:tableName" element={<MasterEntryPage />} />
+            <Route path="/master/university" element={<UniversityMaster />} />
+            <Route path="/master/institute" element={<InstituteMaster />} />
+            <Route path="/settings" element={<SettingsPanel />} />
             {/* Add other routes here */}
           </Routes>
         </div>

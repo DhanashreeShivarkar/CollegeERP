@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import MasterTableList from "../master/MasterTableList";
+import { useTheme as useMUITheme } from "@mui/material/styles";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+  const theme = useMUITheme();
 
   const menuItems = [
     { icon: "bi-speedometer2", text: "Dashboard", path: "/dashboard/home" },
@@ -16,6 +18,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       icon: "bi-database-fill",
       text: "Master Entry",
       path: "/dashboard/master",
+      exact: true, // Add this to ensure exact match
+    },
+    {
+      icon: "bi-building",
+      text: "University",
+      path: "/dashboard/master/university",
+      exact: true, // Add this to ensure exact match
+    },
+    {
+      icon: "bi-mortarboard",
+      text: "Institute",
+      path: "/dashboard/master/institute",
+      exact: true, // Add this to ensure exact match
     },
     {
       icon: "bi-gear-fill",
@@ -33,15 +48,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { icon: "bi-clock-history", text: "Audit Logs", path: "/audit" },
   ];
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  // Update isActive to check for exact matches
+  const isActive = (path: string, exact?: boolean) => {
+    if (exact) {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <div
-      className="bg-light border-end transition-width"
-      style={{ width: isOpen ? "250px" : "50px" }}
+      className={`border-end transition-width`}
+      style={{
+        width: isOpen ? "250px" : "50px",
+        backgroundColor: theme.palette.background.paper,
+        borderColor: theme.palette.divider,
+      }}
     >
       {/* Sidebar Header */}
-      <div className="p-3 border-bottom bg-white d-flex align-items-center">
+      <div
+        className="p-3 border-bottom d-flex align-items-center"
+        style={{
+          backgroundColor: theme.palette.background.paper,
+          borderColor: theme.palette.divider,
+        }}
+      >
         <button
           className="btn btn-link p-0 me-2 text-primary"
           onClick={() => setIsOpen(!isOpen)}
@@ -66,12 +97,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             to={item.path}
             className={`
               d-flex align-items-center text-decoration-none p-2 mb-1 rounded
-              ${
-                isActive(item.path)
-                  ? "bg-primary text-white"
-                  : "text-secondary hover-bg-light-primary"
-              }
+              ${isActive(item.path, item.exact) ? "bg-primary text-white" : ""}
             `}
+            style={{
+              color: isActive(item.path, item.exact)
+                ? theme.palette.primary.contrastText
+                : theme.palette.text.secondary,
+              backgroundColor: isActive(item.path, item.exact)
+                ? theme.palette.primary.main
+                : "transparent",
+              transition: "background-color 0.3s",
+            }}
             title={!isOpen ? item.text : ""}
           >
             <i className={`${item.icon} ${isOpen ? "me-2" : ""}`}></i>

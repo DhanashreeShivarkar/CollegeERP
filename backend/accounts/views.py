@@ -5,23 +5,25 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
-from .models import CustomUser
+from .models import (
+    CustomUser, COUNTRY, STATE, CITY, 
+    CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
+    UNIVERSITY, INSTITUTE  # Add these imports
+)
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import COUNTRY
-from .serializers import CountrySerializer
+from .serializers import (
+    CountrySerializer, StateSerializer, CitySerializer,
+    CurrencySerializer, LanguageSerializer, DesignationSerializer,
+    CategorySerializer, UniversitySerializer, InstituteSerializer  # Add these imports
+)
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework.permissions import AllowAny
-from .models import STATE
-from .serializers import StateSerializer
-from .models import CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY
-from .serializers import (CitySerializer, CurrencySerializer, 
-                        LanguageSerializer, DesignationSerializer, CategorySerializer)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -539,4 +541,22 @@ class CategoryViewSet(BaseModelViewSet):
     def list(self, request, *args, **kwargs):
         categories = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)
+
+class UniversityViewSet(BaseModelViewSet):
+    queryset = UNIVERSITY.objects.all()
+    serializer_class = UniversitySerializer
+
+    def list(self, request, *args, **kwargs):
+        universities = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(universities, many=True)
+        return Response(serializer.data)
+
+class InstituteViewSet(BaseModelViewSet):
+    queryset = INSTITUTE.objects.all()
+    serializer_class = InstituteSerializer
+
+    def list(self, request, *args, **kwargs):
+        institutes = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(institutes, many=True)
         return Response(serializer.data)

@@ -3,14 +3,11 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { lightTheme, darkTheme } from "../utils/theme";
 
-interface SettingsState {
+interface SettingsContextType {
   darkMode: boolean;
   compactMode: boolean;
   fontSize: "small" | "medium" | "large";
   animations: boolean;
-}
-
-interface SettingsContextType extends SettingsState {
   toggleDarkMode: () => void;
   toggleCompactMode: () => void;
   setFontSize: (size: "small" | "medium" | "large") => void;
@@ -24,23 +21,21 @@ const SettingsContext = createContext<SettingsContextType | undefined>(
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [settings, setSettings] = useState<SettingsState>(() => {
-    const savedSettings = localStorage.getItem("userSettings");
-    return savedSettings
-      ? JSON.parse(savedSettings)
-      : {
-          darkMode: false,
-          compactMode: false,
-          fontSize: "medium" as const,
-          animations: true,
-        };
-  });
+  const [darkMode, setDarkMode] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
+  const [fontSize, setFontSize] = useState<"small" | "medium" | "large">(
+    "medium"
+  );
+  const [animations, setAnimations] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem("userSettings", JSON.stringify(settings));
+    localStorage.setItem(
+      "userSettings",
+      JSON.stringify({ darkMode, compactMode, fontSize, animations })
+    );
     document.documentElement.setAttribute(
       "data-theme",
-      settings.darkMode ? "dark" : "light"
+      darkMode ? "dark" : "light"
     );
 
     const fontSizes = {
@@ -49,45 +44,27 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
       large: "18px",
     } as const;
 
-    document.documentElement.style.fontSize = fontSizes[settings.fontSize];
-  }, [settings]);
+    document.documentElement.style.fontSize = fontSizes[fontSize];
+  }, [darkMode, compactMode, fontSize, animations]);
 
-  const toggleDarkMode = () => {
-    setSettings((prev: SettingsState) => ({
-      ...prev,
-      darkMode: !prev.darkMode,
-    }));
-  };
-
-  const toggleCompactMode = () => {
-    setSettings((prev: SettingsState) => ({
-      ...prev,
-      compactMode: !prev.compactMode,
-    }));
-  };
-
-  const setFontSize = (size: "small" | "medium" | "large") => {
-    setSettings((prev: SettingsState) => ({ ...prev, fontSize: size }));
-  };
-
-  const toggleAnimations = () => {
-    setSettings((prev: SettingsState) => ({
-      ...prev,
-      animations: !prev.animations,
-    }));
-  };
+  const toggleDarkMode = () => setDarkMode((prev) => !prev);
+  const toggleCompactMode = () => setCompactMode((prev) => !prev);
+  const toggleAnimations = () => setAnimations((prev) => !prev);
 
   return (
     <SettingsContext.Provider
       value={{
-        ...settings,
+        darkMode,
+        compactMode,
+        fontSize,
+        animations,
         toggleDarkMode,
         toggleCompactMode,
         setFontSize,
         toggleAnimations,
       }}
     >
-      <ThemeProvider theme={settings.darkMode ? darkTheme : lightTheme}>
+      <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
         <CssBaseline />
         {children}
       </ThemeProvider>
@@ -97,7 +74,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useSettings = () => {
   const context = useContext(SettingsContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useSettings must be used within a SettingsProvider");
   }
   return context;
