@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MasterTableList from "../master/MasterTableList";
 import { useTheme as useMUITheme } from "@mui/material/styles";
@@ -11,26 +11,45 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const theme = useMUITheme();
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   const menuItems = [
     { icon: "bi-speedometer2", text: "Dashboard", path: "/dashboard/home" },
     {
-      icon: "bi-database-fill",
-      text: "Master Entry",
-      path: "/dashboard/master",
-      exact: true, // Add this to ensure exact match
+      icon: "bi-gear-fill",
+      text: "Administration",
+      children: [
+        {
+          icon: "bi-database-fill",
+          text: "Master",
+          children: [
+            {
+              icon: "bi-database-fill",
+              text: "Master Entry",
+              path: "/dashboard/master",
+              exact: true,
+            },
+            {
+              icon: "bi-people-fill",
+              text: "Employee Type",
+              path: "/dashboard/employee",
+              exact: true,
+            },
+          ],
+        },
+      ],
     },
     {
       icon: "bi-building",
       text: "University",
       path: "/dashboard/master/university",
-      exact: true, // Add this to ensure exact match
+      exact: true,
     },
     {
       icon: "bi-mortarboard",
       text: "Institute",
       path: "/dashboard/master/institute",
-      exact: true, // Add this to ensure exact match
+      exact: true,
     },
     {
       icon: "bi-gear-fill",
@@ -47,6 +66,76 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { icon: "bi-person-lines-fill", text: "User Management", path: "/users" },
     { icon: "bi-clock-history", text: "Audit Logs", path: "/audit" },
   ];
+
+  const toggleSubmenu = (text: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(text)
+        ? prev.filter((item) => item !== text)
+        : [...prev, text]
+    );
+  };
+
+  const renderMenuItem = (item: any, level = 0) => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedMenus.includes(item.text);
+
+    return (
+      <div key={item.text} style={{ marginLeft: level * 15 }}>
+        {item.path ? (
+          <Link
+            to={item.path}
+            className={`
+              d-flex align-items-center text-decoration-none p-2 mb-1 rounded
+              ${isActive(item.path, item.exact) ? "bg-primary text-white" : ""}
+              hover-effect
+            `}
+            style={{
+              color: isActive(item.path, item.exact)
+                ? theme.palette.primary.contrastText
+                : theme.palette.text.secondary,
+              backgroundColor: isActive(item.path, item.exact)
+                ? theme.palette.primary.main
+                : "transparent",
+              transition: "all 0.3s",
+            }}
+            title={!isOpen ? item.text : ""}
+          >
+            <i className={`${item.icon} ${isOpen ? "me-2" : ""}`}></i>
+            {isOpen && <span className="small">{item.text}</span>}
+          </Link>
+        ) : (
+          <div
+            className="d-flex align-items-center p-2 mb-1 rounded cursor-pointer hover-effect"
+            onClick={() => toggleSubmenu(item.text)}
+            style={{
+              color: theme.palette.text.secondary,
+              transition: "all 0.3s",
+              cursor: "pointer",
+            }}
+          >
+            <i className={`${item.icon} ${isOpen ? "me-2" : ""}`}></i>
+            {isOpen && (
+              <>
+                <span className="small">{item.text}</span>
+                <i
+                  className={`bi bi-chevron-${
+                    isExpanded ? "down" : "right"
+                  } ms-auto`}
+                ></i>
+              </>
+            )}
+          </div>
+        )}
+        {hasChildren && isExpanded && isOpen && (
+          <div className="submenu-container">
+            {item.children.map((child: any) =>
+              renderMenuItem(child, level + 1)
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Update isActive to check for exact matches
   const isActive = (path: string, exact?: boolean) => {
@@ -90,31 +179,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       </div>
 
       {/* Sidebar Menu */}
-      <div className="p-2">
-        {menuItems.map((item, index) => (
-          <Link
-            key={index}
-            to={item.path}
-            className={`
-              d-flex align-items-center text-decoration-none p-2 mb-1 rounded
-              ${isActive(item.path, item.exact) ? "bg-primary text-white" : ""}
-            `}
-            style={{
-              color: isActive(item.path, item.exact)
-                ? theme.palette.primary.contrastText
-                : theme.palette.text.secondary,
-              backgroundColor: isActive(item.path, item.exact)
-                ? theme.palette.primary.main
-                : "transparent",
-              transition: "background-color 0.3s",
-            }}
-            title={!isOpen ? item.text : ""}
-          >
-            <i className={`${item.icon} ${isOpen ? "me-2" : ""}`}></i>
-            {isOpen && <span className="small">{item.text}</span>}
-          </Link>
-        ))}
-      </div>
+      <div className="p-2">{menuItems.map((item) => renderMenuItem(item))}</div>
     </div>
   );
 };

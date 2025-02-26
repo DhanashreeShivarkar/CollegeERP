@@ -7,6 +7,7 @@ import MasterEntryPage from "../master/MasterEntryPage";
 import UniversityMaster from "../master/UniversityMaster";
 import InstituteMaster from "../master/InstituteMaster";
 import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
+import EmployeeTypeEntry from "../Employee/employeeTypeEntry";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -65,6 +66,7 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/master/university" element={<UniversityMaster />} />
             <Route path="/master/institute" element={<InstituteMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
+            <Route path="/employee" element={<EmployeeTypeEntry />} />
             {/* Add other routes here */}
           </Routes>
         </div>

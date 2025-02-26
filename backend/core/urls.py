@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('accounts.urls')),  # All endpoints will be under accounts
+    path('api/', include('accounts.urls')),
+    path('api/establishment/', include('establishments.urls')),  # Changed from employee to establishment
 ]
