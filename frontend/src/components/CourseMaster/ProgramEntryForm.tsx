@@ -69,7 +69,7 @@ const NameEntryForm = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const response = await axiosInstance.post("/api/master/course/", data, {
+      const response = await axiosInstance.post("/api/master/program/", data, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
       });
       if (response.status === 201) alert("Program entry saved successfully!");

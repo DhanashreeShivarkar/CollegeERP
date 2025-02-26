@@ -8,7 +8,7 @@ import UniversityMaster from "../master/UniversityMaster";
 import InstituteMaster from "../master/InstituteMaster";
 import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
 import EmployeeTypeEntry from "../Employee/employeeTypeEntry";
-import NameEntryForm from "../CourseMaster/NameEntryForm";
+import NameEntryForm from "../CourseMaster/ProgramEntryForm";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">

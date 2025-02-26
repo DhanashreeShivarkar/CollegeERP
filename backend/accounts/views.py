@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, PROGRAMSerializer  # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer # Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -573,7 +573,7 @@ class DepartmentViewSet(BaseModelViewSet):
     
 class ProgramListCreateView(BaseModelViewSet):
     queryset = PROGRAM.objects.all()
-    serializer_class = PROGRAMSerializer
+    serializer_class = ProgramSerializer
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):

@@ -99,7 +99,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model = DEPARTMENT
         fields = ['DEPARTMENT_ID', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
 
-class PROGRAMSerializer(serializers.ModelSerializer):
+class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = PROGRAM
         fields = [

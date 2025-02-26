@@ -13,7 +13,7 @@ router.register(r'master/departments', views.DepartmentViewSet, basename='depart
 router.register(r'master/categories', views.CategoryViewSet, basename='category')
 router.register(r'master/universities', views.UniversityViewSet, basename='university')
 router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
-router.register(r'master/course', views.ProgramListCreateView, basename='program')
+router.register(r'master/program', views.ProgramListCreateView, basename='program')
 
 app_name = 'accounts'
 
