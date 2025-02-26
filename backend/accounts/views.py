@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE  # Add these imports
+    UNIVERSITY, INSTITUTE ,PROGRAM# Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer  # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer ,PROGRAMSerializer  # Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -560,3 +560,25 @@ class InstituteViewSet(BaseModelViewSet):
         institutes = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(institutes, many=True)
         return Response(serializer.data)
+    
+
+    
+class ProgramListCreateView(BaseModelViewSet):
+    queryset = PROGRAM.objects.all()
+    serializer_class = PROGRAMSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Program created successfully!", "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        
+        print("Serializer Errors:", serializer.errors)  # 🔥 Print errors to console
+        return Response(
+            {"error": serializer.errors}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
