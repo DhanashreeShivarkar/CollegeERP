@@ -11,6 +11,7 @@ import CategoryEntry from "./masterPages/CategoryEntry";
 import MasterTableView from "./MasterTableView";
 import { Paper } from "@mui/material";
 import { useSettings } from "../../context/SettingsContext";
+import DepartmentEntry from "./masterPages/DepartmentEntry";
 
 const MasterEntryPage: React.FC = () => {
   const { tableName } = useParams();
@@ -33,6 +34,8 @@ const MasterEntryPage: React.FC = () => {
         return <LanguageEntry />;
       case "designation":
         return <DesignationEntry />;
+      case "department":
+        return <DepartmentEntry />;
       case "category":
         return <CategoryEntry />;
       default:

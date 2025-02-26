@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE ,PROGRAM
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -94,6 +94,10 @@ class InstituteSerializer(serializers.ModelSerializer):
             'ESTD_YEAR', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
         ]
 
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DEPARTMENT
+        fields = ['DEPARTMENT_ID', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
 
 class PROGRAMSerializer(serializers.ModelSerializer):
     class Meta:
@@ -103,5 +107,3 @@ class PROGRAMSerializer(serializers.ModelSerializer):
     'DURATION_YEARS', 'LEVEL', 'TYPE', 'DESCRIPTION',
     'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
 ]
-
-     
