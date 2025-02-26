@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE  # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT  # Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer  # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer  # Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -401,6 +401,7 @@ class MasterTableListView(APIView):
             {"name": "currency", "display_name": "Currency", "endpoint": "http://localhost:8000/api/master/currencies/"},
             {"name": "language", "display_name": "Language", "endpoint": "http://localhost:8000/api/master/languages/"},
             {"name": "designation", "display_name": "Designation", "endpoint": "http://localhost:8000/api/master/designations/"},
+            {"name": "department", "display_name": "Department", "endpoint": "http://localhost:8000/api/master/departments/"},
             {"name": "category", "display_name": "Category", "endpoint": "http://localhost:8000/api/master/categories/"}
         ]
         return Response(master_tables)
@@ -559,4 +560,13 @@ class InstituteViewSet(BaseModelViewSet):
     def list(self, request, *args, **kwargs):
         institutes = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(institutes, many=True)
+        return Response(serializer.data)
+    
+class DepartmentViewSet(BaseModelViewSet):
+    queryset = DEPARTMENT.objects.all()
+    serializer_class = DepartmentSerializer
+
+    def list(self, request, *args, **kwargs):
+        departments = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(departments, many=True)
         return Response(serializer.data)

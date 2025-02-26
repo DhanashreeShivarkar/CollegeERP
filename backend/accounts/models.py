@@ -629,6 +629,20 @@ class PROGRAM(AuditModel):
 
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+    
+class DEPARTMENT(AuditModel):
+    DEPARTMENT_ID = models.AutoField(primary_key=True, db_column='DEPARTMENT_ID')
+    NAME = models.CharField(max_length=255, db_column='NAME')
+    CODE = models.CharField(max_length=20, unique=True, db_column='CODE')
+    IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    
+    class Meta:
+        db_table = 'DEPARTMENTS'
+        verbose_name = 'Department'
+        verbose_name_plural = 'Departments'
+
+    def __str__(self):
+        return f"{self.CODE} - {self.NAME}"
 
 class BRANCH(AuditModel):
     BRANCH_ID = models.AutoField(primary_key=True, db_column='BRANCH_ID')
