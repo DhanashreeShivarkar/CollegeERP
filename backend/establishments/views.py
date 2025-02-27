@@ -1,11 +1,12 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER
 from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer
 import logging
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +34,44 @@ class EmployeeMasterTableView(APIView):
         logger.debug(f"Returning employee master tables: {master_tables}")
         return Response(master_tables)
 
-class TypeMasterViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+class BaseMasterViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]  # Temporarily allow all access
+
+    def get_username_from_request(self):
+        auth_header = self.request.headers.get('Authorization', '')
+        if auth_header.startswith('Username '):
+            return auth_header.split(' ')[1]
+        return 'SYSTEM'
+
+    def perform_create(self, serializer):
+        try:
+            username = self.get_username_from_request()
+            logger.debug(f"Using username: {username}")
+            serializer.save(CREATED_BY=username)
+        except Exception as e:
+            logger.error(f"Error in perform_create: {str(e)}")
+            raise
+
+    def perform_update(self, serializer):
+        try:
+            username = self.get_username_from_request()
+            serializer.save(UPDATED_BY=username)
+        except Exception as e:
+            logger.error(f"Error in perform_update: {str(e)}")
+            raise
+
+    def perform_destroy(self, instance):
+        try:
+            username = self.get_username_from_request()
+            instance.IS_DELETED = True
+            instance.DELETED_AT = timezone.now()
+            instance.DELETED_BY = username
+            instance.save()
+        except Exception as e:
+            logger.error(f"Error in perform_destroy: {str(e)}")
+            raise
+
+class TypeMasterViewSet(BaseMasterViewSet):
     queryset = TYPE_MASTER.objects.all()
     serializer_class = TypeMasterSerializer
 
@@ -53,21 +90,14 @@ class TypeMasterViewSet(viewsets.ModelViewSet):
         logger.debug(f"Updated data: {serializer.data}")
         return Response(serializer.data)
 
-    def perform_update(self, serializer):
-        username = self.request.user.USERNAME if hasattr(self.request.user, 'USERNAME') else 'SYSTEM'
-        logger.debug(f"Performing update with username: {username}")
-        serializer.save(UPDATED_BY=username)
-
-class StatusMasterViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+class StatusMasterViewSet(BaseMasterViewSet):
     queryset = STATUS_MASTER.objects.all()
     serializer_class = StatusMasterSerializer
 
     def get_queryset(self):
         return self.queryset.filter(IS_DELETED=False)
 
-class ShiftMasterViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+class ShiftMasterViewSet(BaseMasterViewSet):
     queryset = SHIFT_MASTER.objects.all()
     serializer_class = ShiftMasterSerializer
 
