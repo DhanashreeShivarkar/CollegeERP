@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
-import axiosInstance from "../../../api/axios"; // Update import
+import {
+  Paper,
+  IconButton,
+  Tooltip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
-import { Paper } from "@mui/material";
+import DeleteConfirmDialog from "../../common/DeleteConfirmDialog";
 
 interface CountryFormData {
   COUNTRY_ID?: number;
@@ -25,6 +37,22 @@ const CountryEntry: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [countries, setCountries] = useState<CountryFormData[]>([]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get("/api/settings/countries/");
+      setCountries(response.data);
+    } catch (err) {
+      console.error("Error fetching countries:", err);
+      setError("Failed to fetch countries");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Check authentication when component mounts
@@ -32,6 +60,7 @@ const CountryEntry: React.FC = () => {
     if (!token) {
       navigate("/login");
     }
+    fetchData();
   }, [navigate]);
 
   const handleChange = (
@@ -86,6 +115,7 @@ const CountryEntry: React.FC = () => {
           IS_ACTIVE: true,
         });
         alert("Country created successfully!");
+        fetchData();
       }
     } catch (err: any) {
       console.error("Error:", err);
@@ -95,6 +125,36 @@ const CountryEntry: React.FC = () => {
         localStorage.removeItem("user");
         navigate("/login");
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (item: any) => {
+    setSelectedItem(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedItem) return;
+
+    try {
+      setLoading(true);
+      await axiosInstance.delete(
+        `/api/master/countries/${selectedItem.COUNTRY_ID}/`
+      );
+
+      // Update local state instead of fetching again
+      setCountries((prevCountries) =>
+        prevCountries.filter(
+          (country) => country.COUNTRY_ID !== selectedItem.COUNTRY_ID
+        )
+      );
+
+      setDeleteDialogOpen(false);
+      setSelectedItem(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete item");
     } finally {
       setLoading(false);
     }
@@ -194,6 +254,53 @@ const CountryEntry: React.FC = () => {
           </div>
         </Form>
       </div>
+
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Code</TableCell>
+              <TableCell>Phone Code</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="center">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {countries.map((country) => (
+              <TableRow key={country.COUNTRY_ID}>
+                <TableCell>{country.NAME}</TableCell>
+                <TableCell>{country.CODE}</TableCell>
+                <TableCell>{country.PHONE_CODE}</TableCell>
+                <TableCell>
+                  {country.IS_ACTIVE ? "Active" : "Inactive"}
+                </TableCell>
+                <TableCell align="center">
+                  <Tooltip title="Delete">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteClick(country)}
+                      color="error"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        title={selectedItem?.NAME || ""}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedItem(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
     </Paper>
   );
 };

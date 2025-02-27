@@ -2,7 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
-import { Paper } from "@mui/material";
+import {
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteConfirmDialog from "../../common/DeleteConfirmDialog";
 
 interface LanguageFormData {
   LANGUAGE_ID?: number;
@@ -23,6 +35,22 @@ const LanguageEntry: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [languages, setLanguages] = useState<LanguageFormData[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get("/api/master/languages/");
+      setLanguages(response.data);
+    } catch (err) {
+      console.error("Error fetching languages:", err);
+      setError("Failed to fetch languages");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,6 +58,7 @@ const LanguageEntry: React.FC = () => {
       navigate("/login");
       return;
     }
+    fetchData();
   }, [navigate]);
 
   const handleChange = (
@@ -75,12 +104,42 @@ const LanguageEntry: React.FC = () => {
         IS_ACTIVE: true,
       });
       alert("Language created successfully!");
+      fetchData();
     } catch (err: any) {
       console.error("Error:", err);
       setError(err.response?.data?.message || "Failed to create language");
       if (err.response?.status === 401) {
         navigate("/login");
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (item: any) => {
+    setSelectedItem(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedItem) return;
+
+    try {
+      setLoading(true);
+      await axiosInstance.delete(
+        `/api/master/languages/${selectedItem.LANGUAGE_ID}/`
+      );
+
+      setLanguages((prevLanguages) =>
+        prevLanguages.filter(
+          (language) => language.LANGUAGE_ID !== selectedItem.LANGUAGE_ID
+        )
+      );
+
+      setDeleteDialogOpen(false);
+      setSelectedItem(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete item");
     } finally {
       setLoading(false);
     }
@@ -165,6 +224,51 @@ const LanguageEntry: React.FC = () => {
             </Button>
           </div>
         </Form>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Code</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {languages.map((language) => (
+                <TableRow key={language.LANGUAGE_ID}>
+                  <TableCell>{language.NAME}</TableCell>
+                  <TableCell>{language.CODE}</TableCell>
+                  <TableCell>
+                    {language.IS_ACTIVE ? "Active" : "Inactive"}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteClick(language)}
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          title={selectedItem?.NAME || ""}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSelectedItem(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
       </div>
     </Paper>
   );

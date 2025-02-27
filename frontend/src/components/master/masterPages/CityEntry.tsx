@@ -2,7 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
-import { Paper } from "@mui/material";
+import {
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteConfirmDialog from "../../common/DeleteConfirmDialog";
 
 interface StateData {
   STATE_ID: number;
@@ -31,6 +43,9 @@ const CityEntry: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cities, setCities] = useState<CityFormData[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -40,6 +55,7 @@ const CityEntry: React.FC = () => {
     }
     // Call fetchStates only if we have a token
     fetchStates(token);
+    fetchData();
   }, [navigate]);
 
   const fetchStates = async (token: string) => {
@@ -60,6 +76,19 @@ const CityEntry: React.FC = () => {
       } else {
         setError("Failed to fetch states");
       }
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get("/api/master/cities/");
+      setCities(response.data);
+    } catch (err) {
+      console.error("Error fetching cities:", err);
+      setError("Failed to fetch cities");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,6 +152,34 @@ const CityEntry: React.FC = () => {
       if (err.response?.status === 401) {
         navigate("/login");
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (item: any) => {
+    setSelectedItem(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedItem) return;
+
+    try {
+      setLoading(true);
+      await axiosInstance.delete(
+        `/api/settings/cities/${selectedItem.CITY_ID}/`
+      ); // Changed from master to settings
+
+      // Update local state instead of fetching again
+      setCities((prevCities) =>
+        prevCities.filter((city) => city.CITY_ID !== selectedItem.CITY_ID)
+      );
+
+      setDeleteDialogOpen(false);
+      setSelectedItem(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete item");
     } finally {
       setLoading(false);
     }
@@ -225,6 +282,53 @@ const CityEntry: React.FC = () => {
             </Button>
           </div>
         </Form>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>City Name</TableCell>
+                <TableCell>Code</TableCell>
+                <TableCell>State</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {cities.map((city) => (
+                <TableRow key={city.CITY_ID}>
+                  <TableCell>{city.NAME}</TableCell>
+                  <TableCell>{city.CODE}</TableCell>
+                  <TableCell>{city.STATE}</TableCell>
+                  <TableCell>
+                    {city.IS_ACTIVE ? "Active" : "Inactive"}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteClick(city)}
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          title={selectedItem?.NAME || ""}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSelectedItem(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
       </div>
     </Paper>
   );

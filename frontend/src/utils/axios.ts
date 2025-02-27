@@ -13,10 +13,11 @@ axiosInstance.interceptors.request.use(
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
       console.log("User data found:", userData);
 
-      // Add username in Authorization header
       if (userData.username) {
+        // Add username in two formats to ensure it's received
         config.headers["Authorization"] = `Username ${userData.username}`;
-        console.log("Added auth header:", config.headers["Authorization"]);
+        config.headers["X-Username"] = userData.username;
+        console.log("Added username headers:", config.headers);
       }
     } catch (error) {
       console.error("Error in request interceptor:", error);
