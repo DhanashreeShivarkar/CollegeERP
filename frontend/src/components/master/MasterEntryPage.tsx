@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import MasterTableList from "./MasterTableList";
 import CountryEntry from "./masterPages/CountryEntry";
 import StateEntry from "./masterPages/StateEntry";
@@ -9,7 +9,7 @@ import LanguageEntry from "./masterPages/LanguageEntry";
 import DesignationEntry from "./masterPages/DesignationEntry";
 import CategoryEntry from "./masterPages/CategoryEntry";
 import MasterTableView from "./MasterTableView";
-import { Paper } from "@mui/material";
+import { Paper, Select, MenuItem, FormControl } from "@mui/material";
 import { useSettings } from "../../context/SettingsContext";
 import DepartmentEntry from "./masterPages/DepartmentEntry";
 
@@ -19,6 +19,24 @@ const MasterEntryPage: React.FC = () => {
   const [selectedAction, setSelectedAction] = useState<
     "create" | "update" | null
   >(null);
+  const [selectedTable, setSelectedTable] = useState<string>("");
+  const navigate = useNavigate();
+
+  const tables = [
+    { name: "country", display: "Country" },
+    { name: "state", display: "State" },
+    { name: "city", display: "City" },
+    { name: "currency", display: "Currency" },
+    { name: "language", display: "Language" },
+    { name: "designation", display: "Designation" },
+    { name: "department", display: "Department" },
+    { name: "category", display: "Category" }
+  ];
+
+  const handleTableChange = (value: string) => {
+    setSelectedTable(value);
+    navigate(`/master/${value}`);
+  };
 
   const renderCreateForm = () => {
     switch (tableName?.toLowerCase()) {
@@ -57,38 +75,57 @@ const MasterEntryPage: React.FC = () => {
       <div className="container-fluid p-4">
         <div className="row">
           <div className="col-12 mb-4">
-            <div className="d-flex align-items-center gap-3">
+            <div className="d-flex justify-content-between align-items-center">
               <h2>Master Entry Management</h2>
-              <div className="d-flex align-items-center gap-2">
-                <div style={{ width: "250px" }}>
-                  <MasterTableList />
-                </div>
-                {tableName && (
-                  <div className="btn-group">
-                    <button
-                      className={`btn ${
-                        selectedAction === "create"
-                          ? "btn-primary"
-                          : "btn-outline-primary"
-                      }`}
-                      onClick={() => setSelectedAction("create")}
-                    >
-                      Create New Entry
-                    </button>
-                    <button
-                      className={`btn ${
-                        selectedAction === "update"
-                          ? "btn-primary"
-                          : "btn-outline-primary"
-                      }`}
-                      onClick={() => setSelectedAction("update")}
-                    >
-                      Update Entries
-                    </button>
-                  </div>
-                )}
-              </div>
+              <FormControl sx={{ minWidth: 200 }}>
+                <Select
+                  value={tableName || ""}
+                  onChange={(e) => handleTableChange(e.target.value)}
+                  displayEmpty
+                  variant="standard"
+                  sx={{
+                    '& .MuiSelect-select': {
+                      backgroundColor: 'transparent',
+                      boxShadow: 'none',
+                      '&:focus': {
+                        backgroundColor: 'transparent'
+                      }
+                    },
+                    '& .MuiInput-underline:before': {
+                      borderBottomColor: 'rgba(0, 0, 0, 0.12)'
+                    }
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Master Table
+                  </MenuItem>
+                  {tables.map((table) => (
+                    <MenuItem key={table.name} value={table.name}>
+                      {table.display}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
+            
+            {tableName && (
+              <div className="mt-3 d-flex justify-content-center">
+                <div className="btn-group">
+                  <button
+                    className={`btn ${selectedAction === "create" ? "btn-primary" : "btn-outline-primary"}`}
+                    onClick={() => setSelectedAction("create")}
+                  >
+                    Create New Entry
+                  </button>
+                  <button
+                    className={`btn ${selectedAction === "update" ? "btn-primary" : "btn-outline-primary"}`}
+                    onClick={() => setSelectedAction("update")}
+                  >
+                    Update Entries
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <div className="col-12">
             {tableName ? (
