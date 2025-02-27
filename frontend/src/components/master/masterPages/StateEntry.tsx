@@ -4,17 +4,7 @@ import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 import {
   Paper,
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import DeleteConfirmDialog from "../../common/DeleteConfirmDialog";
 
 interface CountryData {
   COUNTRY_ID: number;
@@ -41,9 +31,6 @@ const StateEntry: React.FC = () => {
     IS_ACTIVE: true,
   });
 
-  const [states, setStates] = useState<StateFormData[]>([]);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -54,7 +41,6 @@ const StateEntry: React.FC = () => {
       return;
     }
     fetchCountries();
-    fetchData();
   }, [navigate]);
 
   const fetchCountries = async () => {
@@ -69,19 +55,6 @@ const StateEntry: React.FC = () => {
     } catch (err) {
       console.error("Error fetching countries:", err);
       setError("Failed to fetch countries");
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get("/api/master/states/");
-      setStates(response.data);
-    } catch (err) {
-      console.error("Error fetching states:", err);
-      setError("Failed to fetch states");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -147,34 +120,6 @@ const StateEntry: React.FC = () => {
         localStorage.removeItem("user");
         navigate("/login");
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteClick = (item: any) => {
-    setSelectedItem(item);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedItem) return;
-
-    try {
-      setLoading(true);
-      await axiosInstance.delete(
-        `/api/master/states/${selectedItem.STATE_ID}/`
-      );
-
-      // Update local state instead of fetching again
-      setStates((prevStates) =>
-        prevStates.filter((state) => state.STATE_ID !== selectedItem.STATE_ID)
-      );
-
-      setDeleteDialogOpen(false);
-      setSelectedItem(null);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete item");
     } finally {
       setLoading(false);
     }
@@ -277,51 +222,6 @@ const StateEntry: React.FC = () => {
             </Button>
           </div>
         </Form>
-
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Code</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {states.map((state) => (
-                <TableRow key={state.STATE_ID}>
-                  <TableCell>{state.NAME}</TableCell>
-                  <TableCell>{state.CODE}</TableCell>
-                  <TableCell>
-                    {state.IS_ACTIVE ? "Active" : "Inactive"}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteClick(state)}
-                        color="error"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <DeleteConfirmDialog
-          open={deleteDialogOpen}
-          title={selectedItem?.NAME || ""}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setSelectedItem(null);
-          }}
-          onConfirm={handleDeleteConfirm}
-        />
       </div>
     </Paper>
   );
