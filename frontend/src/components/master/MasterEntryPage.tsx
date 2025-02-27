@@ -30,7 +30,7 @@ const MasterEntryPage: React.FC = () => {
     { name: "language", display: "Language" },
     { name: "designation", display: "Designation" },
     { name: "department", display: "Department" },
-    { name: "category", display: "Category" }
+    { name: "category", display: "Category" },
   ];
 
   const handleTableChange = (value: string) => {
@@ -84,16 +84,16 @@ const MasterEntryPage: React.FC = () => {
                   displayEmpty
                   variant="standard"
                   sx={{
-                    '& .MuiSelect-select': {
-                      backgroundColor: 'transparent',
-                      boxShadow: 'none',
-                      '&:focus': {
-                        backgroundColor: 'transparent'
-                      }
+                    "& .MuiSelect-select": {
+                      backgroundColor: "transparent",
+                      boxShadow: "none",
+                      "&:focus": {
+                        backgroundColor: "transparent",
+                      },
                     },
-                    '& .MuiInput-underline:before': {
-                      borderBottomColor: 'rgba(0, 0, 0, 0.12)'
-                    }
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: "rgba(0, 0, 0, 0.12)",
+                    },
                   }}
                 >
                   <MenuItem value="" disabled>
@@ -107,18 +107,26 @@ const MasterEntryPage: React.FC = () => {
                 </Select>
               </FormControl>
             </div>
-            
+
             {tableName && (
               <div className="mt-3 d-flex justify-content-center">
                 <div className="btn-group">
                   <button
-                    className={`btn ${selectedAction === "create" ? "btn-primary" : "btn-outline-primary"}`}
+                    className={`btn ${
+                      selectedAction === "create"
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
                     onClick={() => setSelectedAction("create")}
                   >
                     Create New Entry
                   </button>
                   <button
-                    className={`btn ${selectedAction === "update" ? "btn-primary" : "btn-outline-primary"}`}
+                    className={`btn ${
+                      selectedAction === "update"
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
                     onClick={() => setSelectedAction("update")}
                   >
                     Update Entries
