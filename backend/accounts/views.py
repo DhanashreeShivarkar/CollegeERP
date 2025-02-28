@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM  # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH # Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer ,BranchSerializer# Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -613,11 +613,9 @@ class ProgramTableListView(View):
         ]
         return JsonResponse(program_master, safe=False)  # ✅ Fixed variable reference
 
-from rest_framework import viewsets
-from .models import BRANCH
-from .serializers import BranchSerializer
 
-class BranchListCreateView(viewsets.ModelViewSet):
+
+class BranchListCreateView(BaseModelViewSet):
     queryset = BRANCH.objects.all()
     serializer_class = BranchSerializer
     
