@@ -59,7 +59,7 @@ INSTALLED_APPS = [
 ]
 
 # Add custom user model
-AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'accounts.CustomUser'  # Make sure this matches your accounts app
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be first
@@ -176,9 +176,10 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',  # Change this to allow unauthenticated access to login
+        'rest_framework.permissions.AllowAny',  # Change this temporarily
     ),
 }
 
@@ -215,6 +216,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'x-username',  # Add this line for our custom header
 ]
 
 # CSRF Settings

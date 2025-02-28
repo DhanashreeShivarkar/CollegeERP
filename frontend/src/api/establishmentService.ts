@@ -125,3 +125,16 @@ export const updateShiftEntry = (
     EARLY_GOING_TIME?: string;
   }
 ) => axios.put(`${API_URL}/establishment/shift-master/${id}/`, data);
+
+// Add these functions
+export const deleteTypeEntry = (id: number) => {
+  return axios.delete(`${API_URL}/establishment/type-master/${id}/`);
+};
+
+export const deleteStatusEntry = (id: number) => {
+  return axios.delete(`${API_URL}/establishment/status-master/${id}/`);
+};
+
+export const deleteShiftEntry = (id: number) => {
+  return axios.delete(`${API_URL}/establishment/shift-master/${id}/`);
+};

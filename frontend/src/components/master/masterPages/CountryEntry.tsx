@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
-import axiosInstance from "../../../api/axios"; // Update import
-import { useNavigate } from "react-router-dom";
 import { Paper } from "@mui/material";
+import axiosInstance from "../../../api/axios";
+import { useNavigate } from "react-router-dom";
 
 interface CountryFormData {
   COUNTRY_ID?: number;
@@ -27,8 +27,7 @@ const CountryEntry: React.FC = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Check authentication when component mounts
-    const token = localStorage.getItem("token"); // Changed from 'accessToken' to 'token'
+    const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
     }

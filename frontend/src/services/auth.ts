@@ -14,13 +14,16 @@ const authApi = axios.create({
 export const login = async (user_id: string, password: string) => {
   try {
     const response = await authApi.post("/api/auth/login/", {
-      // Added trailing slash to match Django URL pattern
       user_id,
       password,
     });
 
-    if (response.data.token) {
-      sessionStorage.setItem("user", JSON.stringify(response.data));
+    console.log("Login response:", response.data);
+
+    if (response.data) {
+      // Store the complete user data
+      localStorage.setItem("user", JSON.stringify(response.data));
+      console.log("Stored user data:", response.data);
     }
     return response.data;
   } catch (error: any) {
