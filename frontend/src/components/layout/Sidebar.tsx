@@ -24,8 +24,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     },
     {
       icon: "bi-building",
-      text: "Institutions",
-      path: "/dashboard/institutions",
+      text: "Master University",
+      path: "/dashboard/master/university",
+    },
+    {
+      icon: "bi-building",
+      text: "Master Institute",
+      path: "/dashboard/master/institute",
+    },
+    {
+      icon: "bi-building",
+      text: "Academic Year Master",
+      path: "/dashboard/master/academic",
     },
     { icon: "bi-shield-lock", text: "Roles & Permissions", path: "/roles" },
     { icon: "bi-sliders", text: "Configuration", path: "/config" },

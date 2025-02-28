@@ -19,9 +19,9 @@ from rest_framework_simplejwt.settings import api_settings
 from rest_framework.permissions import AllowAny
 from .models import STATE
 from .serializers import StateSerializer
-from .models import CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY
+from .models import CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, ACADEMIC_YEAR
 from .serializers import (CitySerializer, CurrencySerializer, 
-                        LanguageSerializer, DesignationSerializer, CategorySerializer)
+                        LanguageSerializer, DesignationSerializer, CategorySerializer, UniversitySerializer, InstituteSerializer, AcademicYearSerializer)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -540,3 +540,51 @@ class CategoryViewSet(BaseModelViewSet):
         categories = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(categories, many=True)
         return Response(serializer.data)
+    
+class UniversityViewSet(BaseModelViewSet):
+    queryset = UNIVERSITY.objects.all()
+    serializer_class = UniversitySerializer
+
+    def list(self, request, *args, **kwargs):
+        universities = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(universities, many=True)
+        return Response(serializer.data)
+
+class InstituteViewSet(BaseModelViewSet):
+    queryset = INSTITUTE.objects.all()
+    serializer_class = InstituteSerializer
+
+    def list(self, request, *args, **kwargs):
+        university_id = request.query_params.get('university_id', None)
+        
+        # Filter institutes by IS_ACTIVE and optionally by university_id
+        if university_id:
+            institutes = self.queryset.filter(IS_ACTIVE=True, UNIVERSITY_id=university_id)
+        else:
+            institutes = self.queryset.filter(IS_ACTIVE=True)
+        
+        serializer = self.get_serializer(institutes, many=True)
+        return Response(serializer.data)
+    
+# class InstituteSoftDeleteView(APIView):
+#     def patch(self, request, pk):
+#         try:
+#             institute = Institute.objects.get(pk=pk)
+#             institute.is_deleted = True
+#             institute.save()
+#             return Response({"message": "Institute marked as deleted"}, status=status.HTTP_200_OK)
+#         except Institute.DoesNotExist:
+#             return Response({"message": "Institute not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+class AcademicYearViewSet(BaseModelViewSet):
+    queryset = ACADEMIC_YEAR.objects.all()
+    serializer_class = AcademicYearSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

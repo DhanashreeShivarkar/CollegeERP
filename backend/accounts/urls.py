@@ -10,6 +10,9 @@ router.register(r'master/currencies', views.CurrencyViewSet, basename='currency'
 router.register(r'master/languages', views.LanguageViewSet, basename='language')
 router.register(r'master/designations', views.DesignationViewSet, basename='designation')
 router.register(r'master/categories', views.CategoryViewSet, basename='category')
+router.register(r'master/universities', views.UniversityViewSet, basename='university')
+router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
+router.register(r'master/academic-years', views.AcademicYearViewSet, basename='academic-year')
 
 app_name = 'accounts'
 
@@ -22,4 +25,5 @@ urlpatterns = [
     path('auth/verify-reset-otp/', views.VerifyResetOTPView.as_view(), name='verify-reset-otp'),
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
     path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
+    path('api/master/academic-years', include(router.urls)),
 ]
