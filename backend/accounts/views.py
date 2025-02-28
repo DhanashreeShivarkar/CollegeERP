@@ -558,7 +558,12 @@ class InstituteViewSet(BaseModelViewSet):
     serializer_class = InstituteSerializer
 
     def list(self, request, *args, **kwargs):
+        university_id = request.GET.get("university_id")  # Get university_id from query params
         institutes = self.queryset.filter(IS_ACTIVE=True)
+
+        if university_id:
+            institutes = institutes.filter(UNIVERSITY=university_id)  # Apply filtering
+
         serializer = self.get_serializer(institutes, many=True)
         return Response(serializer.data)
    
@@ -590,3 +595,31 @@ class ProgramListCreateView(BaseModelViewSet):
             {"error": serializer.errors}, 
             status=status.HTTP_400_BAD_REQUEST
         )
+        
+from django.http import JsonResponse
+from django.views import View
+
+from django.http import JsonResponse
+from django.views import View
+
+class ProgramTableListView(View):
+    def get(self, request):
+        program_master = [  # ✅ Fixed variable name (no hyphen)
+            {"name": "program", "display_name": "Program", "api_url": "http://localhost:8000/api/master/program/"},
+            {"name": "BRANCH_MASTER", "display_name": "Branch"},
+            {"name": "YEAR_MASTER", "display_name": "Year"},
+            {"name": "SEMESTER_MASTER", "display_name": "Semester"},
+            {"name": "COURSE_MASTER", "display_name": "Course"},
+        ]
+        return JsonResponse(program_master, safe=False)  # ✅ Fixed variable reference
+
+from rest_framework import viewsets
+from .models import BRANCH
+from .serializers import BranchSerializer
+
+class BranchListCreateView(viewsets.ModelViewSet):
+    queryset = BRANCH.objects.all()
+    serializer_class = BranchSerializer
+    
+
+

@@ -105,5 +105,13 @@ class ProgramSerializer(serializers.ModelSerializer):
         fields = [
     'PROGRAM_ID', 'INSTITUTE', 'NAME', 'CODE', 
     'DURATION_YEARS', 'LEVEL', 'TYPE', 'DESCRIPTION',
-    'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
+    'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY',
 ]
+        
+from rest_framework import serializers
+from .models import BRANCH
+
+class BranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BRANCH
+        fields = '__all__'
