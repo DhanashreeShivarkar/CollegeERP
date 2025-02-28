@@ -621,6 +621,7 @@ class PROGRAM(AuditModel):
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
     CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
     UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
+   
 
     class Meta:
         db_table = 'PROGRAMS'

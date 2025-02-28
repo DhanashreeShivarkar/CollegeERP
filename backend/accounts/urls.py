@@ -14,6 +14,7 @@ router.register(r'master/categories', views.CategoryViewSet, basename='category'
 router.register(r'master/universities', views.UniversityViewSet, basename='university')
 router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
 router.register(r'master/program', views.ProgramListCreateView, basename='program')
+router.register(r'master/branch', views.BranchListCreateView, basename='branch')
 
 app_name = 'accounts'
 
@@ -26,4 +27,6 @@ urlpatterns = [
     path('auth/verify-reset-otp/', views.VerifyResetOTPView.as_view(), name='verify-reset-otp'),
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
     path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
+    path('api/program-master/', views.ProgramTableListView.as_view(), name='program-master'),
+
 ]
