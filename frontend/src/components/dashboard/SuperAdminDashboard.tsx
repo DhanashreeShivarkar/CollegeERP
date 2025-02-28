@@ -10,7 +10,7 @@ import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
 import EmployeeTypeEntry from "../Employee/employeeTypeEntry";
 import NameEntryForm from "../CourseMaster/ProgramEntryForm";
 import ProgramTable from "../CourseMaster/Programtable";
-import ProgramList from "../CourseMaster/ProgramList";
+
 
 
 const DashboardHome = () => (
