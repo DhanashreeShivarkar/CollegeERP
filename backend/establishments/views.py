@@ -1,10 +1,14 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER
-from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer
+from django.core.mail import send_mail
+from django.conf import settings
+from utils.id_generators import generate_employee_id, generate_password
+from accounts.models import CustomUser, DESIGNATION
+from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER
+from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer, EmployeeMasterSerializer
 import logging
 from django.utils import timezone
 
@@ -39,7 +43,7 @@ class BaseMasterViewSet(viewsets.ModelViewSet):
 
     def get_username_from_request(self):
         auth_header = self.request.headers.get('Authorization', '')
-        if auth_header.startswith('Username '):
+        if (auth_header.startswith('Username ')):
             return auth_header.split(' ')[1]
         return 'SYSTEM'
 
@@ -103,3 +107,107 @@ class ShiftMasterViewSet(BaseMasterViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(IS_DELETED=False)
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    serializer_class = EmployeeMasterSerializer
+    queryset = EMPLOYEE_MASTER.objects.filter(IS_DELETED=False)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            logger.info("=== Starting Employee Creation Process ===")
+            
+            # 1. Generate employee ID
+            designation_id = request.data.get('DESIGNATION')
+            designation_obj = DESIGNATION.objects.get(DESIGNATION_ID=designation_id)
+            employee_id = generate_employee_id(designation_obj.NAME)
+            password = generate_password(8)
+            
+            logger.info(f"Generated employee ID: {employee_id}")
+
+            # 2. Create employee data
+            employee_data = request.data.copy()
+            employee_data._mutable = True
+            employee_data['EMPLOYEE_ID'] = employee_id
+            employee_data['IS_ACTIVE'] = 'YES'
+            employee_data._mutable = False
+
+            # Debug log
+            logger.debug("Employee data to save:")
+            logger.debug(employee_data)
+
+            # 3. Validate data
+            serializer = self.get_serializer(data=employee_data)
+            if not serializer.is_valid():
+                logger.error("Validation errors:")
+                logger.error(serializer.errors)
+                return Response({
+                    'error': 'Validation failed',
+                    'details': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # 4. Save employee
+            try:
+                # Use serializer.save() instead of objects.create()
+                employee = serializer.save()
+                logger.info(f"Employee created successfully with ID: {employee.EMPLOYEE_ID}")
+            except Exception as emp_error:
+                logger.error(f"Error saving employee: {str(emp_error)}")
+                raise
+
+            # 5. Create user
+            try:
+                username = request.data.get('EMAIL').split('@')[0]
+                user = CustomUser.objects.create(
+                    USER_ID=employee_id,
+                    USERNAME=username,
+                    EMAIL=request.data.get('EMAIL'),
+                    PASSWORD=password,
+                    IS_ACTIVE=True,
+                    IS_STAFF=False,
+                    IS_SUPERUSER=False,
+                    DESIGNATION=designation_obj,
+                    FIRST_NAME=request.data.get('EMP_NAME')
+                )
+                logger.info(f"User created with ID: {user.USER_ID}")
+            except Exception as user_error:
+                employee.delete()
+                logger.error(f"User creation failed: {str(user_error)}")
+                raise
+
+            # 5. Send welcome email
+            email_subject = "Your College ERP Account Credentials"
+            email_message = f"""
+            Dear {request.data.get('EMP_NAME')},
+
+            Your College ERP account has been created. Here are your login credentials:
+
+            Employee ID: {employee_id}
+            Username: {user.USERNAME}
+            Password: {password}
+
+            Please change your password after first login.
+
+            Best regards,
+            College ERP Team
+            """
+
+            send_mail(
+                email_subject,
+                email_message,
+                settings.EMAIL_HOST_USER,
+                [user.EMAIL],
+                fail_silently=False,
+            )
+
+            return Response({
+                'message': 'Employee and user account created successfully',
+                'employee_id': employee_id,
+                'username': username
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error(f"Error in create process: {str(e)}", exc_info=True)
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
