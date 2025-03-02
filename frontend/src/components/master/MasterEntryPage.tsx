@@ -35,7 +35,7 @@ const MasterEntryPage: React.FC = () => {
 
   const handleTableChange = (value: string) => {
     setSelectedTable(value);
-    navigate(`/master/${value}`);
+    navigate(`../master/${value}`); // Updated to use relative path
   };
 
   const renderCreateForm = () => {
