@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)  # Add this line
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM  # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH # Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -20,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer ,BranchSerializer# Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -622,7 +622,12 @@ class InstituteViewSet(BaseModelViewSet):
     serializer_class = InstituteSerializer
 
     def list(self, request, *args, **kwargs):
+        university_id = request.GET.get("university_id")  # Get university_id from query params
         institutes = self.queryset.filter(IS_ACTIVE=True)
+
+        if university_id:
+            institutes = institutes.filter(UNIVERSITY=university_id)  # Apply filtering
+
         serializer = self.get_serializer(institutes, many=True)
         return Response(serializer.data)
    
@@ -657,3 +662,29 @@ class ProgramListCreateView(BaseModelViewSet):
             {"error": serializer.errors}, 
             status=status.HTTP_400_BAD_REQUEST
         )
+        
+from django.http import JsonResponse
+from django.views import View
+
+from django.http import JsonResponse
+from django.views import View
+
+class ProgramTableListView(View):
+    def get(self, request):
+        program_master = [  # ✅ Fixed variable name (no hyphen)
+            {"name": "program", "display_name": "Program", "api_url": "http://localhost:8000/api/master/program/"},
+            {"name": "BRANCH_MASTER", "display_name": "Branch"},
+            {"name": "YEAR_MASTER", "display_name": "Year"},
+            {"name": "SEMESTER_MASTER", "display_name": "Semester"},
+            {"name": "COURSE_MASTER", "display_name": "Course"},
+        ]
+        return JsonResponse(program_master, safe=False)  # ✅ Fixed variable reference
+
+
+
+class BranchListCreateView(BaseModelViewSet):
+    queryset = BRANCH.objects.all()
+    serializer_class = BranchSerializer
+    
+
+
