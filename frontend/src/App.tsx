@@ -110,7 +110,7 @@ const App = () => {
 
             {/* Admin Routes */}
             <Route
-              path="/admin-dashboard/*"
+              path="/admin-dashboard"
               element={
                 isAuthorized(ROLES.ADMIN) ? (
                   <AdminDashboard user={user} />
@@ -122,7 +122,7 @@ const App = () => {
 
             {/* Separate routes for Admin and Superadmin */}
             <Route
-              path="/superadmin-dashboard"
+              path="/superadmin-dashboard/*" // Add the * to handle nested routes
               element={
                 isAuthorized(ROLES.SUPERADMIN) ? (
                   <SuperAdminDashboard user={user} />

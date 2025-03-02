@@ -13,7 +13,6 @@ import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
 import ProgramList from "../CourseMaster/ProgramList";
 
-
 const DashboardHome = () => (
   <div className="container-fluid p-4">
     <h2>Welcome to Admin Dashboard</h2>
