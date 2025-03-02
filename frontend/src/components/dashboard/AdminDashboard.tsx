@@ -52,8 +52,9 @@ import {
   Science,
   SportsEsports,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
+import MasterEntryPage from '../master/MasterEntryPage';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -324,6 +325,10 @@ const AdminDashboard = ({ user }: any) => {
           overflow: "hidden",
         }}
       >
+        <Routes>
+          <Route path="master/:tableName" element={<MasterEntryPage />} />
+          {/* Add other admin routes here */}
+        </Routes>
         {renderContent()}
         <Box
           component="footer"

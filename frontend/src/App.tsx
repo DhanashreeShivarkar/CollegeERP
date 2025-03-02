@@ -110,7 +110,7 @@ const App = () => {
 
             {/* Admin Routes */}
             <Route
-              path="/admin-dashboard"
+              path="/admin-dashboard/*"
               element={
                 isAuthorized(ROLES.ADMIN) ? (
                   <AdminDashboard user={user} />
