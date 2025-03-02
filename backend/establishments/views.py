@@ -117,7 +117,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         try:
             logger.info("=== Starting Employee Creation Process ===")
             
-            # 1. Generate employee ID
+            # 1. Generate employee ID and password
             designation_id = request.data.get('DESIGNATION')
             designation_obj = DESIGNATION.objects.get(DESIGNATION_ID=designation_id)
             employee_id = generate_employee_id(designation_obj.NAME)
@@ -132,11 +132,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             employee_data['IS_ACTIVE'] = 'YES'
             employee_data._mutable = False
 
-            # Debug log
-            logger.debug("Employee data to save:")
-            logger.debug(employee_data)
-
-            # 3. Validate data
+            # 3. Validate and save employee
             serializer = self.get_serializer(data=employee_data)
             if not serializer.is_valid():
                 logger.error("Validation errors:")
@@ -146,29 +142,25 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     'details': serializer.errors
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # 4. Save employee
-            try:
-                # Use serializer.save() instead of objects.create()
-                employee = serializer.save()
-                logger.info(f"Employee created successfully with ID: {employee.EMPLOYEE_ID}")
-            except Exception as emp_error:
-                logger.error(f"Error saving employee: {str(emp_error)}")
-                raise
+            employee = serializer.save()
 
-            # 5. Create user
+            # 4. Create user with proper password hashing
             try:
                 username = request.data.get('EMAIL').split('@')[0]
                 user = CustomUser.objects.create(
                     USER_ID=employee_id,
                     USERNAME=username,
                     EMAIL=request.data.get('EMAIL'),
-                    PASSWORD=password,
                     IS_ACTIVE=True,
                     IS_STAFF=False,
                     IS_SUPERUSER=False,
                     DESIGNATION=designation_obj,
                     FIRST_NAME=request.data.get('EMP_NAME')
                 )
+                # Properly set hashed password
+                user.set_password(password)  # This will properly hash the password
+                user.save()
+                
                 logger.info(f"User created with ID: {user.USER_ID}")
             except Exception as user_error:
                 employee.delete()
