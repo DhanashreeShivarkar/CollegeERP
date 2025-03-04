@@ -32,6 +32,8 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import { masterService } from "../../api/masterService";
 import { instituteService } from "../../api/instituteService";
 import { employeeService } from "../../api/MasterEmployeeService";
+import SearchEmployeeDialog from "./SearchEmployeeDialog";
+import SearchIcon from "@mui/icons-material/Search";
 
 const CreateEmployee = () => {
   const initialFormState: EmployeeFormData = {
@@ -90,6 +92,15 @@ const CreateEmployee = () => {
     message: "",
     severity: "success" as "success" | "error",
   });
+
+  const [openSearch, setOpenSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchInstitutes = async () => {
@@ -258,6 +269,21 @@ const CreateEmployee = () => {
     }
   };
 
+  const resetForm = () => {
+    // Reset all form fields to initial state
+    setFormData(initialFormState);
+    setPhotoPreview(null);
+    setIsEditing(false);
+    setCurrentEmployeeId(null);
+    setSameAsPermAddress(false); // Reset address checkbox
+
+    // Reset any touched/modified form fields
+    const formElements = document.querySelector("form");
+    if (formElements) {
+      formElements.reset();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -345,17 +371,45 @@ const CreateEmployee = () => {
       // Log data being sent
       console.log("Sending data:", Object.fromEntries(formDataObj));
 
-      const response = await employeeService.createEmployee(formDataObj);
+      let response;
+      if (isEditing && currentEmployeeId) {
+        // Only include fields that have changed
+        const currentEmployee = await employeeService.getEmployee(
+          currentEmployeeId
+        );
+        const changedFields = {};
 
-      if (response.data) {
-        setNotification({
-          open: true,
-          message: `Employee created successfully! Employee ID: ${response.data.employee_id}`,
-          severity: "success",
+        // Add only changed fields to formData
+        Object.entries(formData).forEach(([key, value]) => {
+          const apiKey = key.toUpperCase();
+          if (value !== currentEmployee.data[apiKey]) {
+            formDataObj.append(apiKey, value);
+          }
         });
-        setFormData(initialFormState);
-        setPhotoPreview(null);
+
+        // Always include profile image if selected
+        if (formData.profileImage) {
+          formDataObj.append("PROFILE_IMAGE", formData.profileImage);
+        }
+
+        response = await employeeService.updateEmployee(
+          currentEmployeeId,
+          formDataObj
+        );
+      } else {
+        response = await employeeService.createEmployee(formDataObj);
       }
+
+      setNotification({
+        open: true,
+        message: isEditing
+          ? "Employee updated successfully!"
+          : `Employee created successfully! Employee ID: ${response.data.employee_id}`,
+        severity: "success",
+      });
+
+      // Call resetForm after successful submission
+      resetForm();
     } catch (error: any) {
       console.error("Submit Error:", error);
       const errorMessage =
@@ -386,6 +440,103 @@ const CreateEmployee = () => {
     </span>
   );
 
+  const handleSearch = async (query: string) => {
+    setSearchLoading(true);
+    try {
+      const response = await employeeService.searchEmployees(query);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error("Error searching employees:", error);
+      setNotification({
+        open: true,
+        message: "Error searching employees",
+        severity: "error",
+      });
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSelectEmployee = async (employeeId: string) => {
+    try {
+      const response = await employeeService.getEmployee(employeeId);
+      const employeeData = response.data;
+
+      // Map API response fields to form data fields
+      const mappedFormData = {
+        institute: employeeData.INSTITUTE,
+        department: employeeData.DEPARTMENT,
+        shortCode: employeeData.SHORT_CODE || "",
+        empType: employeeData.EMP_TYPE || "",
+        empName: employeeData.EMP_NAME,
+        fatherName: employeeData.FATHER_NAME || "",
+        motherName: employeeData.MOTHER_NAME || "",
+        dateOfBirth: employeeData.DATE_OF_BIRTH
+          ? new Date(employeeData.DATE_OF_BIRTH)
+          : null,
+        designation: employeeData.DESIGNATION,
+        permanentAddress: employeeData.PERMANENT_ADDRESS || "",
+        email: employeeData.EMAIL,
+        localAddress: employeeData.LOCAL_ADDRESS || "",
+        panNo: employeeData.PAN_NO || "",
+        permanentCity: employeeData.PERMANENT_CITY || "",
+        permanentPinNo: employeeData.PERMANENT_PIN || "",
+        drivingLicNo: employeeData.DRIVING_LICENSE_NO || "",
+        sex: employeeData.SEX || "",
+        status: employeeData.STATUS || "",
+        maritalStatus: employeeData.MARITAL_STATUS || "",
+        dateOfJoin: employeeData.DATE_OF_JOIN
+          ? new Date(employeeData.DATE_OF_JOIN)
+          : null,
+        localCity: employeeData.LOCAL_CITY || "",
+        localPinNo: employeeData.LOCAL_PIN || "",
+        position: employeeData.POSITION || "",
+        shift: employeeData.SHIFT || "",
+        bloodGroup: employeeData.BLOOD_GROUP || "",
+        active: employeeData.IS_ACTIVE || "yes",
+        phoneNo: employeeData.PHONE_NO || "",
+        mobileNo: employeeData.MOBILE_NO || "",
+        category: employeeData.CATEGORY,
+        bankAccountNo: employeeData.BANK_ACCOUNT_NO || "",
+        unaNo: employeeData.UAN_NO || "",
+        profileImage: null, // Reset profile image since we'll load it separately
+      };
+
+      setFormData(mappedFormData);
+
+      // Handle profile image if exists
+      if (employeeData.PROFILE_IMAGE) {
+        setPhotoPreview(employeeData.PROFILE_IMAGE);
+      }
+
+      setOpenSearch(false);
+      setIsEditing(true);
+      setCurrentEmployeeId(employeeId);
+
+      // Show notification
+      setNotification({
+        open: true,
+        message: "Employee data loaded for editing",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error fetching employee details:", error);
+      setNotification({
+        open: true,
+        message: "Error fetching employee details",
+        severity: "error",
+      });
+    }
+  };
+
+  // Add this helper to determine button text
+  const getSubmitButtonText = () => {
+    if (isEditing) {
+      return "Update Employee Details";
+    }
+    return "Save Employee Details";
+  };
+
   return (
     <Paper elevation={3} sx={{ p: 0.5, m: 0.25, maxHeight: "98vh" }}>
       <Snackbar
@@ -411,9 +562,31 @@ const CreateEmployee = () => {
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                Employee Details
-              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  {isEditing
+                    ? `Edit Employee: ${currentEmployeeId}`
+                    : "Create Employee"}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<SearchIcon />}
+                  size="small"
+                  onClick={() => setOpenSearch(true)}
+                >
+                  Search Employee
+                </Button>
+                {isEditing && (
+                  <Button
+                    variant="outlined"
+                    color="info"
+                    size="small"
+                    onClick={resetForm}
+                  >
+                    Create New Employee
+                  </Button>
+                )}
+              </Stack>
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Avatar
                   src={photoPreview || undefined}
@@ -834,19 +1007,44 @@ const CreateEmployee = () => {
           <Grid
             item
             xs={12}
-            sx={{ display: "flex", justifyContent: "flex-end" }}
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+              mt: 2,
+            }}
           >
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={resetForm}
+              >
+                Cancel Edit
+              </Button>
+            )}
             <Button
               type="submit"
               variant="contained"
+              color={isEditing ? "primary" : "primary"}
               size="small"
-              sx={{ mt: 0.5 }}
+              sx={{ minWidth: 150 }}
             >
-              Save Employee Details
+              {getSubmitButtonText()}
             </Button>
           </Grid>
         </Grid>
       </form>
+      <SearchEmployeeDialog
+        open={openSearch}
+        onClose={() => setOpenSearch(false)}
+        onSelect={handleSelectEmployee}
+        onSearch={handleSearch}
+        searchResults={searchResults}
+        loading={searchLoading}
+      />
     </Paper>
   );
 };
