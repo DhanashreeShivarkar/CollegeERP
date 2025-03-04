@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 interface DepartmentFormData {
   DEPARTMENT_ID?: number;
-  INSTITUTE: string;
+  INSTITUTE_CODE: string;  // Changed from INSTITUTE
   NAME: string;
   CODE: string;
   IS_ACTIVE: boolean;
@@ -17,7 +17,7 @@ interface DepartmentFormData {
 const DepartmentEntry: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<DepartmentFormData>({
-    INSTITUTE: "",
+    INSTITUTE_CODE: "",  // Changed from INSTITUTE
     NAME: "",
     CODE: "",
     IS_ACTIVE: true,
@@ -91,7 +91,7 @@ const DepartmentEntry: React.FC = () => {
 
       if (response.status === 201) {
         setFormData({
-          INSTITUTE: "",
+          INSTITUTE_CODE: "",  // Changed from INSTITUTE
           NAME: "",
           CODE: "",
           IS_ACTIVE: true,
@@ -144,8 +144,8 @@ const DepartmentEntry: React.FC = () => {
               <Form.Group>
                 <Form.Label>Institute</Form.Label>
                 <Form.Select
-                  name="INSTITUTE"
-                  value={formData.INSTITUTE}
+                  name="INSTITUTE_CODE"  // Changed from INSTITUTE
+                  value={formData.INSTITUTE_CODE}  // Changed from INSTITUTE
                   onChange={handleChange}
                   required
                 >
@@ -153,7 +153,7 @@ const DepartmentEntry: React.FC = () => {
                   {institutes.map((institute) => (
                     <option
                       key={institute.INSTITUTE_ID}
-                      value={institute.INSTITUTE_ID}
+                      value={institute.CODE}  // Changed to use CODE instead of ID
                     >
                       {institute.NAME}
                     </option>

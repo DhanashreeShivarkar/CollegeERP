@@ -633,11 +633,12 @@ class PROGRAM(AuditModel):
     
 class DEPARTMENT(AuditModel):
     DEPARTMENT_ID = models.AutoField(primary_key=True, db_column='DEPARTMENT_ID')
-    INSTITUTE = models.ForeignKey(
-        INSTITUTE,
-        on_delete=models.PROTECT,
-        db_column='INSTITUTE_ID',
-        related_name='departments'
+    INSTITUTE_CODE = models.CharField(  # Add default and allow null temporarily
+        max_length=50,
+        db_column='INSTITUTE_CODE',
+        default='DEFAULT',  # Add this
+        null=True,         # Add this
+        blank=True        # Add this
     )
     NAME = models.CharField(max_length=255, db_column='NAME')
     CODE = models.CharField(max_length=20, unique=True, db_column='CODE')
