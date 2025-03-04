@@ -692,43 +692,51 @@ class BranchListCreateView(BaseModelViewSet):
 #         self.perform_create(serializer)
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
 class YearListCreateView(BaseModelViewSet):
     queryset = YEAR.objects.all()
     serializer_class = YearSerializer
-    
-    
-    
-def create(self, request, *args, **kwargs):
-    print("Received Data:", request.data)  # 🟢 Debugging step
-    
-    serializer = self.get_serializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(
-            {"message": "Year created successfully!", "data": serializer.data},
-            status=status.HTTP_201_CREATED,
-        )
 
-    print("Serializer Errors:", serializer.errors)  # 🔴 Debugging step
-    return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-def get_queryset(self):
-        queryset = super().get_queryset()
-        year_id = self.request.query_params.get("year_id")
-        if year_id:
-            queryset = queryset.filter(YEAR__id=year_id)
+    def get_queryset(self):
+        queryset = super().get_queryset()  # ✅ Correct indentation
+        branch_id = self.request.query_params.get("branch")  
+        if branch_id:
+            queryset = queryset.filter(branch_id=branch_id)  # ✅ Ensure field name matches model
         return queryset
 
-def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
 
-        if not serializer.is_valid():
-            print("❌ Validation Errors:", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+# def create(self, request, *args, **kwargs):
+#     print("Received Data:", request.data)  # 🟢 Debugging step
+    
+#     serializer = self.get_serializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save()
+#         return Response(
+#             {"message": "Year created successfully!", "data": serializer.data},
+#             status=status.HTTP_201_CREATED,
+#         )
 
-        self.perform_update(serializer)
-        return Response(serializer.data)
+#     print("Serializer Errors:", serializer.errors)  # 🔴 Debugging step
+#     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+# def get_queryset(self):
+#         queryset = super().get_queryset()
+#         year_id = self.request.query_params.get("year_id")
+#         if year_id:
+#             queryset = queryset.filter(YEAR__id=year_id)
+#         return queryset
+
+# def update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+#         if not serializer.is_valid():
+#             print("❌ Validation Errors:", serializer.errors)
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         self.perform_update(serializer)
+#         return Response(serializer.data)
 
     # def create(self, request, *args, **kwargs):
     #     # Extract only the required fields
@@ -753,24 +761,39 @@ def update(self, request, *args, **kwargs):
         # )
     
 
-class SemesterListCreateView(BaseModelViewSet):
-    queryset = SEMESTER.objects.all()
+class SemesterListCreateView(viewsets.ModelViewSet):
+    """
+    API endpoint for listing and creating Semester records.
+    """
+    queryset = SEMESTER.objects.all().order_by("YEAR", "SEMESTER")  # Sorting by year and semester
     serializer_class = SemesterSerializer
+   
+
+    def create(self, request, *args, **kwargs):
+        """
+        Custom create method to handle extra validation or data processing.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(CREATED_BY=request.user, UPDATED_BY=request.user)
+            return Response({"message": "Semester created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-# class CourseListCreateView(BaseModelViewSet):
-#     queryset = COURSE.objects.all()
-#     serializer_class = CourseSerializer
-from django.http import JsonResponse
-from django.db import connection
 
-def get_semesters(request):
-    query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        columns = [col[0] for col in cursor.description]
-        data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    return JsonResponse(data, safe=False)
+# # class CourseListCreateView(BaseModelViewSet):
+# #     queryset = COURSE.objects.all()
+# #     serializer_class = CourseSerializer
+# from django.http import JsonResponse
+# from django.db import connection
+
+# def get_semesters(request):
+#     query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
+#     with connection.cursor() as cursor:
+#         cursor.execute(query)
+#         columns = [col[0] for col in cursor.description]
+#         data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+#     return JsonResponse(data, safe=False)
 
 

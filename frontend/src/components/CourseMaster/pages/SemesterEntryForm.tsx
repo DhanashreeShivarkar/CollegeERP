@@ -76,14 +76,19 @@ const SemesterEntryForm = () => {
   };
 
   const fetchYears = async (branchId: number) => {
-    setYears([]);
+    console.log("Fetching years for branch:", branchId); // Debug log
+    setYears([]); 
+  
     try {
       const response = await axiosInstance.get(`/api/master/year/?branch=${branchId}`);
+      console.log("API Response:", response.data); // Debug log
+  
       if (response.status === 200) setYears(response.data);
     } catch (error) {
       console.error("Error fetching years:", error);
     }
   };
+  
 
   const onSubmit: SubmitHandler<SemesterEntryFormInputs> = async (data) => {
     try {
