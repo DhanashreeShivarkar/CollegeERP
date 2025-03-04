@@ -11,6 +11,9 @@ from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER
 from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer, EmployeeMasterSerializer
 import logging
 from django.utils import timezone
+from django.db.models import Q
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +203,97 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.error(f"Error in create process: {str(e)}", exc_info=True)
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = request.query_params.get('query', '')
+        if not query:
+            return Response({'error': 'Search query is required'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+
+        # Fix the Q objects syntax
+        employees = EMPLOYEE_MASTER.objects.filter(
+            Q(EMPLOYEE_ID__icontains=query) |
+            Q(EMP_NAME__icontains=query) |
+            Q(DEPARTMENT__NAME__icontains=query) |
+            Q(DESIGNATION__NAME__icontains=query),
+            IS_DELETED=False
+        ).select_related('DEPARTMENT', 'DESIGNATION')[:10]
+
+        data = [{
+            'EMPLOYEE_ID': emp.EMPLOYEE_ID,
+            'EMP_NAME': emp.EMP_NAME,
+            'DEPARTMENT_NAME': emp.DEPARTMENT.NAME,
+            'DESIGNATION_NAME': emp.DESIGNATION.NAME,
+        } for emp in employees]
+
+        return Response(data)
+
+    def retrieve(self, request, pk=None):
+        try:
+            employee = get_object_or_404(EMPLOYEE_MASTER, EMPLOYEE_ID=pk, IS_DELETED=False)
+            serializer = self.get_serializer(employee)
+            
+            # Transform dates to string format if needed
+            data = serializer.data
+            if data.get('DATE_OF_BIRTH'):
+                data['DATE_OF_BIRTH'] = employee.DATE_OF_BIRTH.strftime('%Y-%m-%d')
+            if data.get('DATE_OF_JOIN'):
+                data['DATE_OF_JOIN'] = employee.DATE_OF_JOIN.strftime('%Y-%m-%d')
+
+            return Response(data)
+        except Exception as e:
+            return Response(
+                {'error': f'Error retrieving employee: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def update(self, request, *args, **kwargs):
+        try:
+            employee = self.get_object()
+            logger.info(f"Updating employee: {employee.EMPLOYEE_ID}")
+
+            # Create a mutable copy of the request data
+            data = request.data.copy()
+            
+            # Remove unique fields if they haven't changed
+            if 'EMAIL' in data and data['EMAIL'] == employee.EMAIL:
+                data.pop('EMAIL')
+            if 'MOBILE_NO' in data and data['MOBILE_NO'] == employee.MOBILE_NO:
+                data.pop('MOBILE_NO')
+
+            # Update employee data
+            serializer = self.get_serializer(
+                employee,
+                data=data,
+                partial=True  # Allow partial updates
+            )
+            
+            if not serializer.is_valid():
+                logger.error("Update validation errors:")
+                logger.error(serializer.errors)
+                return Response({
+                    'error': 'Validation failed',
+                    'details': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            updated_employee = serializer.save()
+
+            # Handle profile image update if provided
+            if 'PROFILE_IMAGE' in request.FILES:
+                updated_employee.PROFILE_IMAGE = request.FILES['PROFILE_IMAGE']
+                updated_employee.save()
+
+            return Response({
+                'message': 'Employee updated successfully',
+                'data': serializer.data
+            })
+
+        except Exception as e:
+            logger.error(f"Error updating employee: {str(e)}", exc_info=True)
             return Response({
                 'error': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)

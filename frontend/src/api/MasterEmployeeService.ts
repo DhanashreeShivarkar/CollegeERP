@@ -1,5 +1,7 @@
 import axios from "./axios";
 
+const API_URL = "http://localhost:8000/api";
+
 export const employeeService = {
   createEmployee: async (formData: FormData) => {
     try {
@@ -38,6 +40,46 @@ export const employeeService = {
       });
       throw error;
     }
+  },
+
+  updateEmployee: async (employeeId: string, formData: FormData) => {
+    try {
+      const response = await axios.patch(
+        // Changed from put to patch
+        `/api/establishment/employees/${employeeId}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+          transformRequest: [
+            function (data) {
+              return data;
+            },
+          ],
+          responseType: "json",
+        }
+      );
+      return response;
+    } catch (error: any) {
+      console.error("API Error Details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
+  },
+
+  searchEmployees: (query: string) => {
+    return axios.get(`${API_URL}/establishment/employees/search/`, {
+      params: { query },
+    });
+  },
+
+  getEmployee: (employeeId: string) => {
+    return axios.get(`${API_URL}/establishment/employees/${employeeId}/`);
   },
 };
 

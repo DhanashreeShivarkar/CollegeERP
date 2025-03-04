@@ -157,10 +157,10 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Create specific paths for employee profile photos
-EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_photo')
+# Create specific path for employee profile photos
+EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_Photo')
 
-# Create directories if they don't exist
+# Create directory if it doesn't exist
 os.makedirs(EMPLOYEE_PROFILE_PATH, exist_ok=True)
 
 # Default primary key field type
