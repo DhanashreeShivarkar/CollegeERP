@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axios";
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import EditModal from "../../components/CourseMaster/Editmodal";// ✅ Import the modal
-
-
+import { Button, Table } from "react-bootstrap";
+import { Paper } from "@mui/material";
+import EditModal from "../../components/CourseMaster/Editmodal"; // ✅ Import the modal
 
 interface Branch {
   BRANCH_ID: number;
-  UNIVERSITY: string;
-  INSTITUTE: string;
   PROGRAM: string;
   NAME: string;
   CODE: string;
-  DESCRIPTION: string;
   IS_ACTIVE: boolean;
 }
 
@@ -76,54 +72,50 @@ const BranchTableView: React.FC = () => {
       await axiosInstance.delete(`/api/master/branch/${branchId}/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Remove deleted branch from the state without re-fetching
+      setBranches((prevBranches) => prevBranches.filter(branch => branch.BRANCH_ID !== branchId));
+
       alert("Branch deleted successfully!");
-      fetchBranches();
     } catch (error) {
       console.error("Error deleting branch:", error);
     }
   };
 
   return (
-    <TableContainer component={Paper} elevation={3}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Branch Name</TableCell>
-            <TableCell>Code</TableCell>
-            <TableCell>University</TableCell>
-            <TableCell>Institute</TableCell>
-            <TableCell>Program</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Active</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+    <Paper elevation={3} style={{ padding: "20px" }}>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Branch Name</th>
+            <th>Code</th>
+            <th>Program</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
           {branches.map((branch) => (
-            <TableRow key={branch.BRANCH_ID}>
-              <TableCell>{branch.NAME}</TableCell>
-              <TableCell>{branch.CODE}</TableCell>
-              <TableCell>{branch.UNIVERSITY}</TableCell>
-              <TableCell>{branch.INSTITUTE}</TableCell>
-              <TableCell>{branch.PROGRAM}</TableCell>
-              <TableCell>{branch.DESCRIPTION}</TableCell>
-              <TableCell>{branch.IS_ACTIVE ? "Yes" : "No"}</TableCell>
-              <TableCell>
-                <Button variant="contained" color="primary" onClick={() => handleEdit(branch)}>
+            <tr key={branch.BRANCH_ID}>
+              <td>{branch.NAME}</td>
+              <td>{branch.CODE}</td>
+              <td>{branch.PROGRAM}</td>
+              <td>{branch.IS_ACTIVE ? "Yes" : "No"}</td>
+              <td>
+                <Button variant="primary" onClick={() => handleEdit(branch)}>
                   Edit
                 </Button>
                 <Button
-                  variant="outlined"
-                  color="secondary"
+                  variant="danger"
                   onClick={() => handleDelete(branch.BRANCH_ID)}
                   style={{ marginLeft: "10px" }}
                 >
                   Delete
                 </Button>
-              </TableCell>
-            </TableRow>
+              </td>
+            </tr>
           ))}
-        </TableBody>
+        </tbody>
       </Table>
 
       {editingBranch && (
@@ -135,7 +127,7 @@ const BranchTableView: React.FC = () => {
           title="Branch"
         />
       )}
-    </TableContainer>
+    </Paper>
   );
 };
 

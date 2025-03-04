@@ -7,15 +7,16 @@ import { useNavigate } from "react-router-dom";
 import ProgramEntryForm from "./ProgramEntryForm";
 import CourseEntryForm from "./pages/CourseEntryForm";
 import BranchEntryForm from "./pages/BranchEntryForm";
-// import SemesterEntryForm from "./pages/SemesterEntryForm";
-// import YearEntryForm from "./pages/YearEntryForm";
+import SemesterEntryForm from "./pages/SemesterEntryForm";
+import YearEntryForm from "./pages/YearEntryForm";
 
 import ProgramTableView from "./ProgramTableView";
 import BranchTableView from "./BranchTableView";
 // import CourseList from "./CourseList";
 // import BranchList from "./BranchList";
 // import SemesterList from "./SemesterList";
-// import YearList from "./YearList";
+import YearTableView from "./YearTableView";
+import SemesterTableView from "./SemesterTableView";
 
 const NameEntryForm = () => {
   const [selectedForm, setSelectedForm] = useState<string>("program"); // Default selection
@@ -31,9 +32,11 @@ const NameEntryForm = () => {
         <select onChange={(e) => setSelectedForm(e.target.value)} className="form-control mb-3">
           <option value="program">Program</option>
           <option value="branch">Branch</option>
-          <option value="course">Course</option>
-          <option value="semester">Semester</option>
           <option value="year">Year</option>
+          <option value="semester">Semester</option>
+          <option value="course">Course</option>
+          {/* <option value="semester">Semester</option> */}
+          {/* <option value="year">Year</option> */}
         </select>
 
         {/* Create / View Buttons */}
@@ -60,11 +63,11 @@ const NameEntryForm = () => {
             </div>
             <div className="card-body p-2">
               {selectedForm === "program" && <ProgramEntryForm />}
-              {selectedForm === "course" && <CourseEntryForm />}
+              {/* {selectedForm === "course" && <CourseEntryForm />} */}
               {/* Uncomment when needed */}
               {selectedForm === "branch" && <BranchEntryForm />}
-              {/* {selectedForm === "semester" && <SemesterEntryForm />} */}
-              {/* {selectedForm === "year" && <YearEntryForm />} */}
+              {selectedForm === "semester" && <SemesterEntryForm />}
+              {selectedForm === "year" && <YearEntryForm />}
             </div>
           </div>
         )}
@@ -85,8 +88,8 @@ const NameEntryForm = () => {
               {/* Uncomment when needed */}
               {/* {selectedForm === "course" && <CourseList />} */}
               {selectedForm === "branch" && <BranchTableView />}
-              {/* {selectedForm === "semester" && <SemesterList />} */}
-              {/* {selectedForm === "year" && <YearList />} */}
+              {selectedForm === "semester" && <SemesterTableView />}
+              {selectedForm === "year" && <YearTableView />}
             </div>
           </div>
         )}

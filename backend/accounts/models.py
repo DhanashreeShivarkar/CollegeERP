@@ -672,6 +672,41 @@ class BRANCH(AuditModel):
 
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+    
+class YEAR(AuditModel):
+    YEAR_ID = models.AutoField(primary_key=True, db_column='YEAR_ID')
+    YEAR = models.CharField(max_length=255, db_column='YEAR')
+    BRANCH = models.ForeignKey(
+        BRANCH,
+        on_delete=models.PROTECT,
+        db_column='BRANCH_ID',
+        related_name='years'
+    )
+
+    class Meta:
+        db_table = 'YEARS'
+        verbose_name = 'Year'
+        verbose_name_plural = 'Years'
+
+    def _str_(self):
+        return f"{self.YEAR_ID} - {self.YEAR}"
+
+class SEMESTER(AuditModel):
+    SEMESTER_ID = models.AutoField(primary_key=True, db_column='SEMESTER_ID')
+    SEMESTER = models.CharField(max_length=255, db_column='SEMESTER')
+    YEAR = models.ForeignKey(
+        YEAR, 
+        on_delete=models.PROTECT,
+        db_column='YEAR_ID',
+        related_name='semesters'
+    )
+    class Meta:
+        db_table = 'SEMESTERS'
+        verbose_name = 'Semester'
+        verbose_name_plural = 'Semesters'
+
+    def _str_(self):
+        return f"{self.SEMESTER_ID} - {self.SEMESTER}"
 
 class COUNTRY(AuditModel):
     COUNTRY_ID = models.AutoField(primary_key=True, db_column='COUNTRY_ID')
@@ -793,3 +828,4 @@ class CATEGORY(AuditModel):
 
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+    

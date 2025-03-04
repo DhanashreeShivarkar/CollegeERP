@@ -29,7 +29,8 @@ const EditModal = <T extends Record<string, any>>({ show, onHide, onSave, data, 
     }
   };
 
-  const excludedFields = ["PROGRAM_ID", "CREATED_BY", "INSTITUTE", "DESCRIPTION", "UPDATED_BY", "IS_ACTIVE", 'PROGRAM','BRANCH_ID'];
+  const excludedFields = ["PROGRAM_ID", "CREATED_BY", "INSTITUTE", "DESCRIPTION", "UPDATED_BY", "IS_ACTIVE", "BRANCH_ID","SEMESTER_ID","PROGRAM","BRANCH","YEAR_ID"];
+ 
 
   return (
     <Modal show={show} onHide={onHide} centered>

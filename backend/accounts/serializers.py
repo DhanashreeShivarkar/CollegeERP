@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH, YEAR,SEMESTER
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,3 +116,24 @@ class BranchSerializer(serializers.ModelSerializer):
         'CODE','DESCRIPTION','IS_ACTIVE','CREATED_BY',
         'UPDATED_BY'
         ]
+
+class YearSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YEAR
+        fields =  ['YEAR_ID','YEAR','BRANCH']
+        
+class SemesterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SEMESTER
+        fields = ['SEMESTER_ID','SEMESTER','YEAR'
+        ]
+        
+
+# class CourseSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = COURSE
+#         fields = ['COURSE_ID','SEMESTER_NAME','NAME',
+#         'CODE','CREDITS','THEORY_MARKS','PRACTICAL_MARKS',
+#         'IS_ELECTIVE','IS_ACTIVE','SEMESTER_ID'
+#         ]
+

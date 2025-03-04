@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH,YEAR,SEMESTER # Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer ,BranchSerializer# Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer ,BranchSerializer,YearSerializer,SemesterSerializer# Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -667,8 +667,110 @@ class BranchListCreateView(BaseModelViewSet):
             {"error": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    def list(self, request, *args, **kwargs):
+        program_id = request.GET.get("program_id")  # Get program_id from query params
+        branches = self.queryset.filter(IS_ACTIVE=True)  # Base queryset with active branches
 
+        if program_id:
+            # try:
+                program_id = int(program_id)
+                branches = branches.filter(PROGRAM=program_id)
+        #     except ValueError:
+        #         return Response({"error": "Invalid Program ID"}, status=status.HTTP_400_BAD_REQUEST)
 
+        serializer = self.get_serializer(branches, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
+    
+# class YearlistCreateView(viewsets.ModelViewSet):
+#     queryset = YEAR.objects.all()
+#     serializer_class = YearSerializer
+    
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create(serializer)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class YearListCreateView(BaseModelViewSet):
+    queryset = YEAR.objects.all()
+    serializer_class = YearSerializer
+    
+    
+    
+def create(self, request, *args, **kwargs):
+    print("Received Data:", request.data)  # 🟢 Debugging step
+    
+    serializer = self.get_serializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"message": "Year created successfully!", "data": serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
+
+    print("Serializer Errors:", serializer.errors)  # 🔴 Debugging step
+    return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+def get_queryset(self):
+        queryset = super().get_queryset()
+        year_id = self.request.query_params.get("year_id")
+        if year_id:
+            queryset = queryset.filter(YEAR__id=year_id)
+        return queryset
+
+def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+        if not serializer.is_valid():
+            print("❌ Validation Errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    # def create(self, request, *args, **kwargs):
+    #     # Extract only the required fields
+    #     filtered_data = {
+    #         "YEAR_ID": request.data.get("YEAR_ID"),
+    #         "YEAR": request.data.get("YEAR"),
+    #         "BRANCH": request.data.get("BRANCH"),
+    #     }
+
+    #     serializer = self.get_serializer(data=filtered_data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(
+    #             {"message": "Year created successfully!", "data": serializer.data},
+    #             status=status.HTTP_201_CREATED,
+    #         )
+
+    #     print("Serializer Errors:", serializer.errors)  # Debugging
+    #     return Response(
+    #         {"error": serializer.errors},
+    #         status=status.HTTP_400_BAD_REQUEST,
+        # )
+    
+
+class SemesterListCreateView(BaseModelViewSet):
+    queryset = SEMESTER.objects.all()
+    serializer_class = SemesterSerializer
+
+
+
+# class CourseListCreateView(BaseModelViewSet):
+#     queryset = COURSE.objects.all()
+#     serializer_class = CourseSerializer
+from django.http import JsonResponse
+from django.db import connection
+
+def get_semesters(request):
+    query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        columns = [col[0] for col in cursor.description]
+        data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return JsonResponse(data, safe=False)
 
 
