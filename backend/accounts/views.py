@@ -24,6 +24,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework.permissions import AllowAny
+from django.http import JsonResponse
+from django.db import connection
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -225,10 +227,30 @@ class VerifyOTPView(APIView):
                 # Update login info
                 user.update_login_info(request.META.get('REMOTE_ADDR'))
                 
-                # Generate tokens manually
+                # Store session data
+                session_data = {
+                    'user_id': user.USER_ID,
+                    'username': user.USERNAME,
+                    'email': user.EMAIL,
+                    'is_superuser': user.IS_SUPERUSER,
+                    'designation': {
+                        'code': user.DESIGNATION.CODE,
+                        'name': user.DESIGNATION.NAME,
+                    },
+                    'permissions': user.DESIGNATION.PERMISSIONS,
+                    'last_activity': timezone.now().isoformat(),
+                    'department_id': getattr(user, 'DEPARTMENT_ID', None),
+                    'institute_id': getattr(user, 'INSTITUTE_ID', None)
+                }
+                
+                # Store all session data
+                for key, value in session_data.items():
+                    request.session[key] = value
+                
+                # Generate tokens
                 refresh = RefreshToken()
                 refresh[api_settings.USER_ID_CLAIM] = user.USER_ID
-                refresh['user_id'] = user.USER_ID  # Add custom claims
+                refresh['user_id'] = user.USER_ID
                 refresh['username'] = user.USERNAME
                 refresh['is_superuser'] = user.IS_SUPERUSER
                 
@@ -237,19 +259,7 @@ class VerifyOTPView(APIView):
                     'message': message,
                     'token': str(refresh.access_token),
                     'refresh': str(refresh),
-                    'user': {
-                        'user_id': user.USER_ID,
-                        'username': user.USERNAME,
-                        'email': user.EMAIL,
-                        'designation': {
-                            'code': user.DESIGNATION.CODE,
-                            'name': user.DESIGNATION.NAME,
-                        },
-                        'first_name': user.FIRST_NAME,
-                        'last_name': user.LAST_NAME,
-                        'is_superuser': user.IS_SUPERUSER,
-                        'permissions': user.DESIGNATION.PERMISSIONS
-                    }
+                    'user': session_data
                 }, status=status.HTTP_200_OK)
             
             return Response({
@@ -263,7 +273,7 @@ class VerifyOTPView(APIView):
                 'message': 'Invalid user'
             }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"Token generation error: {str(e)}")
+            logger.error(f"Error in VerifyOTPView: {str(e)}")
             return Response({
                 'status': 'error',
                 'message': 'An error occurred during authentication'
@@ -652,7 +662,36 @@ class ProgramTableListView(View):
 class BranchListCreateView(BaseModelViewSet):
     queryset = BRANCH.objects.all()
     serializer_class = BranchSerializer
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
     
+    def post(self, request):
+        try:
+            # Clear user session
+            request.session.flush()
+            
+            # Blacklist the JWT token if you're using JWT
+            try:
+                refresh_token = request.data.get('refresh_token')
+                if refresh_token:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+            except Exception as e:
+                logger.warning(f"Error blacklisting token: {str(e)}")
+            
+            return Response({
+                'status': 'success',
+                'message': 'Successfully logged out'
+            })
+        except Exception as e:
+            logger.error(f"Error in logout: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': 'Error during logout'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+=======
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -680,17 +719,6 @@ class BranchListCreateView(BaseModelViewSet):
 
         serializer = self.get_serializer(branches, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
-# class YearlistCreateView(viewsets.ModelViewSet):
-#     queryset = YEAR.objects.all()
-#     serializer_class = YearSerializer
-    
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create(serializer)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class YearListCreateView(BaseModelViewSet):
     queryset = YEAR.objects.all()
@@ -702,64 +730,6 @@ class YearListCreateView(BaseModelViewSet):
         if branch_id:
             queryset = queryset.filter(BRANCH_id=branch_id)  # ✅ Ensure field name matches model
         return queryset
-
-
-    
-    
-    
-# def create(self, request, *args, **kwargs):
-#     print("Received Data:", request.data)  # 🟢 Debugging step
-    
-#     serializer = self.get_serializer(data=request.data)
-#     if serializer.is_valid():
-#         serializer.save()
-#         return Response(
-#             {"message": "Year created successfully!", "data": serializer.data},
-#             status=status.HTTP_201_CREATED,
-#         )
-
-#     print("Serializer Errors:", serializer.errors)  # 🔴 Debugging step
-#     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-# def get_queryset(self):
-#         queryset = super().get_queryset()
-#         year_id = self.request.query_params.get("year_id")
-#         if year_id:
-#             queryset = queryset.filter(YEAR__id=year_id)
-#         return queryset
-
-# def update(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         serializer = self.get_serializer(instance, data=request.data, partial=True)
-
-#         if not serializer.is_valid():
-#             print("❌ Validation Errors:", serializer.errors)
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#         self.perform_update(serializer)
-#         return Response(serializer.data)
-
-    # def create(self, request, *args, **kwargs):
-    #     # Extract only the required fields
-    #     filtered_data = {
-    #         "YEAR_ID": request.data.get("YEAR_ID"),
-    #         "YEAR": request.data.get("YEAR"),
-    #         "BRANCH": request.data.get("BRANCH"),
-    #     }
-
-    #     serializer = self.get_serializer(data=filtered_data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(
-    #             {"message": "Year created successfully!", "data": serializer.data},
-    #             status=status.HTTP_201_CREATED,
-    #         )
-
-    #     print("Serializer Errors:", serializer.errors)  # Debugging
-    #     return Response(
-    #         {"error": serializer.errors},
-    #         status=status.HTTP_400_BAD_REQUEST,
-        # )
-    
 
 class SemesterListCreateView(viewsets.ModelViewSet):
     """
@@ -779,21 +749,10 @@ class SemesterListCreateView(viewsets.ModelViewSet):
             return Response({"message": "Semester created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-# # class CourseListCreateView(BaseModelViewSet):
-# #     queryset = COURSE.objects.all()
-# #     serializer_class = CourseSerializer
-# from django.http import JsonResponse
-# from django.db import connection
-
-# def get_semesters(request):
-#     query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
-#     with connection.cursor() as cursor:
-#         cursor.execute(query)
-#         columns = [col[0] for col in cursor.description]
-#         data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-#     return JsonResponse(data, safe=False)
-
-
+def get_semesters(request):
+    query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        columns = [col[0] for col in cursor.description]
+        data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return JsonResponse(data, safe=False)

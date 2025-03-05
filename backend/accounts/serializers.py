@@ -97,7 +97,7 @@ class InstituteSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = DEPARTMENT
-        fields = ['DEPARTMENT_ID', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+        fields = ['DEPARTMENT_ID', 'INSTITUTE_CODE', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
 
 class ProgramSerializer(serializers.ModelSerializer):
     class Meta:

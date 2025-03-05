@@ -633,6 +633,11 @@ class PROGRAM(AuditModel):
     
 class DEPARTMENT(AuditModel):
     DEPARTMENT_ID = models.AutoField(primary_key=True, db_column='DEPARTMENT_ID')
+    INSTITUTE_CODE = models.CharField(
+        max_length=50,
+        db_column='INSTITUTE_CODE',
+        default='DEFAULT', 
+    )
     NAME = models.CharField(max_length=255, db_column='NAME')
     CODE = models.CharField(max_length=20, unique=True, db_column='CODE')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
