@@ -9,10 +9,12 @@ router.register(r'master/cities', views.CityViewSet, basename='city')
 router.register(r'master/currencies', views.CurrencyViewSet, basename='currency')
 router.register(r'master/languages', views.LanguageViewSet, basename='language')
 router.register(r'master/designations', views.DesignationViewSet, basename='designation')
+router.register(r'master/departments', views.DepartmentViewSet, basename='department')
 router.register(r'master/categories', views.CategoryViewSet, basename='category')
 router.register(r'master/universities', views.UniversityViewSet, basename='university')
 router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
 router.register(r'master/academic-years', views.AcademicYearViewSet, basename='academic-year')
+router.register(r'master/program', views.ProgramListCreateView, basename='program')
 
 app_name = 'accounts'
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { useSettings } from "../../context/SettingsContext";
+import { Paper } from "@mui/material";
 
 interface EditModalProps {
   show: boolean;
@@ -18,6 +20,7 @@ const EditModal: React.FC<EditModalProps> = ({
   tableName,
   relatedData,
 }) => {
+  const { darkMode } = useSettings();
   const [formData, setFormData] = useState<any>(data);
 
   useEffect(() => {
@@ -147,31 +150,49 @@ const EditModal: React.FC<EditModalProps> = ({
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>
-          Edit {tableName.charAt(0).toUpperCase() + tableName.slice(1)}
-        </Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleSubmit}>
-        <Modal.Body>
-          <Row>
-            {Object.entries(formData).map(([key, value]) => (
-              <Col md={6} key={key} className="mb-3">
-                {renderFormField(key, value)}
-              </Col>
-            ))}
-          </Row>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={onHide}>
-            Cancel
-          </Button>
-          <Button variant="primary" type="submit">
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Form>
+    <Modal
+      show={show}
+      onHide={onHide}
+      size="lg"
+      contentClassName={darkMode ? "bg-dark text-light" : ""}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          backgroundColor: (theme) =>
+            theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff",
+          color: (theme) => theme.palette.text.primary,
+        }}
+      >
+        <Modal.Header
+          closeButton
+          className={darkMode ? "border-secondary bg-dark" : ""}
+          closeVariant={darkMode ? "white" : undefined}
+        >
+          <Modal.Title>
+            Edit {tableName.charAt(0).toUpperCase() + tableName.slice(1)}
+          </Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmit}>
+          <Modal.Body className={darkMode ? "bg-dark" : ""}>
+            <Row>
+              {Object.entries(formData).map(([key, value]) => (
+                <Col md={6} key={key} className="mb-3">
+                  {renderFormField(key, value)}
+                </Col>
+              ))}
+            </Row>
+          </Modal.Body>
+          <Modal.Footer className={darkMode ? "border-secondary bg-dark" : ""}>
+            <Button variant="secondary" onClick={onHide}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Paper>
     </Modal>
   );
 };

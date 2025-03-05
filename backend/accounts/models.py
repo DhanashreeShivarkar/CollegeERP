@@ -629,6 +629,20 @@ class PROGRAM(AuditModel):
 
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+    
+class DEPARTMENT(AuditModel):
+    DEPARTMENT_ID = models.AutoField(primary_key=True, db_column='DEPARTMENT_ID')
+    NAME = models.CharField(max_length=255, db_column='NAME')
+    CODE = models.CharField(max_length=20, unique=True, db_column='CODE')
+    IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    
+    class Meta:
+        db_table = 'DEPARTMENTS'
+        verbose_name = 'Department'
+        verbose_name_plural = 'Departments'
+
+    def __str__(self):
+        return f"{self.CODE} - {self.NAME}"
 
 class BRANCH(AuditModel):
     BRANCH_ID = models.AutoField(primary_key=True, db_column='BRANCH_ID')
@@ -797,5 +811,24 @@ class ACADEMIC_YEAR(AuditModel):
 
     def __str__(self):
         return f"{self.ACADEMIC_YEAR} ({self.START_DATE} - {self.END_DATE})"
+
+
+class SEMESTER_DURATION(AuditModel):
+    SEMESTER_DURATION_ID = models.AutoField(primary_key=True, db_column='SEMESTER_DURATION_ID')  
+    SEMESTER = models.CharField(max_length=50, db_column='SEMESTER', null=True)  
+    START_DATE = models.DateField(db_column='START_DATE')  
+    END_DATE = models.DateField(db_column='END_DATE')  
+
+    IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
+
+    class Meta:
+        db_table = 'SEMESTER_DURATION'
+        verbose_name = 'Semester Duration'
+        verbose_name_plural = 'Semester Durations'
+
+    def __str__(self):
+        return f"{self.SEMESTER} ({self.START_DATE} - {self.END_DATE})"
 
 

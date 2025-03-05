@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Form } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axios";
+import { Paper } from "@mui/material";
 
 interface InstituteFormInputs {
   INSTITUTE_ID?: number;
@@ -101,205 +102,220 @@ export default function InstituteForm() {
   const years = Array.from(new Array(225), (_, index) => currentYear - index);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="container my-5 p-4 bg-light shadow rounded"
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        backgroundColor: (theme) =>
+          theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff",
+        color: (theme) => theme.palette.text.primary,
+        "& .container": {
+          backgroundColor: "transparent !important",
+        },
+        borderRadius: 2,
+        boxShadow: (theme) =>
+          theme.palette.mode === "dark"
+            ? "0 4px 6px rgba(0, 0, 0, 0.3)"
+            : "0 4px 6px rgba(0, 0, 0, 0.1)",
+      }}
     >
-      <h2 className="text-center mb-4">Institute Registration Form</h2>
-
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="grid grid-cols-2 gap-6"
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="container my-5 p-4 shadow rounded form-container"
       >
-        <div className="row g-3">
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                University
-              </label>
-              <select
-                {...register("UNIVERSITY", {
-                  // Changed from UNIVERSITY_ID
-                  required: true,
-                  valueAsNumber: true,
-                })}
-                className="form-control input-focus"
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Select University
-                </option>
-                {universities.map((university) => (
-                  <option
-                    key={university.UNIVERSITY_ID}
-                    value={university.UNIVERSITY_ID}
-                  >
-                    {university.NAME} ({university.CODE})
+        <h2 className="text-center mb-4">Institute Registration Form</h2>
+
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="row g-3">
+            {/* First row */}
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  University
+                </label>
+                <select
+                  {...register("UNIVERSITY", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
+                  className="form-control input-focus"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Select University
                   </option>
-                ))}
-              </select>
-              {errors.UNIVERSITY && (
-                <p className="text-danger">Please select a university</p>
-              )}
-            </motion.div>
+                  {universities.map((university) => (
+                    <option
+                      key={university.UNIVERSITY_ID}
+                      value={university.UNIVERSITY_ID}
+                    >
+                      {university.NAME} ({university.CODE})
+                    </option>
+                  ))}
+                </select>
+                {errors.UNIVERSITY && (
+                  <p className="text-danger">Please select a university</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Institute Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Institute Code"
+                  {...register("CODE", { required: true })} // Changed from INSTITUTE_CODE
+                  className="form-control input-focus"
+                />
+                {errors.CODE && (
+                  <p className="text-danger">This field is required</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Institute Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Institute Name"
+                  {...register("NAME", { required: true })} // Changed from INSTITUTE_NAME
+                  className="form-control"
+                />
+                {errors.NAME && (
+                  <p className="text-danger">This field is required</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Address
+                </label>
+                <textarea
+                  placeholder="Enter Address"
+                  {...register("ADDRESS", { required: true })}
+                  className="form-control"
+                ></textarea>
+                {errors.ADDRESS && (
+                  <p className="text-danger">This field is required</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Contact Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Contact Number"
+                  {...register("CONTACT_NUMBER", {
+                    required: true,
+                    pattern: /^[0-9]{10,15}$/,
+                  })}
+                  className="form-control"
+                />
+                {errors.CONTACT_NUMBER && (
+                  <p className="text-danger">Invalid contact number</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  placeholder="Enter Email"
+                  {...register("EMAIL", { required: true })}
+                  className="form-control"
+                />
+                {errors.EMAIL && (
+                  <p className="text-danger">Valid email required</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Website
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Website URL"
+                  {...register("WEBSITE")}
+                  className="form-control"
+                />
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <label className="form-label fw-semibold text-secondary">
+                  Established Year
+                </label>
+                <select
+                  {...register("ESTD_YEAR", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
+                  className="form-select"
+                >
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+                {errors.ESTD_YEAR && (
+                  <p className="text-danger">Enter a valid year</p>
+                )}
+              </motion.div>
+            </div>
+
+            <div className="col-md-4">
+              <motion.div whileHover={{ scale: 1.02 }}>
+                <Form.Check
+                  type="checkbox"
+                  {...register("IS_ACTIVE")}
+                  label="Is Active"
+                  className="fw-semibold text-secondary"
+                />
+              </motion.div>
+            </div>
           </div>
 
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Institute Code
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Institute Code"
-                {...register("CODE", { required: true })} // Changed from INSTITUTE_CODE
-                className="form-control input-focus"
-              />
-              {errors.CODE && (
-                <p className="text-danger">This field is required</p>
-              )}
-            </motion.div>
+          <div className="col-12 text-center mt-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              className="btn btn-primary"
+            >
+              Submit
+            </motion.button>
           </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Institute Name
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Institute Name"
-                {...register("NAME", { required: true })} // Changed from INSTITUTE_NAME
-                className="form-control"
-              />
-              {errors.NAME && (
-                <p className="text-danger">This field is required</p>
-              )}
-            </motion.div>
-          </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Address
-              </label>
-              <textarea
-                placeholder="Enter Address"
-                {...register("ADDRESS", { required: true })}
-                className="form-control"
-              ></textarea>
-              {errors.ADDRESS && (
-                <p className="text-danger">This field is required</p>
-              )}
-            </motion.div>
-          </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Contact Number
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Contact Number"
-                {...register("CONTACT_NUMBER", {
-                  required: true,
-                  pattern: /^[0-9]{10,15}$/,
-                })}
-                className="form-control"
-              />
-              {errors.CONTACT_NUMBER && (
-                <p className="text-danger">Invalid contact number</p>
-              )}
-            </motion.div>
-          </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="Enter Email"
-                {...register("EMAIL", { required: true })}
-                className="form-control"
-              />
-              {errors.EMAIL && (
-                <p className="text-danger">Valid email required</p>
-              )}
-            </motion.div>
-          </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Website
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Website URL"
-                {...register("WEBSITE")}
-                className="form-control"
-              />
-            </motion.div>
-          </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <label className="form-label fw-semibold text-secondary">
-                Established Year
-              </label>
-              <select
-                {...register("ESTD_YEAR", {
-                  required: true,
-                  valueAsNumber: true,
-                })}
-                className="form-select"
-              >
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-              {errors.ESTD_YEAR && (
-                <p className="text-danger">Enter a valid year</p>
-              )}
-            </motion.div>
-          </div>
-
-          <div className="col-md-4">
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <Form.Check
-                type="checkbox"
-                {...register("IS_ACTIVE")}
-                label="Is Active"
-                className="fw-semibold text-secondary"
-              />
-            </motion.div>
-          </div>
-        </div>
-
-        <div className="col-12 text-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            className="btn btn-primary"
-          >
-            Submit
-          </motion.button>
-        </div>
-      </form>
-    </motion.div>
+        </form>
+      </motion.div>
+    </Paper>
   );
 }

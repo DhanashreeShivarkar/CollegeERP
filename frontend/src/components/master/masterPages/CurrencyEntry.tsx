@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
+import { Paper } from "@mui/material";
 import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -84,82 +85,100 @@ const CurrencyEntry: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <h4 className="mb-4">Create New Currency</h4>
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        backgroundColor: (theme) =>
+          theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff",
+        color: (theme) => theme.palette.text.primary,
+        "& .container": {
+          backgroundColor: "transparent !important",
+        },
+        borderRadius: 2,
+        boxShadow: (theme) =>
+          theme.palette.mode === "dark"
+            ? "0 4px 6px rgba(0, 0, 0, 0.3)"
+            : "0 4px 6px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <div className="p-4">
+        <h4 className="mb-4">Create New Currency</h4>
 
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
 
-      <Form onSubmit={handleSubmit}>
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label>Currency Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="NAME"
-                value={formData.NAME}
-                onChange={handleChange}
-                required
-                maxLength={50}
-                placeholder="Enter currency name"
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label>Currency Code</Form.Label>
-              <Form.Control
-                type="text"
-                name="CODE"
-                value={formData.CODE}
-                onChange={handleChange}
-                required
-                maxLength={3}
-                placeholder="Enter currency code (e.g., USD)"
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+        <Form onSubmit={handleSubmit}>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Currency Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="NAME"
+                  value={formData.NAME}
+                  onChange={handleChange}
+                  required
+                  maxLength={50}
+                  placeholder="Enter currency name"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Currency Code</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="CODE"
+                  value={formData.CODE}
+                  onChange={handleChange}
+                  required
+                  maxLength={3}
+                  placeholder="Enter currency code (e.g., USD)"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
 
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label>Currency Symbol</Form.Label>
-              <Form.Control
-                type="text"
-                name="SYMBOL"
-                value={formData.SYMBOL}
-                onChange={handleChange}
-                required
-                maxLength={5}
-                placeholder="Enter currency symbol (e.g., $)"
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mt-4">
-              <Form.Check
-                type="checkbox"
-                name="IS_ACTIVE"
-                checked={formData.IS_ACTIVE}
-                onChange={handleChange}
-                label="Is Active"
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Currency Symbol</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="SYMBOL"
+                  value={formData.SYMBOL}
+                  onChange={handleChange}
+                  required
+                  maxLength={5}
+                  placeholder="Enter currency symbol (e.g., $)"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mt-4">
+                <Form.Check
+                  type="checkbox"
+                  name="IS_ACTIVE"
+                  checked={formData.IS_ACTIVE}
+                  onChange={handleChange}
+                  label="Is Active"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
 
-        <div className="mt-4">
-          <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? "Creating..." : "Create Currency"}
-          </Button>
-        </div>
-      </Form>
-    </div>
+          <div className="mt-4">
+            <Button type="submit" variant="primary" disabled={loading}>
+              {loading ? "Creating..." : "Create Currency"}
+            </Button>
+          </div>
+        </Form>
+      </div>
+    </Paper>
   );
 };
 
