@@ -700,7 +700,7 @@ class YearListCreateView(BaseModelViewSet):
         queryset = super().get_queryset()  # ✅ Correct indentation
         branch_id = self.request.query_params.get("branch")  
         if branch_id:
-            queryset = queryset.filter(branch_id=branch_id)  # ✅ Ensure field name matches model
+            queryset = queryset.filter(BRANCH_id=branch_id)  # ✅ Ensure field name matches model
         return queryset
 
 

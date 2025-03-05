@@ -7,17 +7,24 @@ import EditModal from "../../components/CourseMaster/Editmodal";
 interface Semester {
   SEMESTER_ID: number;
   YEAR_ID: number;
-  YEAR: number;
-  SEMESTER: number;
+  YEAR_NAME?: string;  // Marked optional for cases where it's missing
+  SEMESTER: string;
   IS_ACTIVE: boolean;
+}
+
+interface Year {
+  YEAR_ID: number;
+  YEAR_NAME: string;
 }
 
 const SemesterTableView: React.FC = () => {
   const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [years, setYears] = useState<Year[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingSemester, setEditingSemester] = useState<Semester | null>(null);
 
   useEffect(() => {
+    fetchYears();
     fetchSemesters();
   }, []);
 
@@ -38,6 +45,31 @@ const SemesterTableView: React.FC = () => {
     } catch (error) {
       console.error("Error fetching semesters:", error);
     }
+  };
+
+  const fetchYears = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await axiosInstance.get("/api/master/year/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (Array.isArray(response.data)) {
+        setYears(response.data);
+      } else {
+        console.error("Expected an array but received:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching years:", error);
+    }
+  };
+
+  // Function to get Year Name from YEAR_ID if YEAR_NAME is missing
+  const getYearName = (yearId: number) => {
+    const year = years.find((y) => y.YEAR_ID === yearId);
+    return year ? year.YEAR_NAME : "Unknown Year";
   };
 
   const handleEdit = (semester: Semester) => {
@@ -96,7 +128,7 @@ const SemesterTableView: React.FC = () => {
         <thead>
           <tr>
             <th>Semester ID</th>
-            <th>Year</th>
+            <th>Year Name</th>
             <th>Semester</th>
             <th>Active</th>
             <th>Actions</th>
@@ -106,7 +138,7 @@ const SemesterTableView: React.FC = () => {
           {semesters.map((semester) => (
             <tr key={semester.SEMESTER_ID}>
               <td>{semester.SEMESTER_ID}</td>
-              <td>{semester.YEAR}</td>
+              <td>{semester.YEAR_NAME || getYearName(semester.YEAR_ID)}</td> {/* Use YEAR_NAME if available */}
               <td>{semester.SEMESTER}</td>
               <td>{semester.IS_ACTIVE ? "Yes" : "No"}</td>
               <td>
