@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+from .views import LogoutView
 
 router = DefaultRouter()
 router.register(r'master/countries', views.CountryViewSet, basename='country')
@@ -26,6 +27,7 @@ urlpatterns = [
     path('auth/request-password-reset/', views.RequestPasswordResetView.as_view(), name='request-password-reset'),
     path('auth/verify-reset-otp/', views.VerifyResetOTPView.as_view(), name='verify-reset-otp'),
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
+    path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
     path('api/program-master/', views.ProgramTableListView.as_view(), name='program-master'),
 
