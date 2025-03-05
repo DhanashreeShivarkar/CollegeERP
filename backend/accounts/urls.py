@@ -15,6 +15,7 @@ router.register(r'master/universities', views.UniversityViewSet, basename='unive
 router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
 router.register(r'master/academic-years', views.AcademicYearViewSet, basename='academic-year')
 router.register(r'master/program', views.ProgramListCreateView, basename='program')
+router.register(r'master/semester-duration', views.SemesterDurationViewSet, basename='semester-duration')
 
 app_name = 'accounts'
 
@@ -28,4 +29,5 @@ urlpatterns = [
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
     path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
     path('api/master/academic-years', include(router.urls)),
+    path('api/master/semester-duration', include(router.urls)),
 ]

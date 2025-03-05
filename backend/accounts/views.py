@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)  # Add this line
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM  # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM, SEMESTER_DURATION  # Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -20,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer, SemesterDurationSerializer # Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -702,3 +702,22 @@ class ProgramListCreateView(BaseModelViewSet):
             {"error": serializer.errors}, 
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class SemesterDurationViewSet(BaseModelViewSet):
+    queryset = SEMESTER_DURATION.objects.all()
+    serializer_class = SemesterDurationSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def list(self, request, *args, **kwargs):
+        active_semesters = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(active_semesters, many=True)
+        return Response(serializer.data)
