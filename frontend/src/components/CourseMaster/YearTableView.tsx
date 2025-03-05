@@ -8,15 +8,24 @@ interface Year {
   YEAR_ID: number;
   YEAR: number;
   IS_ACTIVE: boolean;
+  BRANCH_ID: number;
+  BRANCH_NAME: string;
+}
+
+interface Branch {
+  BRANCH_ID: number;
+  BRANCH_NAME: string;
 }
 
 const YearTableView: React.FC = () => {
   const [years, setYears] = useState<Year[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingYear, setEditingYear] = useState<Year | null>(null);
 
   useEffect(() => {
     fetchYears();
+    fetchBranches();
   }, []);
 
   const fetchYears = async () => {
@@ -35,6 +44,25 @@ const YearTableView: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching years:", error);
+    }
+  };
+
+  const fetchBranches = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await axiosInstance.get("/api/master/branch/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (Array.isArray(response.data)) {
+        setBranches(response.data);
+      } else {
+        console.error("Expected an array but received:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching branches:", error);
     }
   };
 
@@ -89,6 +117,8 @@ const YearTableView: React.FC = () => {
           <tr>
             <th>Year ID</th>
             <th>Year Name</th>
+            <th>Branch ID</th>
+            <th>Branch Name</th>
             <th>Active</th>
             <th>Actions</th>
           </tr>
@@ -98,6 +128,8 @@ const YearTableView: React.FC = () => {
             <tr key={year.YEAR_ID}>
               <td>{year.YEAR_ID}</td>
               <td>{year.YEAR}</td>
+              <td>{year.BRANCH_ID}</td>
+              <td>{year.BRANCH_NAME}</td>
               <td>{year.IS_ACTIVE ? "Yes" : "No"}</td>
               <td>
                 <Button variant="primary" onClick={() => handleEdit(year)}>Edit</Button>
