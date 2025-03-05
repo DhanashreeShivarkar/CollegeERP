@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, ACADEMIC_YEAR, DEPARTMENT, PROGRAM, SEMESTER_DURATION
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH, YEAR,SEMESTER,ACADEMIC_YEAR,SEMESTER_DURATION
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -93,7 +93,7 @@ class InstituteSerializer(serializers.ModelSerializer):
             'ADDRESS', 'CONTACT_NUMBER', 'EMAIL', 'WEBSITE',
             'ESTD_YEAR', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
         ]
-        
+                
 class AcademicYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = ACADEMIC_YEAR
@@ -105,7 +105,7 @@ class AcademicYearSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = DEPARTMENT
-        fields = ['DEPARTMENT_ID', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+        fields = ['DEPARTMENT_ID', 'INSTITUTE_CODE', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
 
 class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
@@ -115,11 +115,3 @@ class ProgramSerializer(serializers.ModelSerializer):
     'DURATION_YEARS', 'LEVEL', 'TYPE', 'DESCRIPTION',
     'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
 ]
-
-class SemesterDurationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SEMESTER_DURATION
-        fields = [
-            'SEMESTER', 'START_DATE', 'END_DATE', 
-            'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
-        ]

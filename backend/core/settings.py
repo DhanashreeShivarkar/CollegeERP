@@ -153,6 +153,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Create specific path for employee profile photos
+EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_Photo')
+
+# Create directory if it doesn't exist
+os.makedirs(EMPLOYEE_PROFILE_PATH, exist_ok=True)
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -226,3 +236,6 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_SECURE = False  # Set to True in production
+
+# Add media URL patterns - add to urls.py
+FRONTEND_URL = 'http://localhost:3000'  # Add this if not already present

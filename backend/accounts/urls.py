@@ -16,6 +16,7 @@ router.register(r'master/institutes', views.InstituteViewSet, basename='institut
 router.register(r'master/academic-years', views.AcademicYearViewSet, basename='academic-year')
 router.register(r'master/program', views.ProgramListCreateView, basename='program')
 router.register(r'master/semester-duration', views.SemesterDurationViewSet, basename='semester-duration')
+router.register(r'master/branch', views.BranchListCreateView, basename='branch')
 
 app_name = 'accounts'
 
@@ -30,4 +31,6 @@ urlpatterns = [
     path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
     path('api/master/academic-years', include(router.urls)),
     path('api/master/semester-duration', include(router.urls)),
+    path('api/program-master/', views.ProgramTableListView.as_view(), name='program-master'),
+
 ]

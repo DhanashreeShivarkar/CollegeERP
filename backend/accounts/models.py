@@ -621,6 +621,7 @@ class PROGRAM(AuditModel):
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
     CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
     UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
+   
 
     class Meta:
         db_table = 'PROGRAMS'
@@ -632,6 +633,11 @@ class PROGRAM(AuditModel):
     
 class DEPARTMENT(AuditModel):
     DEPARTMENT_ID = models.AutoField(primary_key=True, db_column='DEPARTMENT_ID')
+    INSTITUTE_CODE = models.CharField(
+        max_length=50,
+        db_column='INSTITUTE_CODE',
+        default='DEFAULT', 
+    )
     NAME = models.CharField(max_length=255, db_column='NAME')
     CODE = models.CharField(max_length=20, unique=True, db_column='CODE')
     IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
@@ -671,6 +677,41 @@ class BRANCH(AuditModel):
 
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+    
+class YEAR(AuditModel):
+    YEAR_ID = models.AutoField(primary_key=True, db_column='YEAR_ID')
+    YEAR = models.CharField(max_length=255, db_column='YEAR')
+    BRANCH = models.ForeignKey(
+        BRANCH,
+        on_delete=models.PROTECT,
+        db_column='BRANCH_ID',
+        related_name='years'
+    )
+
+    class Meta:
+        db_table = 'YEARS'
+        verbose_name = 'Year'
+        verbose_name_plural = 'Years'
+
+    def _str_(self):
+        return f"{self.YEAR_ID} - {self.YEAR}"
+
+class SEMESTER(AuditModel):
+    SEMESTER_ID = models.AutoField(primary_key=True, db_column='SEMESTER_ID')
+    SEMESTER = models.CharField(max_length=255, db_column='SEMESTER')
+    YEAR = models.ForeignKey(
+        YEAR, 
+        on_delete=models.PROTECT,
+        db_column='YEAR_ID',
+        related_name='semesters'
+    )
+    class Meta:
+        db_table = 'SEMESTERS'
+        verbose_name = 'Semester'
+        verbose_name_plural = 'Semesters'
+
+    def _str_(self):
+        return f"{self.SEMESTER_ID} - {self.SEMESTER}"
 
 class COUNTRY(AuditModel):
     COUNTRY_ID = models.AutoField(primary_key=True, db_column='COUNTRY_ID')
@@ -791,7 +832,6 @@ class CATEGORY(AuditModel):
         verbose_name_plural = 'Categories'
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
-    
 class ACADEMIC_YEAR(AuditModel):
     ACADEMIC_YEAR_ID = models.AutoField(primary_key=True, db_column='ACADEMIC_YEAR_ID')  # Primary key
     ACADEMIC_YEAR = models.CharField(max_length=50, db_column='ACADEMIC_YEAR',null=True)  # Academic year (e.g., "2023-2024")
@@ -830,5 +870,5 @@ class SEMESTER_DURATION(AuditModel):
 
     def __str__(self):
         return f"{self.SEMESTER} ({self.START_DATE} - {self.END_DATE})"
-
-
+    
+    

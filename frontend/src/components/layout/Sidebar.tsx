@@ -20,6 +20,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "Administration",
       children: [
         {
+          icon: "bi-people-fill",
+          text: "Master Employee",
+          children: [
+            {
+              icon: "bi-person-plus-fill",
+              text: "Create Employee",
+              path: "/dashboard/master-employee/create",
+              exact: true,
+            },
+          ],
+        },
+        {
           icon: "bi-database-fill",
           text: "Master",
           children: [
