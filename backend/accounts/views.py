@@ -229,10 +229,30 @@ class VerifyOTPView(APIView):
                 # Update login info
                 user.update_login_info(request.META.get('REMOTE_ADDR'))
                 
-                # Generate tokens manually
+                # Store session data
+                session_data = {
+                    'user_id': user.USER_ID,
+                    'username': user.USERNAME,
+                    'email': user.EMAIL,
+                    'is_superuser': user.IS_SUPERUSER,
+                    'designation': {
+                        'code': user.DESIGNATION.CODE,
+                        'name': user.DESIGNATION.NAME,
+                    },
+                    'permissions': user.DESIGNATION.PERMISSIONS,
+                    'last_activity': timezone.now().isoformat(),
+                    'department_id': getattr(user, 'DEPARTMENT_ID', None),
+                    'institute_id': getattr(user, 'INSTITUTE_ID', None)
+                }
+                
+                # Store all session data
+                for key, value in session_data.items():
+                    request.session[key] = value
+                
+                # Generate tokens
                 refresh = RefreshToken()
                 refresh[api_settings.USER_ID_CLAIM] = user.USER_ID
-                refresh['user_id'] = user.USER_ID  # Add custom claims
+                refresh['user_id'] = user.USER_ID
                 refresh['username'] = user.USERNAME
                 refresh['is_superuser'] = user.IS_SUPERUSER
                 
@@ -241,19 +261,7 @@ class VerifyOTPView(APIView):
                     'message': message,
                     'token': str(refresh.access_token),
                     'refresh': str(refresh),
-                    'user': {
-                        'user_id': user.USER_ID,
-                        'username': user.USERNAME,
-                        'email': user.EMAIL,
-                        'designation': {
-                            'code': user.DESIGNATION.CODE,
-                            'name': user.DESIGNATION.NAME,
-                        },
-                        'first_name': user.FIRST_NAME,
-                        'last_name': user.LAST_NAME,
-                        'is_superuser': user.IS_SUPERUSER,
-                        'permissions': user.DESIGNATION.PERMISSIONS
-                    }
+                    'user': session_data
                 }, status=status.HTTP_200_OK)
             
             return Response({
@@ -267,7 +275,7 @@ class VerifyOTPView(APIView):
                 'message': 'Invalid user'
             }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"Token generation error: {str(e)}")
+            logger.error(f"Error in VerifyOTPView: {str(e)}")
             return Response({
                 'status': 'error',
                 'message': 'An error occurred during authentication'
@@ -685,6 +693,34 @@ class ProgramTableListView(View):
 class BranchListCreateView(BaseModelViewSet):
     queryset = BRANCH.objects.all()
     serializer_class = BranchSerializer
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
     
+    def post(self, request):
+        try:
+            # Clear user session
+            request.session.flush()
+            
+            # Blacklist the JWT token if you're using JWT
+            try:
+                refresh_token = request.data.get('refresh_token')
+                if refresh_token:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+            except Exception as e:
+                logger.warning(f"Error blacklisting token: {str(e)}")
+            
+            return Response({
+                'status': 'success',
+                'message': 'Successfully logged out'
+            })
+        except Exception as e:
+            logger.error(f"Error in logout: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': 'Error during logout'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
