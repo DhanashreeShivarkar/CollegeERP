@@ -8,7 +8,7 @@ import UniversityMaster from "../master/UniversityMaster";
 import InstituteMaster from "../master/InstituteMaster";
 import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
 import EmployeeTypeEntry from "../Employee/employeeTypeEntry";
-import NameEntryForm from "../CourseMaster/ProgramEntryForm";
+// import NameEntryForm from "../CourseMaster/ProgramEntryForm";
 import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
 
@@ -71,8 +71,6 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/master/institute" element={<InstituteMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
-            {/* Add other routes here */}
-            <Route path="/courseMaster" element={<NameEntryForm />} />
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
