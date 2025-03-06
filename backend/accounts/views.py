@@ -690,8 +690,7 @@ class LogoutView(APIView):
                 'status': 'error',
                 'message': 'Error during logout'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-=======
+            
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
