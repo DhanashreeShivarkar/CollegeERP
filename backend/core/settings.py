@@ -159,7 +159,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Create specific path for employee profile photos
-EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_Photo')
+EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_photo')
 
 # Create directory if it doesn't exist
 os.makedirs(EMPLOYEE_PROFILE_PATH, exist_ok=True)

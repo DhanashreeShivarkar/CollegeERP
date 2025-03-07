@@ -115,27 +115,36 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     serializer_class = EmployeeMasterSerializer
     queryset = EMPLOYEE_MASTER.objects.filter(IS_DELETED=False)
+    lookup_field = 'EMPLOYEE_ID'
+    lookup_url_kwarg = 'pk'  # Add this line to map 'pk' from URL to 'EMPLOYEE_ID'
 
     def create(self, request, *args, **kwargs):
         try:
             logger.info("=== Starting Employee Creation Process ===")
             
-            # 1. Generate employee ID and password
+            # 1. Generate IDs first
             designation_id = request.data.get('DESIGNATION')
             designation_obj = DESIGNATION.objects.get(DESIGNATION_ID=designation_id)
             employee_id = generate_employee_id(designation_obj.NAME)
             password = generate_password(8)
             
-            logger.info(f"Generated employee ID: {employee_id}")
+            # 2. Create a new dict for employee data instead of copying request.data
+            employee_data = {}
+            
+            # 3. Add all form fields except files
+            for key in request.data.keys():
+                if key != 'PROFILE_IMAGE':  # Skip file field
+                    employee_data[key] = request.data.get(key)
 
-            # 2. Create employee data
-            employee_data = request.data.copy()
-            employee_data._mutable = True
+            # 4. Add generated ID and active status
             employee_data['EMPLOYEE_ID'] = employee_id
             employee_data['IS_ACTIVE'] = 'YES'
-            employee_data._mutable = False
 
-            # 3. Validate and save employee
+            # 5. Add file separately if it exists
+            if 'PROFILE_IMAGE' in request.FILES:
+                employee_data['PROFILE_IMAGE'] = request.FILES['PROFILE_IMAGE']
+
+            # 6. Create and validate
             serializer = self.get_serializer(data=employee_data)
             if not serializer.is_valid():
                 logger.error("Validation errors:")
@@ -160,46 +169,46 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     DESIGNATION=designation_obj,
                     FIRST_NAME=request.data.get('EMP_NAME')
                 )
-                # Properly set hashed password
-                user.set_password(password)  # This will properly hash the password
+                user.set_password(password)
                 user.save()
                 
                 logger.info(f"User created with ID: {user.USER_ID}")
+
+                # 5. Send welcome email
+                email_subject = "Your College ERP Account Credentials"
+                email_message = f"""
+                Dear {request.data.get('EMP_NAME')},
+
+                Your College ERP account has been created. Here are your login credentials:
+
+                Employee ID: {employee_id}
+                Username: {username}
+                Password: {password}
+
+                Please change your password after first login.
+
+                Best regards,
+                College ERP Team
+                """
+
+                send_mail(
+                    email_subject,
+                    email_message,
+                    settings.EMAIL_HOST_USER,
+                    [user.EMAIL],
+                    fail_silently=False,
+                )
+
+                return Response({
+                    'message': 'Employee and user account created successfully',
+                    'employee_id': employee_id,
+                    'username': username
+                }, status=status.HTTP_201_CREATED)
+
             except Exception as user_error:
-                employee.delete()
+                employee.delete()  # Rollback employee creation if user creation fails
                 logger.error(f"User creation failed: {str(user_error)}")
                 raise
-
-            # 5. Send welcome email
-            email_subject = "Your College ERP Account Credentials"
-            email_message = f"""
-            Dear {request.data.get('EMP_NAME')},
-
-            Your College ERP account has been created. Here are your login credentials:
-
-            Employee ID: {employee_id}
-            Username: {user.USERNAME}
-            Password: {password}
-
-            Please change your password after first login.
-
-            Best regards,
-            College ERP Team
-            """
-
-            send_mail(
-                email_subject,
-                email_message,
-                settings.EMAIL_HOST_USER,
-                [user.EMAIL],
-                fail_silently=False,
-            )
-
-            return Response({
-                'message': 'Employee and user account created successfully',
-                'employee_id': employee_id,
-                'username': username
-            }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             logger.error(f"Error in create process: {str(e)}", exc_info=True)
@@ -251,25 +260,33 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            obj = queryset.get(EMPLOYEE_ID=self.kwargs['pk'])
+            self.check_object_permissions(self.request, obj)
+            return obj
+        except EMPLOYEE_MASTER.DoesNotExist:
+            raise Http404("Employee not found")
+
     def update(self, request, *args, **kwargs):
         try:
-            employee = self.get_object()
-            logger.info(f"Updating employee: {employee.EMPLOYEE_ID}")
+            instance = self.get_object()
+            logger.info(f"Updating employee: {instance.EMPLOYEE_ID}")
 
-            # Create a mutable copy of the request data
-            data = request.data.copy()
+            # Create a new dict for update data instead of copying request.data
+            update_data = {}
             
-            # Remove unique fields if they haven't changed
-            if 'EMAIL' in data and data['EMAIL'] == employee.EMAIL:
-                data.pop('EMAIL')
-            if 'MOBILE_NO' in data and data['MOBILE_NO'] == employee.MOBILE_NO:
-                data.pop('MOBILE_NO')
+            # Add all form fields except files and EMPLOYEE_ID
+            for key in request.data.keys():
+                if key not in ['PROFILE_IMAGE', 'EMPLOYEE_ID']:
+                    update_data[key] = request.data.get(key)
 
             # Update employee data
             serializer = self.get_serializer(
-                employee,
-                data=data,
-                partial=True  # Allow partial updates
+                instance,
+                data=update_data,
+                partial=True
             )
             
             if not serializer.is_valid():
@@ -292,6 +309,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 'data': serializer.data
             })
 
+        except Http404:
+            return Response({
+                'error': 'Employee not found'
+            }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f"Error updating employee: {str(e)}", exc_info=True)
             return Response({
