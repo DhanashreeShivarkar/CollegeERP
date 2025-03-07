@@ -302,6 +302,9 @@ const CreateEmployee = () => {
         MOBILE_NO: formData.mobileNo,
         SEX: formData.sex,
         CATEGORY: Number(formData.category), // Convert to number
+        EMP_TYPE: Number(formData.empType), // Add this line
+        SHORT_CODE: formData.shortCode,     // Add this
+        POSITION: formData.position,        // Add this
       };
 
       // Log what we're sending
@@ -360,7 +363,7 @@ const CreateEmployee = () => {
 
       // Add optional fields
       Object.entries(optionalFields).forEach(([key, value]) => {
-        if (value) formDataObj.append(key, String(value));
+        formDataObj.append(key, value || ''); // Send empty string instead of skipping
       });
 
       // Add profile image if exists
@@ -654,16 +657,20 @@ const CreateEmployee = () => {
               fullWidth
               label="Short Code"
               name="shortCode"
+              value={formData.shortCode}  // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. EMP001"
             />
           </Grid>
           <Grid item xs={2}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Emp Type</InputLabel>
+            <FormControl fullWidth size="small" required>
+              <InputLabel>{<SingleStarLabel label="Emp Type" />}</InputLabel>
               <Select
                 value={formData.empType}
                 name="empType"
                 onChange={handleSelectChange}
-                label="Emp Type"
+                error={!formData.empType}
+                label={<SingleStarLabel label="Emp Type" />}
               >
                 {employeeTypes?.map((type: any) => (
                   <MenuItem key={type.ID} value={type.ID}>
@@ -679,6 +686,9 @@ const CreateEmployee = () => {
               fullWidth
               label="Position"
               name="position"
+              value={formData.position}  // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. Senior Developer"
             />
           </Grid>
 
@@ -693,6 +703,7 @@ const CreateEmployee = () => {
               name="empName" // This maps to the formData field
               error={!formData.empName}
               helperText={!formData.empName ? "Employee Name is required" : ""}
+              placeholder="e.g. John Smith"
             />
           </Grid>
           <Grid item xs={2.4}>
@@ -701,6 +712,9 @@ const CreateEmployee = () => {
               fullWidth
               label="Father Name"
               name="fatherName"
+              value={formData.fatherName}  // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. David Smith"
             />
           </Grid>
           <Grid item xs={2.4}>
@@ -709,6 +723,9 @@ const CreateEmployee = () => {
               fullWidth
               label="Mother Name"
               name="motherName"
+              value={formData.motherName} // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. Sarah Smith"
             />
           </Grid>
           <Grid item xs={2.4}>
@@ -762,10 +779,19 @@ const CreateEmployee = () => {
               type="email"
               error={!formData.email}
               helperText={!formData.email ? "Email is required" : ""}
+              placeholder="e.g. john.smith@example.com"
             />
           </Grid>
           <Grid item xs={2.4}>
-            <TextField size="small" fullWidth label="Phone" name="phoneNo" />
+            <TextField 
+              size="small" 
+              fullWidth 
+              label="Phone" 
+              name="phoneNo" 
+              value={formData.phoneNo} // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. 020-12345678"
+            />
           </Grid>
           <Grid item xs={2.4}>
             <TextField
@@ -777,6 +803,7 @@ const CreateEmployee = () => {
               name="mobileNo"
               error={!formData.mobileNo}
               helperText={!formData.mobileNo ? "Mobile No is required" : ""}
+              placeholder="e.g. 9876543210"
             />
           </Grid>
           <Grid item xs={2.4}>
@@ -823,6 +850,7 @@ const CreateEmployee = () => {
                 label="Permanent Address"
                 name="permanentAddress"
                 onChange={handleAddressChange}
+                placeholder="e.g. 123, Main Street, Apartment 4B"
               />
               <Stack direction="row" spacing={0.5}>
                 <TextField
@@ -831,6 +859,7 @@ const CreateEmployee = () => {
                   label="City"
                   name="permanentCity"
                   onChange={handleAddressChange}
+                  placeholder="e.g. Mumbai"
                 />
                 <TextField
                   size="small"
@@ -838,6 +867,7 @@ const CreateEmployee = () => {
                   label="PIN"
                   name="permanentPinNo"
                   onChange={handleAddressChange}
+                  placeholder="e.g. 400001"
                 />
               </Stack>
             </Stack>
@@ -981,10 +1011,26 @@ const CreateEmployee = () => {
 
           {/* Row 6 - IDs and Numbers */}
           <Grid item xs={2}>
-            <TextField size="small" fullWidth label="PAN No" name="panNo" />
+            <TextField 
+              size="small" 
+              fullWidth 
+              label="PAN No" 
+              name="panNo" 
+              value={formData.panNo} // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. ABCDE1234F"
+            />
           </Grid>
           <Grid item xs={2}>
-            <TextField size="small" fullWidth label="UAN No" name="unaNo" />
+            <TextField 
+              size="small" 
+              fullWidth 
+              label="UAN No" 
+              name="unaNo" 
+              value={formData.unaNo} // Add this 
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. 123456789012"
+            />
           </Grid>
           <Grid item xs={2}>
             <TextField
@@ -992,6 +1038,9 @@ const CreateEmployee = () => {
               fullWidth
               label="Bank A/C No"
               name="bankAccountNo"
+              value={formData.bankAccountNo} // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. 1234567890"
             />
           </Grid>
           <Grid item xs={2}>
@@ -1000,6 +1049,9 @@ const CreateEmployee = () => {
               fullWidth
               label="Driving Lic No"
               name="drivingLicNo"
+              value={formData.drivingLicNo} // Add this
+              onChange={handleInputChange} // Add this
+              placeholder="e.g. MH0123456789"
             />
           </Grid>
 

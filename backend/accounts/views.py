@@ -697,7 +697,32 @@ class ProgramTableListView(View):
 class BranchListCreateView(BaseModelViewSet):
     queryset = BRANCH.objects.all()
     serializer_class = BranchSerializer
-    
+
+    def post(self, request):
+        try:
+            # Clear user session
+            request.session.flush()
+            
+            # Blacklist the JWT token if you're using JWT
+            try:
+                refresh_token = request.data.get('refresh_token')
+                if refresh_token:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+            except Exception as e:
+                logger.warning(f"Error blacklisting token: {str(e)}")
+            
+            return Response({
+                'status': 'success',
+                'message': 'Successfully logged out'
+            })
+        except Exception as e:
+            logger.error(f"Error in logout: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': 'Error during logout'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
