@@ -14,7 +14,9 @@ router.register(r'master/departments', views.DepartmentViewSet, basename='depart
 router.register(r'master/categories', views.CategoryViewSet, basename='category')
 router.register(r'master/universities', views.UniversityViewSet, basename='university')
 router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
+router.register(r'master/academic-years', views.AcademicYearViewSet, basename='academic-year')
 router.register(r'master/program', views.ProgramListCreateView, basename='program')
+router.register(r'master/semester-duration', views.SemesterDurationViewSet, basename='semester-duration')
 router.register(r'master/branch', views.BranchListCreateView, basename='branch')
 router.register(r'master/year', views.YearListCreateView, basename='year')
 router.register(r'master/semester', views.SemesterListCreateView, basename='semester')
@@ -32,6 +34,8 @@ urlpatterns = [
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('master/tables/', views.MasterTableListView.as_view(), name='master-tables'),
+    path('api/master/academic-years', include(router.urls)),
+    path('api/master/semester-duration', include(router.urls)),
     path('api/program-master/', views.ProgramTableListView.as_view(), name='program-master'),
 
 ]
