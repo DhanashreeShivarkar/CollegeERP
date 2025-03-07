@@ -697,35 +697,7 @@ class ProgramTableListView(View):
 class BranchListCreateView(BaseModelViewSet):
     queryset = BRANCH.objects.all()
     serializer_class = BranchSerializer
-
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
     
-    def post(self, request):
-        try:
-            # Clear user session
-            request.session.flush()
-            
-            # Blacklist the JWT token if you're using JWT
-            try:
-                refresh_token = request.data.get('refresh_token')
-                if refresh_token:
-                    token = RefreshToken(refresh_token)
-                    token.blacklist()
-            except Exception as e:
-                logger.warning(f"Error blacklisting token: {str(e)}")
-            
-            return Response({
-                'status': 'success',
-                'message': 'Successfully logged out'
-            })
-        except Exception as e:
-            logger.error(f"Error in logout: {str(e)}")
-            return Response({
-                'status': 'error',
-                'message': 'Error during logout'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -754,6 +726,34 @@ class LogoutView(APIView):
         serializer = self.get_serializer(branches, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            # Clear user session
+            request.session.flush()
+            
+            # Blacklist the JWT token if you're using JWT
+            try:
+                refresh_token = request.data.get('refresh_token')
+                if refresh_token:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+            except Exception as e:
+                logger.warning(f"Error blacklisting token: {str(e)}")
+            
+            return Response({
+                'status': 'success',
+                'message': 'Successfully logged out'
+            })
+        except Exception as e:
+            logger.error(f"Error in logout: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': 'Error during logout'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
 class YearListCreateView(BaseModelViewSet):
     queryset = YEAR.objects.all()
     serializer_class = YearSerializer
@@ -764,6 +764,20 @@ class YearListCreateView(BaseModelViewSet):
         if branch_id:
             queryset = queryset.filter(BRANCH_id=branch_id)  # ✅ Ensure field name matches model
         return queryset
+    
+    def list(self, request, *args, **kwargs):
+        branch_id = request.GET.get("branch_id")  # Get branch_id from query params
+        years = self.queryset  # Get base queryset of active years
+
+        if branch_id:
+            try:
+                branch_id = int(branch_id)
+                years = years.filter(BRANCH=branch_id)  # Filter years by branch
+            except ValueError:
+                return Response({"error": "Invalid Branch ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(years, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class SemesterListCreateView(viewsets.ModelViewSet):
     """
@@ -772,7 +786,7 @@ class SemesterListCreateView(viewsets.ModelViewSet):
     queryset = SEMESTER.objects.all().order_by("YEAR", "SEMESTER")  # Sorting by year and semester
     serializer_class = SemesterSerializer
    
-
+   
     def create(self, request, *args, **kwargs):
         """
         Custom create method to handle extra validation or data processing.
@@ -782,14 +796,43 @@ class SemesterListCreateView(viewsets.ModelViewSet):
             serializer.save(CREATED_BY=request.user, UPDATED_BY=request.user)
             return Response({"message": "Semester created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_queryset(self):
+        """
+        Override to filter semesters by year_id.
+        """
+        queryset = super().get_queryset()
+        year_id = self.request.query_params.get("year_id")
 
-def get_semesters(request):
-    query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        columns = [col[0] for col in cursor.description]
-        data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    return JsonResponse(data, safe=False)
+        if year_id:
+            try:
+                queryset = queryset.filter(YEAR_id=int(year_id))
+            except ValueError:
+                return SEMESTER.objects.none()  # Return an empty queryset if invalid input
+
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        year_id = request.GET.get("year_id")  # Get year_id from query params
+        semesters = self.get_queryset()  # Apply filtering
+
+        if year_id:
+            try:
+                year_id = int(year_id)
+                semesters = semesters.filter(YEAR_id=year_id)  # Ensure filtering works
+            except ValueError:
+                return Response({"error": "Invalid Year ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(semesters, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # def get_semesters(request):
+    #     query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
+    #     with connection.cursor() as cursor:
+    #         cursor.execute(query)
+    #         columns = [col[0] for col in cursor.description]
+    #         data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    #         return JsonResponse(data, safe=False)
 
 class SemesterDurationViewSet(BaseModelViewSet):
     queryset = SEMESTER_DURATION.objects.all()
