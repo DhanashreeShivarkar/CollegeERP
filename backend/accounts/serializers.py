@@ -115,3 +115,30 @@ class ProgramSerializer(serializers.ModelSerializer):
     'DURATION_YEARS', 'LEVEL', 'TYPE', 'DESCRIPTION',
     'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
 ]
+
+class BranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BRANCH
+        fields = ['BRANCH_ID','PROGRAM','NAME',
+        'CODE','DESCRIPTION','IS_ACTIVE','CREATED_BY',
+        'UPDATED_BY'
+        ]
+
+class YearSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YEAR
+        fields =  ['YEAR_ID','YEAR','BRANCH']
+        
+class SemesterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SEMESTER
+        fields = ['SEMESTER_ID','SEMESTER','YEAR'
+        ]
+
+class SemesterDurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SEMESTER_DURATION
+        fields = [
+            'SEMESTER', 'START_DATE', 'END_DATE', 
+            'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
+        ]

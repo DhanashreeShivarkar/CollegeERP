@@ -24,16 +24,14 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework.permissions import AllowAny
-<<<<<<< HEAD
 from .models import STATE
 from .serializers import StateSerializer
 from .models import CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, ACADEMIC_YEAR
 from .serializers import (CitySerializer, CurrencySerializer, 
                         LanguageSerializer, DesignationSerializer, CategorySerializer, UniversitySerializer, InstituteSerializer, AcademicYearSerializer)
-=======
 from django.http import JsonResponse
 from django.db import connection
->>>>>>> 84f5a7d4b00850d0d134b87002ec14515b343d6f
+
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
@@ -728,7 +726,6 @@ class LogoutView(APIView):
                 'message': 'Error during logout'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-=======
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -792,12 +789,7 @@ def get_semesters(request):
         cursor.execute(query)
         columns = [col[0] for col in cursor.description]
         data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-<<<<<<< HEAD
     return JsonResponse(data, safe=False)
-
-
-
-
 
 class SemesterDurationViewSet(BaseModelViewSet):
     queryset = SEMESTER_DURATION.objects.all()
@@ -816,6 +808,5 @@ class SemesterDurationViewSet(BaseModelViewSet):
         active_semesters = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(active_semesters, many=True)
         return Response(serializer.data)
-=======
-    return JsonResponse(data, safe=False)
->>>>>>> 84f5a7d4b00850d0d134b87002ec14515b343d6f
+    
+

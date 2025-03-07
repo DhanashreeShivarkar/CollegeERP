@@ -26,16 +26,24 @@ interface University {
 
   interface Program {
     PROGRAM_ID: number;
-    CODE: string;
+    NAME: string;
   }
 
+  interface Branch {
+    BRANCH_ID: number;
+    NAME: string;
+  }
+  interface Year {
+    YEAR_ID: number;
+    YEAR: string;
+  }
 const SemesterDurationForm = () => {
     // Explicitly define the types of state variables
     const [universities, setUniversities] = useState<University[]>([]);
     const [institutes, setInstitutes] = useState<Institute[]>([]);
     const [programs, setPrograms] = useState<Program[]>([]);
-    const [branches, setBranches] = useState<OptionType[]>([]);
-    const [years, setYears] = useState<OptionType[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
+    const [years, setYears] = useState<Year[]>([]);
     const [semesters, setSemesters] = useState<OptionType[]>([]);
     const [error, setError] = useState("");
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -111,71 +119,64 @@ const SemesterDurationForm = () => {
             fetchPrograms(instituteId);
         }
     };
-    
+        
     const fetchPrograms = async (instituteId: number) => {
+        setPrograms([]);
+        setBranches([]);
+        setYears([]);
         try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-    
-            const response = await axiosInstance.get(`/api/master/programs/?institute_id=${instituteId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-    
-            if (response.status === 200) {
-                setPrograms(response.data);
-            }
+          const response = await axiosInstance.get(`/api/master/program/?institute_id=${instituteId}`);
+          setPrograms(response.data);
         } catch (error) {
-            console.error('Error fetching programs:', error);
-            setError('Failed to load programs');
+          console.error("Error fetching programs:", error);
+        }
+      };
+    
+      const fetchBranches = async (programId: number) => {
+        setBranches([]);
+        setYears([]);
+        try {
+          const response = await axiosInstance.get(`/api/master/branch/?program_id=${programId}`);
+          setBranches(response.data);
+        } catch (error) {
+          console.error("Error fetching branches:", error);
+        }
+      };
+      
+      const handleProgramChange = (e: React.ChangeEvent<unknown>) => {
+        const target = e.target as HTMLSelectElement; // Explicitly cast to HTMLSelectElement
+        const programId = parseInt(target.value, 10);
+        setSelectedProgram(programId.toString());
+    
+        if (programId) {
+            fetchBranches(programId); // Fetch branches based on selected program
+        }
+     };
+
+     const handleBranchChange = (e: React.ChangeEvent<any>) => {
+        const target = e.target as HTMLSelectElement; // Explicit cast
+        const branchId = parseInt(target.value, 10);
+        setSelectedBranch(branchId.toString());
+    
+        if (branchId) {
+            fetchYears(branchId);
         }
     };
-    
-    const handleProgramChange = (data: OptionType[]) => {
-    const programs: Program[] = data.map((option) => ({
-        PROGRAM_ID: option.value, // Now `value` exists
-        CODE: option.label,       // Now `label` exists
-    }));
-
-    setPrograms(programs);
-};
-
-    
-    // useEffect(() => {
-    //     if (selectedInstitute) {
-    //         fetch(`/api/programs?institute=${selectedInstitute}`)
-    //             .then(res => res.json())
-    //             .then((data: OptionType[]) => setPrograms(data))
-    //             .catch(err => console.error("Error fetching programs:", err));
-    //     }
-    // }, [selectedInstitute]);
-
-    // useEffect(() => {
-    //     if (selectedProgram) {
-    //         fetch(`/api/branches?program=${selectedProgram}`)
-    //             .then(res => res.json())
-    //             .then((data: OptionType[]) => setBranches(data))
-    //             .catch(err => console.error("Error fetching branches:", err));
-    //     }
-    // }, [selectedProgram]);
-
-    // useEffect(() => {
-    //     if (selectedBranch) {
-    //         fetch(`/api/years?branch=${selectedBranch}`)
-    //             .then(res => res.json())
-    //             .then((data: OptionType[]) => setYears(data))
-    //             .catch(err => console.error("Error fetching years:", err));
-    //     }
-    // }, [selectedBranch]);
-
-    // useEffect(() => {
-    //     if (selectedYear) {
-    //         fetch(`/api/semesters?year=${selectedYear}`)
-    //             .then(res => res.json())
-    //             .then((data: OptionType[]) => setSemesters(data))
-    //             .catch(err => console.error("Error fetching semesters:", err));
-    //     }
-    // }, [selectedYear]);
-
+        
+    const fetchYears = async (branchId: number) => {
+        console.log("Fetching years for branch:", branchId); // Debug log
+        setYears([]); 
+      
+        try {
+            const response = await axiosInstance.get(`/api/master/years/?branch_id=${branchId}`);
+          console.log("API Response:", response.data); // Debug log
+      
+          if (response.status === 200) setYears(response.data);
+        } catch (error) {
+          console.error("Error fetching years:", error);
+        }
+      };
+      
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = {
@@ -215,12 +216,11 @@ const SemesterDurationForm = () => {
                                 <Form.Group>
                                     <Form.Label>Institute</Form.Label>
                                     <Form.Control as="select" value={selectedInstitute} onChange={handleInstituteChange} disabled={!selectedUniversity}>
-    <option value="" disabled>Select Institute</option>
-    {institutes.map((i: Institute) => (
-        <option key={i.INSTITUTE_ID} value={i.INSTITUTE_ID}>{i.CODE}</option>
-    ))}
-</Form.Control>
-
+                                        <option value="" disabled>Select Institute</option>
+                                        {institutes.map((i: Institute) => (
+                                            <option key={i.INSTITUTE_ID} value={i.INSTITUTE_ID}>{i.CODE}</option>
+                                        ))}
+                                    </Form.Control>
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -229,22 +229,21 @@ const SemesterDurationForm = () => {
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Program</Form.Label>
-                                    <Form.Control as="select" value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} disabled={!selectedInstitute}>
-    <option value="" disabled>Select Program</option>
-    {programs.map((p) => (
-        <option key={p.PROGRAM_ID} value={p.PROGRAM_ID}>{p.CODE}</option>
-    ))}
-</Form.Control>
-
+                                    <Form.Control as="select" value={selectedProgram} onChange={handleProgramChange} disabled={!selectedInstitute}>
+                                        <option value="" disabled>Select Program</option>
+                                        {programs.map((p) => (
+                                            <option key={p.PROGRAM_ID} value={p.PROGRAM_ID}>{p.NAME}</option>
+                                        ))}
+                                    </Form.Control>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Branch</Form.Label>
-                                    <Form.Control as="select" value={selectedBranch} onChange={e => setSelectedBranch(e.target.value)} disabled={!selectedProgram}>
+                                    <Form.Control as="select" value={selectedBranch} onChange={handleBranchChange} disabled={!selectedProgram}>
                                         <option value="" disabled>Select Branch</option>
                                         {branches.map((b) => (
-                                            <option key={b.id} value={b.id}>{b.name}</option>
+                                            <option key={b.BRANCH_ID} value={b.BRANCH_ID}>{b.NAME}</option>
                                         ))}
                                     </Form.Control>
                                 </Form.Group>
@@ -258,7 +257,7 @@ const SemesterDurationForm = () => {
                                     <Form.Control as="select" value={selectedYear} onChange={e => setSelectedYear(e.target.value)} disabled={!selectedBranch}>
                                         <option value="" disabled>Select Year</option>
                                         {years.map((y) => (
-                                            <option key={y.id} value={y.id}>{y.name}</option>
+                                            <option key={y.YEAR_ID} value={y.YEAR_ID}>{y.YEAR}</option>
                                         ))}
                                     </Form.Control>
                                 </Form.Group>

@@ -78,7 +78,7 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
             {/* Add other routes here */}
-            <Route path="/courseMaster" element={<NameEntryForm />} />
+            {/* <Route path="/courseMaster" element={<NameEntryForm />} /> */}
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
