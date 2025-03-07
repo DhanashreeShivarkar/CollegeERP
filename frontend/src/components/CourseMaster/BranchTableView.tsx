@@ -4,9 +4,14 @@ import { Button, Table } from "react-bootstrap";
 import { Paper } from "@mui/material";
 import EditModal from "../../components/CourseMaster/Editmodal"; // ✅ Import the modal
 
+interface Program {
+  PROGRAM_ID: number;
+  NAME: string;
+}
+
 interface Branch {
   BRANCH_ID: number;
-  PROGRAM: string;
+  PROGRAM: Program;
   NAME: string;
   CODE: string;
   IS_ACTIVE: boolean;
@@ -99,7 +104,7 @@ const BranchTableView: React.FC = () => {
             <tr key={branch.BRANCH_ID}>
               <td>{branch.NAME}</td>
               <td>{branch.CODE}</td>
-              <td>{branch.PROGRAM}</td>
+              <td>{branch.PROGRAM.NAME}</td> {/* Display the program name */}
               <td>{branch.IS_ACTIVE ? "Yes" : "No"}</td>
               <td>
                 <Button variant="primary" onClick={() => handleEdit(branch)}>

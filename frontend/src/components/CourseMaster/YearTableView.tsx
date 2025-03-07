@@ -6,26 +6,24 @@ import EditModal from "../../components/CourseMaster/Editmodal";
 
 interface Year {
   YEAR_ID: number;
-  YEAR: number;
+  YEAR: number | { [key: string]: any }; // ✅ Handles object case
   IS_ACTIVE: boolean;
-  BRANCH_ID: number;
-  BRANCH_NAME: string;
+  BRANCH: Branch | null;
 }
 
 interface Branch {
   BRANCH_ID: number;
-  BRANCH_NAME: string;
+  NAME: string;
 }
 
 const YearTableView: React.FC = () => {
   const [years, setYears] = useState<Year[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingYear, setEditingYear] = useState<Year | null>(null);
 
   useEffect(() => {
     fetchYears();
-    fetchBranches();
   }, []);
 
   const fetchYears = async () => {
@@ -37,58 +35,13 @@ const YearTableView: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (Array.isArray(response.data)) {
-        setYears(response.data);
-      } else {
-        console.error("Expected an array but received:", response.data);
-      }
+      console.log("Years Data:", response.data); // ✅ Debugging
+
+      setYears(response.data);
     } catch (error) {
       console.error("Error fetching years:", error);
-    }
-  };
-
-  const fetchBranches = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const response = await axiosInstance.get("/api/master/branch/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (Array.isArray(response.data)) {
-        setBranches(response.data);
-      } else {
-        console.error("Expected an array but received:", response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching branches:", error);
-    }
-  };
-
-  const handleEdit = (year: Year) => {
-    setEditingYear(year);
-    setShowEditModal(true);
-  };
-
-  const handleUpdate = async (updatedYear: Year) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      await axiosInstance.put(`/api/master/year/${updatedYear.YEAR_ID}/`, updatedYear, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setYears((prevYears) =>
-        prevYears.map((year) => (year.YEAR_ID === updatedYear.YEAR_ID ? updatedYear : year))
-      );
-
-      setShowEditModal(false);
-      alert("Year updated successfully!");
-    } catch (error) {
-      console.error("Error updating year:", error);
-      alert("Failed to update year");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,6 +62,38 @@ const YearTableView: React.FC = () => {
     }
   };
 
+  const handleEdit = (year: Year) => {
+    setEditingYear(year);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (updatedYear: Year) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      await axiosInstance.put(`/api/master/year/${updatedYear.YEAR_ID}/`, updatedYear, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setYears((prevYears) =>
+        prevYears.map((year) =>
+          year.YEAR_ID === updatedYear.YEAR_ID ? updatedYear : year
+        )
+      );
+
+      setShowEditModal(false);
+      alert("Year updated successfully!");
+    } catch (error) {
+      console.error("Error updating year:", error);
+      alert("Failed to update year");
+    }
+  };
+
+  if (loading) {
+    return <p>Loading data...</p>;
+  }
+
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
       <h3>Year Management</h3>
@@ -127,13 +112,22 @@ const YearTableView: React.FC = () => {
           {years.map((year) => (
             <tr key={year.YEAR_ID}>
               <td>{year.YEAR_ID}</td>
-              <td>{year.YEAR}</td>
-              <td>{year.BRANCH_ID}</td>
-              <td>{year.BRANCH_NAME}</td>
+              {/* 🛠️ Ensure `year.YEAR` is displayed correctly */}
+              <td>{typeof year.YEAR === "object" ? JSON.stringify(year.YEAR) : String(year.YEAR)}</td>
+              <td>{year.BRANCH ? year.BRANCH.BRANCH_ID : "Not Found"}</td>
+              <td>{year.BRANCH ? year.BRANCH.NAME : "Not Found"}</td>
               <td>{year.IS_ACTIVE ? "Yes" : "No"}</td>
               <td>
-                <Button variant="primary" onClick={() => handleEdit(year)}>Edit</Button>
-                <Button variant="danger" onClick={() => handleDelete(year.YEAR_ID)} style={{ marginLeft: "10px" }}>Delete</Button>
+                <Button variant="primary" onClick={() => handleEdit(year)}>
+                  Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDelete(year.YEAR_ID)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Delete
+                </Button>
               </td>
             </tr>
           ))}
@@ -146,7 +140,7 @@ const YearTableView: React.FC = () => {
           onHide={() => setShowEditModal(false)}
           onSave={handleUpdate}
           data={editingYear}
-          title="Edit Year"
+          title="Year"
         />
       )}
     </Paper>
