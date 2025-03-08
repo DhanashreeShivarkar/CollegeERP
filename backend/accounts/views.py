@@ -837,6 +837,7 @@ class YearListCreateView(BaseModelViewSet):
         if branch_id:
             queryset = queryset.filter(BRANCH_id=branch_id)  # ✅ Ensure field name matches model
         return queryset
+    
     def list(self, request, *args, **kwargs):
         branch_id = request.GET.get("branch_id")  # Get branch_id from query params
         years = self.queryset  # Get base queryset of active years
@@ -897,6 +898,14 @@ class SemesterListCreateView(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(semesters, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # def get_semesters(request):
+    #     query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
+    #     with connection.cursor() as cursor:
+    #         cursor.execute(query)
+    #         columns = [col[0] for col in cursor.description]
+    #         data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    #         return JsonResponse(data, safe=False)
 
 class SemesterDurationViewSet(BaseModelViewSet):
     queryset = SEMESTER_DURATION.objects.all()

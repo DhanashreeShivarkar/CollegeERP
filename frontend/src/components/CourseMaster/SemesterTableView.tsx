@@ -4,22 +4,19 @@ import { Button, Table } from "react-bootstrap";
 import { Paper } from "@mui/material";
 import EditModal from "../../components/CourseMaster/Editmodal";
 
-interface Year {
-  YEAR_ID: number;
-  YEAR: string;  // YEAR_NAME is saved as YEAR in DB ✅
-}
-
 interface Semester {
   SEMESTER_ID: number;
   SEMESTER: string;
-  YEAR: Year | null;  // ✅ YEAR is an object, needs proper access
+  BRANCH_NAME: string; // ✅ Display Branch Name
+  YEAR_YEAR: string;    // ✅ Display Year Name
   IS_ACTIVE: boolean;
 }
 
 const SemesterTableView: React.FC = () => {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingSemester, setEditingSemester] = useState<Semester | null>(null);
+  const [editingSemester, setEditingSemester] = useState<{ SEMESTER: string } | null>(null);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchSemesters();
@@ -34,8 +31,6 @@ const SemesterTableView: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("API Response:", response.data); // ✅ Debugging
-
       if (Array.isArray(response.data)) {
         setSemesters(response.data);
       } else {
@@ -47,25 +42,27 @@ const SemesterTableView: React.FC = () => {
   };
 
   const handleEdit = (semester: Semester) => {
-    setEditingSemester(semester);
+    setEditingSemester({ SEMESTER: semester.SEMESTER }); // ✅ Edit only semester name
+    setSelectedSemesterId(semester.SEMESTER_ID);
     setShowEditModal(true);
   };
 
-  const handleUpdate = async (updatedSemester: Semester) => {
+  const handleUpdate = async (updatedData: { SEMESTER: string }) => {
+    if (selectedSemesterId === null) return;
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
 
       await axiosInstance.put(
-        `/api/master/semester/${updatedSemester.SEMESTER_ID}/`,
-        updatedSemester,
+        `/api/master/semester/${selectedSemesterId}/`,
+        updatedData, // ✅ Only updating semester name
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setSemesters((prevSemesters) =>
         prevSemesters.map((semester) =>
-          semester.SEMESTER_ID === updatedSemester.SEMESTER_ID
-            ? updatedSemester
+          semester.SEMESTER_ID === selectedSemesterId
+            ? { ...semester, SEMESTER: updatedData.SEMESTER } // ✅ Update only semester name
             : semester
         )
       );
@@ -103,9 +100,8 @@ const SemesterTableView: React.FC = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>Semester ID</th>
-            <th>Year ID</th>
-            <th>Year Name</th>
+            <th>Branch Name</th>  {/* ✅ Keep for display */}
+            <th>Year Name</th>    {/* ✅ Keep for display */}
             <th>Semester</th>
             <th>Active</th>
             <th>Actions</th>
@@ -114,9 +110,8 @@ const SemesterTableView: React.FC = () => {
         <tbody>
           {semesters.map((semester) => (
             <tr key={semester.SEMESTER_ID}>
-              <td>{semester.SEMESTER_ID}</td>
-              <td>{semester.YEAR ? semester.YEAR.YEAR_ID : "Unknown"}</td> {/* ✅ Fixed YEAR_ID display */}
-              <td>{semester.YEAR ? semester.YEAR.YEAR : "Unknown Year"}</td> {/* ✅ Fixed YEAR_NAME display */}
+              <td>{semester.BRANCH_NAME || "-"}</td> {/* ✅ Display Branch Name */}
+              <td>{semester.YEAR_YEAR || "-"}</td>   {/* ✅ Display Year */}
               <td>{semester.SEMESTER}</td>
               <td>{semester.IS_ACTIVE ? "Yes" : "No"}</td>
               <td>
@@ -142,7 +137,7 @@ const SemesterTableView: React.FC = () => {
           onHide={() => setShowEditModal(false)}
           onSave={handleUpdate}
           data={editingSemester}
-          title="Edit Semester"
+          title="Edit Semester Name"
         />
       )}
     </Paper>
