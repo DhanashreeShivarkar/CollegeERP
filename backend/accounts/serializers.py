@@ -117,11 +117,15 @@ class ProgramSerializer(serializers.ModelSerializer):
 ]
 
 class BranchSerializer(serializers.ModelSerializer):
+    PROGRAM_CODE = serializers.CharField(source='PROGRAM.CODE', read_only=True)
+    INSTITUTE_CODE = serializers.CharField(source='PROGRAM.INSTITUTE.CODE', read_only=True)
+    
     class Meta:
         model = BRANCH
-        fields = ['BRANCH_ID','PROGRAM','NAME',
-        'CODE','DESCRIPTION','IS_ACTIVE','CREATED_BY',
-        'UPDATED_BY'
+        fields = [
+            'BRANCH_ID', 'PROGRAM', 'NAME', 'CODE',
+            'DESCRIPTION', 'IS_ACTIVE', 'CREATED_BY',
+            'UPDATED_BY', 'PROGRAM_CODE', 'INSTITUTE_CODE'
         ]
 
 class YearSerializer(serializers.ModelSerializer):

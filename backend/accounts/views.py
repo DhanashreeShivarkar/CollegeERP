@@ -248,11 +248,12 @@ class VerifyOTPView(APIView):
                     department_id = None
                     institute_id = None
                     institute_code = None
+                    emp_name = user.FIRST_NAME  # Set default to user's FIRST_NAME
                     
                 # Store session data with emp_name
                 session_data = {
                     'user_id': user.USER_ID,
-                    'name': emp_name,  # Use EMP_NAME here
+                    'name': emp_name,  # Now emp_name will always be defined
                     'email': user.EMAIL,
                     'is_superuser': user.IS_SUPERUSER,
                     'designation': {
@@ -379,7 +380,7 @@ class VerifyResetOTPView(APIView):
                 'status': 'success' if is_valid else 'error',
                 'message': message,
                 'verified': is_valid
-            }, status=status.HTTP_200_OK if is_valid else status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_200_OK if is_valid else status.HTTP_4REQUEST)
             
         except CustomUser.DoesNotExist:
             return Response({
