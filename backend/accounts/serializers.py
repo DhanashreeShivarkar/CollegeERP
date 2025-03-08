@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH, YEAR,SEMESTER
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH, YEAR,SEMESTER,ACADEMIC_YEAR,SEMESTER_DURATION
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -93,11 +93,19 @@ class InstituteSerializer(serializers.ModelSerializer):
             'ADDRESS', 'CONTACT_NUMBER', 'EMAIL', 'WEBSITE',
             'ESTD_YEAR', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
         ]
+                
+class AcademicYearSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ACADEMIC_YEAR
+        fields = [
+            'ACADEMIC_YEAR', 'START_DATE', 'END_DATE',
+            'INSTITUTE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
+        ]
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = DEPARTMENT
-        fields = ['DEPARTMENT_ID', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+        fields = ['DEPARTMENT_ID', 'INSTITUTE_CODE', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
 
 class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,17 +113,23 @@ class ProgramSerializer(serializers.ModelSerializer):
         fields = [
     'PROGRAM_ID', 'INSTITUTE', 'NAME', 'CODE', 
     'DURATION_YEARS', 'LEVEL', 'TYPE', 'DESCRIPTION',
-    'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY',
+    'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
 ]
-        
 
 class BranchSerializer(serializers.ModelSerializer):
+<<<<<<< HEAD
     PROGRAM = ProgramSerializer(read_only=True)  # ✅ Use YearSerializer
+=======
+    PROGRAM_CODE = serializers.CharField(source='PROGRAM.CODE', read_only=True)
+    INSTITUTE_CODE = serializers.CharField(source='PROGRAM.INSTITUTE.CODE', read_only=True)
+    
+>>>>>>> 1405027219c9a09e33f40ef845f6a2c491673eb1
     class Meta:
         model = BRANCH
-        fields = ['BRANCH_ID','PROGRAM','NAME',
-        'CODE','DESCRIPTION','IS_ACTIVE','CREATED_BY',
-        'UPDATED_BY'
+        fields = [
+            'BRANCH_ID', 'PROGRAM', 'NAME', 'CODE',
+            'DESCRIPTION', 'IS_ACTIVE', 'CREATED_BY',
+            'UPDATED_BY', 'PROGRAM_CODE', 'INSTITUTE_CODE'
         ]
         
 
@@ -135,6 +149,7 @@ class SemesterSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = SEMESTER
+<<<<<<< HEAD
         fields = ['SEMESTER_ID','SEMESTER','YEAR']
    
         
@@ -146,4 +161,15 @@ class SemesterSerializer(serializers.ModelSerializer):
 #         'CODE','CREDITS','THEORY_MARKS','PRACTICAL_MARKS',
 #         'IS_ELECTIVE','IS_ACTIVE','SEMESTER_ID'
 #         ]
+=======
+        fields = ['SEMESTER_ID','SEMESTER','YEAR'
+        ]
+>>>>>>> 1405027219c9a09e33f40ef845f6a2c491673eb1
 
+class SemesterDurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SEMESTER_DURATION
+        fields = [
+            'SEMESTER', 'START_DATE', 'END_DATE', 
+            'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
+        ]

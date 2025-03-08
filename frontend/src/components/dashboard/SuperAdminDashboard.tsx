@@ -5,12 +5,16 @@ import Footer from "../layout/Footer";
 import Sidebar from "../layout/Sidebar";
 import MasterEntryPage from "../master/MasterEntryPage";
 import UniversityMaster from "../master/UniversityMaster";
+import InstituteMasterEntry from "../master/InstituteMasterEntry";
+import AcademicYearMaster from "../master/AcademicYearMaster";
 import InstituteMaster from "../master/InstituteMaster";
 import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
 import EmployeeTypeEntry from "../Employee/employeeTypeEntry";
 import NameEntryForm from "../CourseMaster/ProgramEntryForm";
+import SemesterDurationForm from "../master/SemesterDuration";
+import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
-
+import SemesterDurationTableView from "../master/SemesterDurationTableView";
 
 
 const DashboardHome = () => (
@@ -68,20 +72,20 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/master" element={<MasterEntryPage />} />
             <Route path="/master/:tableName" element={<MasterEntryPage />} />
             <Route path="/master/university" element={<UniversityMaster />} />
+            <Route path="/master/institute" element={<InstituteMasterEntry />} />
+            <Route path="/master/academic" element={<AcademicYearMaster />} />
+            <Route path="/master/semesterduration" element={<SemesterDurationTableView />} />
             <Route path="/master/institute" element={<InstituteMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
-            {/* Add other routes here */}
-            {/* <Route path="/courseMaster" element={<NameEntryForm />} /> */}
+            <Route
+              path="/master-employee/create"
+              element={<CreateEmployee />}
+            />
             <Route path="/courseMaster" element={<ProgramTable />} />
-            {/* <Route path="/courseMaster" element={<ProgramList />} /> */}
-            {/* <Route path="/courseMaster" element={<ProgramList />} /> */}
-
-            
           </Routes>
         </div>
       </div>
-
       <Footer />
     </div>
   );

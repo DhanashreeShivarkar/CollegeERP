@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axios";
-import { Button, Table } from "react-bootstrap";
+import { Button, Table, Badge, ButtonGroup } from "react-bootstrap";
 import { Paper } from "@mui/material";
 import EditModal from "../../components/CourseMaster/Editmodal"; // ✅ Import the modal
 
@@ -11,9 +11,10 @@ interface Program {
 
 interface Branch {
   BRANCH_ID: number;
-  PROGRAM: Program;
+  CODE: Program;
   NAME: string;
-  CODE: string;
+  PROGRAM_CODE: string;  // Updated field
+  INSTITUTE_CODE: string; // Updated field
   IS_ACTIVE: boolean;
 }
 
@@ -92,31 +93,35 @@ const BranchTableView: React.FC = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
+            <th>Branch Code</th>
             <th>Branch Name</th>
-            <th>Code</th>
-            <th>Program</th>
-            <th>Active</th>
+            <th>Program Code</th>  {/* Updated label */}
+            <th>Institute Code</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {branches.map((branch) => (
-            <tr key={branch.BRANCH_ID}>
-              <td>{branch.NAME}</td>
+            <tr key={branch.CODE}>
               <td>{branch.CODE}</td>
-              <td>{branch.PROGRAM.NAME}</td> {/* Display the program name */}
-              <td>{branch.IS_ACTIVE ? "Yes" : "No"}</td>
+              <td>{branch.NAME}</td>
+              <td>{branch.PROGRAM_CODE || '-'}</td> {/* Updated field */}
+              <td>{branch.INSTITUTE_CODE || '-'.NAME}</td> {/* Display the program name */} {/* Updated field */}
               <td>
-                <Button variant="primary" onClick={() => handleEdit(branch)}>
-                  Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleDelete(branch.BRANCH_ID)}
-                  style={{ marginLeft: "10px" }}
-                >
-                  Delete
-                </Button>
+                <Badge bg={branch.IS_ACTIVE ? 'success' : 'danger'}>
+                  {branch.IS_ACTIVE ? 'Active' : 'Inactive'}
+                </Badge>
+              </td>
+              <td>
+                <ButtonGroup size="sm">
+                  <Button variant="primary" onClick={() => handleEdit(branch)}>
+                    Edit
+                  </Button>
+                  <Button variant="danger" onClick={() => handleDelete(branch.BRANCH_ID)}>
+                    Delete
+                  </Button>
+                </ButtonGroup>
               </td>
             </tr>
           ))}

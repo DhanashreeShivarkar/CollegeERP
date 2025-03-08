@@ -20,6 +20,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "Administration",
       children: [
         {
+          icon: "bi-people-fill",
+          text: "Master Employee",
+          children: [
+            {
+              icon: "bi-person-plus-fill",
+              text: "Create Employee",
+              path: "/dashboard/master-employee/create",
+              exact: true,
+            },
+          ],
+        },
+        {
           icon: "bi-database-fill",
           text: "Master",
           children: [
@@ -62,10 +74,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "System Settings",
       path: "/dashboard/settings",
     },
+    // {
+    //   icon: "bi-building",
+    //   text: "Master University",
+    //   path: "/dashboard/master/university",
+    // },
+    // {
+    //   icon: "bi-building",
+    //   text: "Master Institute",
+    //   path: "/dashboard/master/institute",
+    // },
     {
-      icon: "bi-building",
-      text: "Institutions",
-      path: "/dashboard/institutions",
+      icon: "bi-calendar",
+      text: "Academic Year Master",
+      path: "/dashboard/master/academic",
+    },
+    {
+      icon: "bi bi-hourglass",
+      text: "Semester Duration",
+      path: "/dashboard/master/semesterduration",
     },
     { icon: "bi-shield-lock", text: "Roles & Permissions", path: "/roles" },
     { icon: "bi-sliders", text: "Configuration", path: "/config" },
