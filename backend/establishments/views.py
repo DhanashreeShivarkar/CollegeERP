@@ -7,13 +7,14 @@ from django.core.mail import send_mail
 from django.conf import settings
 from utils.id_generators import generate_employee_id, generate_password
 from accounts.models import CustomUser, DESIGNATION
-from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER
+from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER  # Add this import
 from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer, EmployeeMasterSerializer
 import logging
 from django.utils import timezone
 from django.db.models import Q
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +283,20 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 if key not in ['PROFILE_IMAGE', 'EMPLOYEE_ID']:
                     update_data[key] = request.data.get(key)
 
+            # Handle profile image update if provided
+            if 'PROFILE_IMAGE' in request.FILES:
+                # Delete old profile image if exists
+                if instance.PROFILE_IMAGE:
+                    instance.PROFILE_IMAGE.delete(save=False)
+                
+                # Get new file and extension
+                new_image = request.FILES['PROFILE_IMAGE']
+                ext = os.path.splitext(new_image.name)[1]
+                
+                # Set filename to EMPLOYEE_ID + extension
+                new_image.name = f"{instance.EMPLOYEE_ID}{ext}"
+                update_data['PROFILE_IMAGE'] = new_image
+
             # Update employee data
             serializer = self.get_serializer(
                 instance,
@@ -298,11 +313,6 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             updated_employee = serializer.save()
-
-            # Handle profile image update if provided
-            if 'PROFILE_IMAGE' in request.FILES:
-                updated_employee.PROFILE_IMAGE = request.FILES['PROFILE_IMAGE']
-                updated_employee.save()
 
             return Response({
                 'message': 'Employee updated successfully',
