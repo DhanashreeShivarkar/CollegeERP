@@ -31,6 +31,10 @@ from .serializers import (CitySerializer, CurrencySerializer,
                         LanguageSerializer, DesignationSerializer, CategorySerializer, UniversitySerializer, InstituteSerializer, AcademicYearSerializer)
 from django.http import JsonResponse
 from django.db import connection
+import logging  # Add this at the top with other imports
+from establishments.models import EMPLOYEE_MASTER  # Add this import
+
+logger = logging.getLogger(__name__)  # Add this after imports
 
 
 class LoginView(APIView):
@@ -233,10 +237,22 @@ class VerifyOTPView(APIView):
                 # Update login info
                 user.update_login_info(request.META.get('REMOTE_ADDR'))
                 
-                # Store session data
+                # Get employee details if they exist
+                try:
+                    employee = EMPLOYEE_MASTER.objects.get(EMPLOYEE_ID=user.USER_ID)
+                    department_id = employee.DEPARTMENT.DEPARTMENT_ID if employee.DEPARTMENT else None
+                    institute_id = employee.INSTITUTE.INSTITUTE_ID if employee.INSTITUTE else None
+                    institute_code = employee.INSTITUTE.CODE if employee.INSTITUTE else None
+                    emp_name = employee.EMP_NAME  # Get EMP_NAME
+                except EMPLOYEE_MASTER.DoesNotExist:
+                    department_id = None
+                    institute_id = None
+                    institute_code = None
+                    
+                # Store session data with emp_name
                 session_data = {
                     'user_id': user.USER_ID,
-                    'username': user.USERNAME,
+                    'name': emp_name,  # Use EMP_NAME here
                     'email': user.EMAIL,
                     'is_superuser': user.IS_SUPERUSER,
                     'designation': {
@@ -245,8 +261,9 @@ class VerifyOTPView(APIView):
                     },
                     'permissions': user.DESIGNATION.PERMISSIONS,
                     'last_activity': timezone.now().isoformat(),
-                    'department_id': getattr(user, 'DEPARTMENT_ID', None),
-                    'institute_id': getattr(user, 'INSTITUTE_ID', None)
+                    'department_id': department_id,
+                    'institute_id': institute_id,
+                    'institute_code': institute_code
                 }
                 
                 # Store all session data
@@ -876,5 +893,5 @@ class SemesterDurationViewSet(BaseModelViewSet):
         active_semesters = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(active_semesters, many=True)
         return Response(serializer.data)
-    
+
 

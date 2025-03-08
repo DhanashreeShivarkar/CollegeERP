@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from utils.id_generators import generate_employee_id, generate_password
 from accounts.models import CustomUser, DESIGNATION
-from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER
+from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER  # Add this import
 from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer, EmployeeMasterSerializer
 import logging
 from django.utils import timezone
