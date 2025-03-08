@@ -768,7 +768,6 @@ class BranchListCreateView(BaseModelViewSet):
 
         serializer = self.get_serializer(branches, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-<<<<<<< HEAD
     
     # def list(self, request, *args, **kwargs):
     #     branch_id = request.GET.get("branch_id")  # Get branch_id from query params
@@ -785,8 +784,6 @@ class BranchListCreateView(BaseModelViewSet):
     #     return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-=======
->>>>>>> 1405027219c9a09e33f40ef845f6a2c491673eb1
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -840,26 +837,6 @@ class YearListCreateView(BaseModelViewSet):
         if branch_id:
             queryset = queryset.filter(BRANCH_id=branch_id)  # ✅ Ensure field name matches model
         return queryset
-<<<<<<< HEAD
-    
-    # def list(self, request, *args, **kwargs):
-    #     branch_id = request.GET.get("branch_id")  # Get branch_id from query params
-    #     years = self.queryset  # Get base queryset of active years
-
-    #     if branch_id:
-    #         try:
-    #             branch_id = int(branch_id)
-    #             years = years.filter(BRANCH=branch_id)  # Filter years by branch
-    #         except ValueError:
-    #             return Response({"error": "Invalid Branch ID"}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     serializer = self.get_serializer(years, many=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-=======
->>>>>>> 1405027219c9a09e33f40ef845f6a2c491673eb1
-    
     def list(self, request, *args, **kwargs):
         branch_id = request.GET.get("branch_id")  # Get branch_id from query params
         years = self.queryset  # Get base queryset of active years
@@ -891,12 +868,6 @@ class SemesterListCreateView(viewsets.ModelViewSet):
             serializer.save(CREATED_BY=request.user, UPDATED_BY=request.user)
             return Response({"message": "Semester created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-
-
-
-
-=======
     
     def get_queryset(self):
         """
@@ -926,14 +897,6 @@ class SemesterListCreateView(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(semesters, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    # def get_semesters(request):
-    #     query = "SELECT SEMESTER_ID, SEMESTER, YEAR_ID FROM SEMESTERS"
-    #     with connection.cursor() as cursor:
-    #         cursor.execute(query)
-    #         columns = [col[0] for col in cursor.description]
-    #         data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    #         return JsonResponse(data, safe=False)
 
 class SemesterDurationViewSet(BaseModelViewSet):
     queryset = SEMESTER_DURATION.objects.all()
@@ -952,6 +915,5 @@ class SemesterDurationViewSet(BaseModelViewSet):
         active_semesters = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(active_semesters, many=True)
         return Response(serializer.data)
->>>>>>> 1405027219c9a09e33f40ef845f6a2c491673eb1
 
 
