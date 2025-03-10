@@ -31,6 +31,10 @@ from .serializers import (CitySerializer, CurrencySerializer,
                         LanguageSerializer, DesignationSerializer, CategorySerializer, UniversitySerializer, InstituteSerializer, AcademicYearSerializer)
 from django.http import JsonResponse
 from django.db import connection
+import logging  # Add this at the top with other imports
+from establishments.models import EMPLOYEE_MASTER  # Add this import
+
+logger = logging.getLogger(__name__)  # Add this after imports
 
 
 class LoginView(APIView):
@@ -233,10 +237,23 @@ class VerifyOTPView(APIView):
                 # Update login info
                 user.update_login_info(request.META.get('REMOTE_ADDR'))
                 
-                # Store session data
+                # Get employee details if they exist
+                try:
+                    employee = EMPLOYEE_MASTER.objects.get(EMPLOYEE_ID=user.USER_ID)
+                    department_id = employee.DEPARTMENT.DEPARTMENT_ID if employee.DEPARTMENT else None
+                    institute_id = employee.INSTITUTE.INSTITUTE_ID if employee.INSTITUTE else None
+                    institute_code = employee.INSTITUTE.CODE if employee.INSTITUTE else None
+                    emp_name = employee.EMP_NAME  # Get EMP_NAME
+                except EMPLOYEE_MASTER.DoesNotExist:
+                    department_id = None
+                    institute_id = None
+                    institute_code = None
+                    emp_name = user.FIRST_NAME  # Set default to user's FIRST_NAME
+                    
+                # Store session data with emp_name
                 session_data = {
                     'user_id': user.USER_ID,
-                    'username': user.USERNAME,
+                    'name': emp_name,  # Now emp_name will always be defined
                     'email': user.EMAIL,
                     'is_superuser': user.IS_SUPERUSER,
                     'designation': {
@@ -245,8 +262,9 @@ class VerifyOTPView(APIView):
                     },
                     'permissions': user.DESIGNATION.PERMISSIONS,
                     'last_activity': timezone.now().isoformat(),
-                    'department_id': getattr(user, 'DEPARTMENT_ID', None),
-                    'institute_id': getattr(user, 'INSTITUTE_ID', None)
+                    'department_id': department_id,
+                    'institute_id': institute_id,
+                    'institute_code': institute_code
                 }
                 
                 # Store all session data
@@ -362,7 +380,7 @@ class VerifyResetOTPView(APIView):
                 'status': 'success' if is_valid else 'error',
                 'message': message,
                 'verified': is_valid
-            }, status=status.HTTP_200_OK if is_valid else status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_200_OK if is_valid else status.HTTP_4REQUEST)
             
         except CustomUser.DoesNotExist:
             return Response({
@@ -697,7 +715,32 @@ class ProgramTableListView(View):
 class BranchListCreateView(BaseModelViewSet):
     queryset = BRANCH.objects.all()
     serializer_class = BranchSerializer
-    
+
+    def post(self, request):
+        try:
+            # Clear user session
+            request.session.flush()
+            
+            # Blacklist the JWT token if you're using JWT
+            try:
+                refresh_token = request.data.get('refresh_token')
+                if refresh_token:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+            except Exception as e:
+                logger.warning(f"Error blacklisting token: {str(e)}")
+            
+            return Response({
+                'status': 'success',
+                'message': 'Successfully logged out'
+            })
+        except Exception as e:
+            logger.error(f"Error in logout: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': 'Error during logout'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -851,5 +894,5 @@ class SemesterDurationViewSet(BaseModelViewSet):
         active_semesters = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(active_semesters, many=True)
         return Response(serializer.data)
-    
+
 
