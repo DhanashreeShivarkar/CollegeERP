@@ -849,7 +849,7 @@ class ACADEMIC_YEAR(AuditModel):
         verbose_name = 'Academic Year'
         verbose_name_plural = 'Academic Years'
 
-   class DASHBOARD_MASTER(AuditModel):
+class DASHBOARD_MASTER(AuditModel):
     DBM_ID = models.AutoField(primary_key=True, db_column='DBM_ID')
     EMP_ID = models.CharField(max_length=50, unique=True, db_column='EMP_ID')
     DASHBOARD_NAME = models.CharField(max_length=50, db_column='DASHBOARD_NAME')
