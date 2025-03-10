@@ -80,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             {
               icon: "bi-person-vcard-fill",
               text: "Employee Details",
-              path: "/dashboard/establishment/employee",
+              path: "/dashboard/establishment/employeedetails",
               exact: true,
             },
           ],
