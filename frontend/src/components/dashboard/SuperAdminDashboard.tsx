@@ -14,6 +14,8 @@ import NameEntryForm from "../CourseMaster/ProgramEntryForm";
 import SemesterDurationForm from "../master/SemesterDuration";
 import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
+import ProgramList from "../CourseMaster/ProgramList";
+import DashboardMaster from "../DashboardMaster/DashboardMaster";
 import SemesterDurationTableView from "../master/SemesterDurationTableView";
 
 
@@ -76,6 +78,7 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/master/academic" element={<AcademicYearMaster />} />
             <Route path="/master/semesterduration" element={<SemesterDurationTableView />} />
             <Route path="/master/institute" element={<InstituteMaster />} />
+            <Route path="/dashboardmaster" element={<DashboardMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
             <Route
