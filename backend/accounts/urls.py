@@ -15,6 +15,7 @@ router.register(r'master/universities', views.UniversityViewSet, basename='unive
 router.register(r'master/institutes', views.InstituteViewSet, basename='institute')
 router.register(r'master/program', views.ProgramListCreateView, basename='program')
 router.register(r'master/branch', views.BranchListCreateView, basename='branch')
+router.register(r'master/dashboard-master', views.DashboardMasterViewSet, basename='dashboard-master')
 
 app_name = 'accounts'
 

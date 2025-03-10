@@ -79,6 +79,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "Institutions",
       path: "/dashboard/institutions",
     },
+    {
+      icon: "bi-speedometer2",
+      text: "Dashboard Master",
+      path: "/dashboard/dashboardmaster",
+    },
     { icon: "bi-shield-lock", text: "Roles & Permissions", path: "/roles" },
     { icon: "bi-sliders", text: "Configuration", path: "/config" },
     { icon: "bi-person-lines-fill", text: "User Management", path: "/users" },

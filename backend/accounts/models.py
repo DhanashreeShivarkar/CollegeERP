@@ -793,3 +793,21 @@ class CATEGORY(AuditModel):
 
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+    
+
+class DASHBOARD_MASTER(AuditModel):
+    DBM_ID = models.AutoField(primary_key=True, db_column='DBM_ID')
+    EMP_ID = models.CharField(max_length=50, unique=True,db_column='EMP_ID')
+    DASHBOARD_NAME = models.CharField(max_length=50, db_column='DASHBOARD_NAME')
+    INSTITUTE = models.CharField(
+        INSTITUTE,
+        db_column='INSTITUTE_ID'
+    )
+
+    class Meta:
+        db_table = 'DASHBOARD_MASTER'
+        verbose_name = 'Dashboard Master'
+        verbose_name_plural = 'Dashboard Master'
+
+    def __str__(self):
+        return f"{self.DASHBOARD_NAME} - {self.EMP_ID}"

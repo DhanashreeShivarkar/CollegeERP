@@ -12,6 +12,7 @@ import NameEntryForm from "../CourseMaster/ProgramEntryForm";
 import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
 import ProgramList from "../CourseMaster/ProgramList";
+import DashboardMaster from "../DashboardMaster/DashboardMaster";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -69,6 +70,7 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/master/:tableName" element={<MasterEntryPage />} />
             <Route path="/master/university" element={<UniversityMaster />} />
             <Route path="/master/institute" element={<InstituteMaster />} />
+            <Route path="/dashboardmaster" element={<DashboardMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
             {/* Add other routes here */}

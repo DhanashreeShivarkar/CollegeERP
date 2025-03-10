@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM ,BRANCH, DASHBOARD_MASTER
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +25,8 @@ class LanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = LANGUAGE
         fields = ['LANGUAGE_ID', 'NAME', 'CODE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+
+
 
 class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -115,3 +117,9 @@ class BranchSerializer(serializers.ModelSerializer):
         fields = ['BRANCH_ID','PROGRAM','NAME',
         'CODE',
         ]
+
+
+class DashboardMasterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DASHBOARD_MASTER
+        fields = ['DBM_ID', 'EMP_ID', 'DASHBOARD_NAME', 'INSTITUTE','IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
