@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Row, Col } from "react-bootstrap";
+import { Form, Button, Row, Col, Table, Modal } from "react-bootstrap";
 import { motion } from "framer-motion";
 import axiosInstance from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { Paper } from "@mui/material";
+import universityService from "../../api/universityService";
 
 interface UniversityFormData {
   UNIVERSITY_ID?: number;
@@ -33,6 +34,10 @@ const UniversityMaster: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [universities, setUniversities] = useState<UniversityFormData[]>([]);
+  const [showList, setShowList] = useState(false);
+  const [editingUniversity, setEditingUniversity] = useState<UniversityFormData | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -40,6 +45,12 @@ const UniversityMaster: React.FC = () => {
       navigate("/login");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (showList) {
+      fetchUniversities();
+    }
+  }, [showList]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -108,6 +119,51 @@ const UniversityMaster: React.FC = () => {
     }
   };
 
+  const fetchUniversities = async () => {
+    try {
+      const response = await universityService.getUniversities();
+      setUniversities(response.data);
+    } catch (error) {
+      console.error('Error fetching universities:', error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this university?')) {
+      try {
+        await universityService.deleteUniversity(id);
+        await fetchUniversities();
+        alert('University deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting university:', error);
+        alert('Failed to delete university');
+      }
+    }
+  };
+
+  const handleEdit = (university: UniversityFormData) => {
+    setEditingUniversity(university);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUniversity?.UNIVERSITY_ID) return;
+
+    try {
+      await universityService.updateUniversity(
+        editingUniversity.UNIVERSITY_ID,
+        editingUniversity
+      );
+      setShowEditModal(false);
+      await fetchUniversities();
+      alert('University updated successfully!');
+    } catch (error) {
+      console.error('Error updating university:', error);
+      alert('Failed to update university');
+    }
+  };
+
   const years = Array.from({ length: 200 }, (_, i) => currentYear - i);
 
   return (
@@ -128,192 +184,278 @@ const UniversityMaster: React.FC = () => {
             : "0 4px 6px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="container my-5 p-4 shadow rounded form-container"
-        style={{ maxHeight: "calc(100vh - 48px)", overflow: "hidden" }}
-      >
-        <h2 className="text-center mb-4">University Registration Form</h2>
+      <div className="d-flex justify-content-between mb-4">
+        <h2 className="text-center">University Management</h2>
+        <Button 
+          onClick={() => setShowList(!showList)}
+          variant="outline-primary"
+        >
+          {showList ? 'Add New University' : 'View Universities'}
+        </Button>
+      </div>
 
-        {error && (
-          <div className="alert alert-danger" role="alert">
-            {error}
-          </div>
-        )}
+      {showList ? (
+        <div className="table-responsive">
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Email</th>
+                <th>Contact</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {universities.map((university) => (
+                <tr key={university.UNIVERSITY_ID}>
+                  <td>{university.NAME}</td>
+                  <td>{university.CODE}</td>
+                  <td>{university.EMAIL}</td>
+                  <td>{university.CONTACT_NUMBER}</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => handleEdit(university)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => handleDelete(university.UNIVERSITY_ID!)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="container my-5 p-4 shadow rounded form-container"
+          style={{ maxHeight: "calc(100vh - 48px)", overflow: "hidden" }}
+        >
+          <h2 className="text-center mb-4">University Registration Form</h2>
 
-        <Form onSubmit={handleSubmit}>
-          <div className="row g-3">
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    University Name
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="NAME"
-                    value={formData.NAME}
-                    onChange={handleChange}
-                    required
-                    maxLength={255}
-                    placeholder="Enter university name"
-                    className="form-control input-focus"
-                  />
-                </Form.Group>
-              </motion.div>
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          )}
+
+          <Form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      University Name
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="NAME"
+                      value={formData.NAME}
+                      onChange={handleChange}
+                      required
+                      maxLength={255}
+                      placeholder="Enter university name"
+                      className="form-control input-focus"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      University Code
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="CODE"
+                      value={formData.CODE}
+                      onChange={handleChange}
+                      required
+                      maxLength={50}
+                      placeholder="Enter university code"
+                      className="form-control input-focus"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      Contact Number
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="CONTACT_NUMBER"
+                      value={formData.CONTACT_NUMBER}
+                      onChange={handleChange}
+                      required
+                      maxLength={15}
+                      placeholder="Enter contact number"
+                      className="form-control"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      Address
+                    </Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      name="ADDRESS"
+                      value={formData.ADDRESS}
+                      onChange={handleChange}
+                      required
+                      rows={3}
+                      placeholder="Enter complete address"
+                      className="form-control"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      Email
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="EMAIL"
+                      value={formData.EMAIL}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter email address"
+                      className="form-control"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      Website
+                    </Form.Label>
+                    <Form.Control
+                      type="url"
+                      name="WEBSITE"
+                      value={formData.WEBSITE}
+                      onChange={handleChange}
+                      placeholder="Enter website URL (optional)"
+                      className="form-control"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Label className="form-label fw-semibold text-secondary">
+                      Established Year
+                    </Form.Label>
+                    <Form.Select
+                      name="ESTD_YEAR"
+                      value={formData.ESTD_YEAR}
+                      onChange={handleChange}
+                      required
+                      className="form-select"
+                    >
+                      {years.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </motion.div>
+              </div>
+
+              <div className="col-md-4">
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Form.Group>
+                    <Form.Check
+                      type="checkbox"
+                      name="IS_ACTIVE"
+                      checked={formData.IS_ACTIVE}
+                      onChange={handleChange}
+                      label="Is Active"
+                      className="fw-semibold text-secondary"
+                    />
+                  </Form.Group>
+                </motion.div>
+              </div>
             </div>
 
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    University Code
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="CODE"
-                    value={formData.CODE}
-                    onChange={handleChange}
-                    required
-                    maxLength={50}
-                    placeholder="Enter university code"
-                    className="form-control input-focus"
-                  />
-                </Form.Group>
-              </motion.div>
+            <div className="col-12 text-center mt-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create University"}
+              </motion.button>
             </div>
+          </Form>
+        </motion.div>
+      )}
 
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    Contact Number
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="CONTACT_NUMBER"
-                    value={formData.CONTACT_NUMBER}
-                    onChange={handleChange}
-                    required
-                    maxLength={15}
-                    placeholder="Enter contact number"
-                    className="form-control"
-                  />
-                </Form.Group>
-              </motion.div>
-            </div>
-
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    Address
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    name="ADDRESS"
-                    value={formData.ADDRESS}
-                    onChange={handleChange}
-                    required
-                    rows={3}
-                    placeholder="Enter complete address"
-                    className="form-control"
-                  />
-                </Form.Group>
-              </motion.div>
-            </div>
-
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    Email
-                  </Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="EMAIL"
-                    value={formData.EMAIL}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter email address"
-                    className="form-control"
-                  />
-                </Form.Group>
-              </motion.div>
-            </div>
-
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    Website
-                  </Form.Label>
-                  <Form.Control
-                    type="url"
-                    name="WEBSITE"
-                    value={formData.WEBSITE}
-                    onChange={handleChange}
-                    placeholder="Enter website URL (optional)"
-                    className="form-control"
-                  />
-                </Form.Group>
-              </motion.div>
-            </div>
-
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Label className="form-label fw-semibold text-secondary">
-                    Established Year
-                  </Form.Label>
-                  <Form.Select
-                    name="ESTD_YEAR"
-                    value={formData.ESTD_YEAR}
-                    onChange={handleChange}
-                    required
-                    className="form-select"
-                  >
-                    {years.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </motion.div>
-            </div>
-
-            <div className="col-md-4">
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Form.Group>
-                  <Form.Check
-                    type="checkbox"
-                    name="IS_ACTIVE"
-                    checked={formData.IS_ACTIVE}
-                    onChange={handleChange}
-                    label="Is Active"
-                    className="fw-semibold text-secondary"
-                  />
-                </Form.Group>
-              </motion.div>
-            </div>
-          </div>
-
-          <div className="col-12 text-center mt-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "Create University"}
-            </motion.button>
-          </div>
-        </Form>
-      </motion.div>
+      {/* Edit Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit University</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdate}>
+            <Form.Group className="mb-3">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={editingUniversity?.NAME || ''}
+                onChange={(e) => setEditingUniversity(prev => ({ ...prev!, NAME: e.target.value }))}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Code</Form.Label>
+              <Form.Control
+                type="text"
+                value={editingUniversity?.CODE || ''}
+                onChange={(e) => setEditingUniversity(prev => ({ ...prev!, CODE: e.target.value }))}
+                required
+              />
+            </Form.Group>
+            {/* Add other form fields similarly */}
+            <Button variant="primary" type="submit">
+              Save Changes
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </Paper>
   );
 };

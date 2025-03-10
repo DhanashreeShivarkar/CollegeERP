@@ -102,13 +102,30 @@ class ShiftMasterSerializer(BaseAuditSerializer):
         read_only_fields = ['ID', 'CREATED_AT', 'UPDATED_AT', 'CREATED_BY_NAME', 'UPDATED_BY_NAME']
 
 class EmployeeMasterSerializer(BaseAuditSerializer):
+    def validate(self, data):
+        # Add back validation for unique fields
+        if self.instance is None:  # Only for create, not update
+            email = data.get('EMAIL')
+            short_code = data.get('SHORT_CODE')
+            employee_id = data.get('EMPLOYEE_ID')
+
+            if email and EMPLOYEE_MASTER.objects.filter(EMAIL=email).exists():
+                raise serializers.ValidationError({'EMAIL': 'Employee with this email already exists'})
+            
+            if short_code and EMPLOYEE_MASTER.objects.filter(SHORT_CODE=short_code).exists():
+                raise serializers.ValidationError({'SHORT_CODE': 'Employee with this short code already exists'})
+            
+            if employee_id and EMPLOYEE_MASTER.objects.filter(EMPLOYEE_ID=employee_id).exists():
+                raise serializers.ValidationError({'EMPLOYEE_ID': 'Employee with this ID already exists'})
+
+        return data
+
     class Meta:
         model = EMPLOYEE_MASTER
         fields = '__all__'
         read_only_fields = ['CREATED_AT', 'UPDATED_AT']
         extra_kwargs = {
-            # Required fields
-            'EMPLOYEE_ID': {'required': True},
+            # Remove EMPLOYEE_ID from required since it's read-only
             'INSTITUTE': {'required': True},
             'EMP_NAME': {'required': True},
             'EMAIL': {'required': True},
@@ -118,6 +135,7 @@ class EmployeeMasterSerializer(BaseAuditSerializer):
             'MOBILE_NO': {'required': True},
             'SEX': {'required': True},
             'CATEGORY': {'required': True},
+            'EMP_TYPE': {'required': True},  # Make EMP_TYPE required
             
             # All other fields optional...
             'PERMANENT_ADDRESS': {'required': False},
@@ -127,7 +145,6 @@ class EmployeeMasterSerializer(BaseAuditSerializer):
             'POSITION': {'required': False},
             'DATE_OF_BIRTH': {'required': False},
             'MARITAL_STATUS': {'required': False},
-            'EMP_TYPE': {'required': False},
             'STATUS': {'required': False},
             'SHIFT': {'required': False},
             'LOCAL_ADDRESS': {'required': False},
@@ -141,13 +158,6 @@ class EmployeeMasterSerializer(BaseAuditSerializer):
             'BANK_ACCOUNT_NO': {'required': False},
             'UAN_NO': {'required': False},
         }
-
-    def validate(self, data):
-        logger.debug("Validating employee data:")
-        logger.debug(f"EMPLOYEE_ID in data: '{data.get('EMPLOYEE_ID')}'")
-        if not data.get('EMPLOYEE_ID'):
-            raise serializers.ValidationError({"EMPLOYEE_ID": "This field is required"})
-        return data
 
     def validate_email(self, value):
         if value:

@@ -152,10 +152,10 @@ const NameEntryForm = () => {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         
         {/* Navigation Bar */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
+        {/* <div className="d-flex justify-content-between align-items-center mb-4">
           <h2>Program Entry Form</h2>
         
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="row g-3">
@@ -190,9 +190,18 @@ const NameEntryForm = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">Duration (Years)</label>
-              <input type="number" {...register("DURATION_YEARS", { required: true })} className="form-control" />
-            </div>
+  <label className="form-label">Duration (Years)</label>
+  <select {...register("DURATION_YEARS", { required: true })} className="form-control">
+    <option value="">Select Duration</option>
+    <option value="1">1 </option>
+    <option value="2">2 </option>
+    <option value="3">3</option>
+    <option value="4">4 </option>
+    <option value="5">5 </option>
+    <option value="6">6 </option>
+  </select>
+</div>
+
             <div className="col-md-6">
               <label className="form-label">Level</label>
               <select {...register("LEVEL", { required: true })} className="form-control">

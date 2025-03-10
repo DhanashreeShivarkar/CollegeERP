@@ -8,7 +8,6 @@ def employee_profile_path(instance, filename):
     ext = os.path.splitext(filename)[1]
     # Create filename using employee ID
     filename = f"{instance.EMPLOYEE_ID}{ext}"
-    # Return full path
     return os.path.join('employee_profiles', 'profile_photo', filename)
 
 class TYPE_MASTER(AuditModel):

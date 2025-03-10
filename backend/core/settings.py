@@ -63,6 +63,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'  # Make sure this matches your accounts 
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be first
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -157,10 +158,10 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Create specific paths for employee profile photos
+# Create specific path for employee profile photos
 EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_photo')
 
-# Create directories if they don't exist
+# Create directory if it doesn't exist
 os.makedirs(EMPLOYEE_PROFILE_PATH, exist_ok=True)
 
 # Default primary key field type
@@ -239,3 +240,16 @@ CSRF_COOKIE_SECURE = False  # Set to True in production
 
 # Add media URL patterns - add to urls.py
 FRONTEND_URL = 'http://localhost:3000'  # Add this if not already present
+
+# Session Settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_SECURE = True  # Enable in production (requires HTTPS)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_NAME = 'collegeERP_sessionid'
+
+# Add session middleware if not present
+if 'django.contrib.sessions.middleware.SessionMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.insert(0, 'django.contrib.sessions.middleware.SessionMiddleware')

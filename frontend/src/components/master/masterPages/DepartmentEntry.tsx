@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 interface DepartmentFormData {
   DEPARTMENT_ID?: number;
+  INSTITUTE_CODE: string;  // Changed from INSTITUTE
   NAME: string;
   CODE: string;
   IS_ACTIVE: boolean;
@@ -16,6 +17,7 @@ interface DepartmentFormData {
 const DepartmentEntry: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<DepartmentFormData>({
+    INSTITUTE_CODE: "",  // Changed from INSTITUTE
     NAME: "",
     CODE: "",
     IS_ACTIVE: true,
@@ -23,6 +25,7 @@ const DepartmentEntry: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [institutes, setInstitutes] = useState<any[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,6 +33,20 @@ const DepartmentEntry: React.FC = () => {
       navigate("/login");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    // Load institutes when component mounts
+    const fetchInstitutes = async () => {
+      try {
+        const response = await axiosInstance.get("/api/master/institutes/");
+        setInstitutes(response.data);
+      } catch (error) {
+        console.error("Error fetching institutes:", error);
+        setError("Failed to load institutes");
+      }
+    };
+    fetchInstitutes();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -74,6 +91,7 @@ const DepartmentEntry: React.FC = () => {
 
       if (response.status === 201) {
         setFormData({
+          INSTITUTE_CODE: "",  // Changed from INSTITUTE
           NAME: "",
           CODE: "",
           IS_ACTIVE: true,
@@ -121,6 +139,30 @@ const DepartmentEntry: React.FC = () => {
         )}
 
         <Form onSubmit={handleSubmit}>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Institute</Form.Label>
+                <Form.Select
+                  name="INSTITUTE_CODE"  // Changed from INSTITUTE
+                  value={formData.INSTITUTE_CODE}  // Changed from INSTITUTE
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Institute</option>
+                  {institutes.map((institute) => (
+                    <option
+                      key={institute.INSTITUTE_ID}
+                      value={institute.CODE}  // Changed to use CODE instead of ID
+                    >
+                      {institute.NAME}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+
           <Row className="mb-3">
             <Col md={6}>
               <Form.Group>
