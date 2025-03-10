@@ -832,6 +832,7 @@ class CATEGORY(AuditModel):
         verbose_name_plural = 'Categories'
     def __str__(self):
         return f"{self.CODE} - {self.NAME}"
+
 class ACADEMIC_YEAR(AuditModel):
     ACADEMIC_YEAR_ID = models.AutoField(primary_key=True, db_column='ACADEMIC_YEAR_ID')  # Primary key
     ACADEMIC_YEAR = models.CharField(max_length=50, db_column='ACADEMIC_YEAR',null=True)  # Academic year (e.g., "2023-2024")
@@ -881,4 +882,39 @@ class SEMESTER_DURATION(AuditModel):
 
     def __str__(self):
         return f"{self.SEMESTER} ({self.START_DATE} - {self.END_DATE})"
+    
+class CASTE_MASTER(AuditModel):
+    CASTE_ID = models.AutoField(primary_key=True, db_column='CASTE_ID')  
+    NAME = models.CharField(max_length=50, db_column='NAME', null=True)  
 
+    class Meta:
+        db_table = 'CASTE_MASTER'
+        verbose_name = 'Caste Master'
+        verbose_name_plural = 'Caste Masters'
+
+    def __str__(self):
+        return f"{self.NAME} - {self.CASTE_ID}"
+
+class QUOTA_MASTER(AuditModel):
+    QUOTA_ID = models.AutoField(primary_key=True, db_column='CASTE_ID')  
+    NAME = models.CharField(max_length=50, db_column='NAME', null=True)  
+
+    class Meta:
+        db_table = 'QUOTA_MASTER'
+        verbose_name = 'Quota Master'
+        verbose_name_plural = 'Quota Masters'
+
+    def __str__(self):
+        return f"{self.NAME} - {self.QUOTA_ID}"
+
+class ADMISSION_QUOTA_MASTER(AuditModel):
+    ADMN_QUOTA_ID = models.AutoField(primary_key=True, db_column='CASTE_ID')  
+    NAME = models.CharField(max_length=50, db_column='NAME', null=True)  
+
+    class Meta:
+        db_table = 'ADMISSION_QUOTA_MASTER'
+        verbose_name = 'Admission Quota Master'
+        verbose_name_plural = 'Admission Quota Masters'
+
+    def __str__(self):
+        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"
