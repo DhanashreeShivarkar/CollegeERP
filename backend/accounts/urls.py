@@ -20,6 +20,7 @@ router.register(r'master/semester-duration', views.SemesterDurationViewSet, base
 router.register(r'master/branch', views.BranchListCreateView, basename='branch')
 router.register(r'master/year', views.YearListCreateView, basename='year')
 router.register(r'master/semester', views.SemesterListCreateView, basename='semester')
+router.register(r'master/caste', views.SemesterListCreateView, basename='caste')
 
 
 app_name = 'accounts'

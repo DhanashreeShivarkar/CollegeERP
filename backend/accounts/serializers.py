@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH, YEAR,SEMESTER,ACADEMIC_YEAR,SEMESTER_DURATION
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH, YEAR,SEMESTER,ACADEMIC_YEAR,SEMESTER_DURATION,CASTE
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -161,3 +161,12 @@ class SemesterDurationSerializer(serializers.ModelSerializer):
             'SEMESTER', 'START_DATE', 'END_DATE', 
             'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY'
         ]
+        
+class CasteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CASTE 
+        fields = ['CASTE_ID','NAME','CODE',
+        'DESCRIPTION','IS_ACTIVE','CREATED_BY',
+        'UPDATED_BY'
+            
+  ]

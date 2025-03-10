@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH,YEAR,SEMESTER, SEMESTER_DURATION   # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH,YEAR,SEMESTER, SEMESTER_DURATION,CASTE  # Add these imports
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer,BranchSerializer,YearSerializer,SemesterSerializer, SemesterDurationSerializer # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer,BranchSerializer,YearSerializer,SemesterSerializer, SemesterDurationSerializer,CasteSerializer # Add these imports
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -924,5 +924,19 @@ class SemesterDurationViewSet(BaseModelViewSet):
         active_semesters = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(active_semesters, many=True)
         return Response(serializer.data)
+    
+class CasteListCreateView(BaseModelViewSet):
+    queryset =CASTE.objects.all()   
+    serializer_class = CasteSerializer
+    
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

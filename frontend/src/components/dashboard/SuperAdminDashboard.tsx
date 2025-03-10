@@ -15,6 +15,7 @@ import SemesterDurationForm from "../master/SemesterDuration";
 import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
 import SemesterDurationTableView from "../master/SemesterDurationTableView";
+import AdmissionTable from "../Admission/AdmissionTable";
 
 
 const DashboardHome = () => (
@@ -83,6 +84,7 @@ const SuperAdminDashboard = ({ user }: any) => {
               element={<CreateEmployee />}
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
+            <Route path="/admissionMaster" element={<AdmissionTable />} />
           </Routes>
         </div>
       </div>
