@@ -8,7 +8,8 @@ from django.utils import timezone
 from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
-    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM,BRANCH,YEAR,SEMESTER, SEMESTER_DURATION,CASTE  # Add these imports
+    UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM, BRANCH, DASHBOARD_MASTER,
+    YEAR, SEMESTER, SEMESTER_DURATION,CASTE_MASTER,QUOTA_MASTER,ADMISSION_QUOTA_MASTER
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -16,8 +17,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     CountrySerializer, StateSerializer, CitySerializer,
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
-    CategorySerializer, UniversitySerializer, InstituteSerializer, DepartmentSerializer, ProgramSerializer,BranchSerializer,YearSerializer,SemesterSerializer, SemesterDurationSerializer,CasteSerializer # Add these imports
+    CategorySerializer, UniversitySerializer, InstituteSerializer, 
+    DepartmentSerializer, ProgramSerializer, BranchSerializer, 
+    DashboardMasterSerializer, YearSerializer, SemesterSerializer, SemesterDurationSerializer,CasteSerializer,QuotaSerializer,AdmissionQuotaSerializer
 )
+
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -593,12 +597,19 @@ class InstituteViewSet(BaseModelViewSet):
     serializer_class = InstituteSerializer
     
     def list(self, request, *args, **kwargs):
-        university_id = request.GET.get("university_id")  # Get university_id from query params
         institutes = self.queryset.filter(IS_ACTIVE=True)
+        serializer = self.get_serializer(institutes, many=True)
+        return Response(serializer.data)
 
+    def list(self, request, *args, **kwargs):
+        university_id = request.query_params.get('university_id', None)
+        
+        # Filter institutes by IS_ACTIVE and optionally by university_id
         if university_id:
-            institutes = institutes.filter(UNIVERSITY=university_id)  # Apply filtering
-
+            institutes = self.queryset.filter(IS_ACTIVE=True, UNIVERSITY_id=university_id)
+        else:
+            institutes = self.queryset.filter(IS_ACTIVE=True)
+        
         serializer = self.get_serializer(institutes, many=True)
         return Response(serializer.data)
 
@@ -924,9 +935,51 @@ class SemesterDurationViewSet(BaseModelViewSet):
         active_semesters = self.queryset.filter(IS_ACTIVE=True)
         serializer = self.get_serializer(active_semesters, many=True)
         return Response(serializer.data)
-    
+
+class DashboardMasterViewSet(BaseModelViewSet):
+    queryset = DASHBOARD_MASTER.objects.all()
+    serializer_class = DashboardMasterSerializer
+
+    def list(self, request, *args, **kwargs):
+        university_id = request.GET.get("university_id")
+        institute_id = request.GET.get("institute_id")
+        queryset = self.queryset
+
+        if university_id:
+            queryset = queryset.filter(institute__UNIVERSITY_id=university_id)
+
+        if institute_id:
+            queryset = queryset.filter(institute__INSTITUTE_ID=institute_id)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=204)
+
 class CasteListCreateView(BaseModelViewSet):
-    queryset =CASTE.objects.all()   
+    queryset =CASTE_MASTER.objects.all()   
     serializer_class = CasteSerializer
     
     
@@ -938,5 +991,36 @@ class CasteListCreateView(BaseModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
+class QuotaListCreateView(BaseModelViewSet):
+    queryset = QUOTA_MASTER.objects.all()
+    serializer_class = QuotaSerializer
 
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      
+class AdmissionListCreateView(BaseModelViewSet):
+      queryset =ADMISSION_QUOTA_MASTER.objects.all()   
+      serializer_class = AdmissionQuotaSerializer
+      
+      def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      
+      
+
+    
