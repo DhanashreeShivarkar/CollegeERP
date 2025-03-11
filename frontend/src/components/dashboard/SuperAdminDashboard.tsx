@@ -19,6 +19,7 @@ import DashboardMaster from "../DashboardMaster/DashboardMaster";
 import SemesterDurationTableView from "../master/SemesterDurationTableView";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
+import AdmissionTable from "../Admission/AdmissionTable";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -95,6 +96,7 @@ const SuperAdminDashboard = ({ user }: any) => {
               path="/establishment/academic-qualification" 
               element={<AcademicQualification />} 
             />
+          <Route path="/student-section" element={<AdmissionTable />} />
           </Routes>
         </div>
       </div>
