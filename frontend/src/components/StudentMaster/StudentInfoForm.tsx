@@ -69,6 +69,11 @@ interface FormData {
     CODE: string;
   }
 
+  interface Quota{
+    QUOTA_ID: number;
+    NAME: string;
+  }
+
   const StudentInfoForm = () => {
   const [formData, setFormData] = useState<FormData>({
     academicYear: "",
@@ -101,7 +106,7 @@ interface FormData {
     const [years, setYears] = useState<Year[]>([]);
     const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [admissionQuotas, setAdmissionQuotas] = useState<DropdownOption[]>([]);
+    const [quotas, setQuotas] = useState<Quota[]>([]);
     const [error, setError] = useState("");
     const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -112,6 +117,7 @@ interface FormData {
     const [selectedYear, setSelectedYear] = useState<string>("");
     const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
     const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [selectedQuota, setSelectedQuota] = useState<string>("");
    
 
   
@@ -310,6 +316,31 @@ interface FormData {
         const categoryId = parseInt(e.target.value, 10);
         setSelectedCategory(categoryId.toString());
     };
+
+    useEffect(() => {
+      const fetchQuotas = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) return;
+    
+          const response = await axiosInstance.get("/api/master/quotas/", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+    
+          if (response.status === 200) {
+            setQuotas(response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching quotas:", error);
+        }
+      };
+    
+      fetchQuotas();
+    }, []);
+    
+    const handleQuotaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedQuota(e.target.value);
+    }; 
          
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -447,15 +478,22 @@ interface FormData {
 
         {/* Admission Quota, Batch, Form No */}
         <div className="row mt-2">
-          <div className="col-md-3">
-            <label>Admission Quota</label>
-            <select className="form-control" name="admissionQuota" value={formData.admissionQuota} onChange={handleChange}>
-              <option value="">Select Quota</option>
-              {admissionQuotas.map((quota) => (
-                <option key={quota.id} value={quota.name}>{quota.name}</option>
-              ))}
-            </select>
-          </div>
+        <div className="col-md-3">
+  <label>Admission Quota</label>
+  <select
+    className="form-control"
+    name="admissionQuota"
+    value={selectedQuota}
+    onChange={handleQuotaChange}
+  >
+        <option value="">Select Quota</option>
+        {quotas.map((quota) => (
+          <option key={quota.QUOTA_ID} value={quota.QUOTA_ID}>
+            {quota.NAME}
+          </option>
+        ))}
+      </select>
+</div>
 
           <div className="col-md-3">
           <label>Batch</label>
