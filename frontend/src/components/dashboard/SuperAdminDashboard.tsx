@@ -15,6 +15,7 @@ import SemesterDurationForm from "../master/SemesterDuration";
 import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
 import SemesterDurationTableView from "../master/SemesterDurationTableView";
+import StudentInfoForm from "../StudentMaster/StudentInfoForm";
 
 
 const DashboardHome = () => (
@@ -81,6 +82,10 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
+            />
+            <Route
+              path="/student-master/student"
+              element={<StudentInfoForm />}
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
           </Routes>
