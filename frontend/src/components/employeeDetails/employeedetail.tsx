@@ -21,7 +21,7 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import type { Dayjs } from "dayjs";
-import { EmployeeFormData } from "./types";
+import { EmployeeFormData } from "../MasterEmployee/types";
 import axios from "axios";
 import {
   fetchTypeEntries,
@@ -32,8 +32,10 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import { masterService } from "../../api/masterService";
 import { instituteService } from "../../api/instituteService";
 import { employeeService } from "../../api/MasterEmployeeService";
-import SearchEmployeeDialog from "./SearchEmployeeDialog";
+import SearchEmployeeDialog from "../MasterEmployee/SearchEmployeeDialog";
 import SearchIcon from "@mui/icons-material/Search";
+import { useNavigate } from "react-router-dom";
+import { loadFromLocalStorage, saveToLocalStorage } from '../../utils/storageUtils';
 
 const CreateEmployee = () => {
   const initialFormState: EmployeeFormData = {
@@ -101,6 +103,8 @@ const CreateEmployee = () => {
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(
     null
   );
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInstitutes = async () => {
@@ -237,18 +241,14 @@ const CreateEmployee = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => {
+      const updates = { [name]: value };
+      
       if (sameAsPermAddress && name.startsWith("permanent")) {
         const localField = name.replace("permanent", "local");
-        return {
-          ...prev,
-          [name]: value,
-          [localField]: value,
-        };
+        updates[localField] = value;
       }
-      return {
-        ...prev,
-        [name]: value,
-      };
+      
+      return { ...prev, ...updates };
     });
   };
 
@@ -282,6 +282,8 @@ const CreateEmployee = () => {
     if (formElements) {
       formElements.reset();
     }
+    localStorage.removeItem('currentEmployeeData');
+    localStorage.removeItem('currentEmployeeId');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -376,21 +378,17 @@ const CreateEmployee = () => {
 
       let response;
       if (isEditing && currentEmployeeId) {
-        // Only include fields that have changed
-        const currentEmployee = await employeeService.getEmployee(
-          currentEmployeeId
-        );
-        const changedFields = {};
-
-        // Add only changed fields to formData
+        // Include all fields in the update, not just changed ones
         Object.entries(formData).forEach(([key, value]) => {
           const apiKey = key.toUpperCase();
-          if (value !== currentEmployee.data[apiKey]) {
-            formDataObj.append(apiKey, value);
+          // Handle date fields specially
+          if (value instanceof Date) {
+            formDataObj.append(apiKey, value.toISOString().split('T')[0]);
+          } else {
+            formDataObj.append(apiKey, value || '');
           }
         });
 
-        // Always include profile image if selected
         if (formData.profileImage) {
           formDataObj.append("PROFILE_IMAGE", formData.profileImage);
         }
@@ -399,20 +397,18 @@ const CreateEmployee = () => {
           currentEmployeeId,
           formDataObj
         );
-      } else {
-        response = await employeeService.createEmployee(formDataObj);
+
+        // Update localStorage after successful save
+        saveToLocalStorage('currentEmployeeData', formData);
+
+        setNotification({
+          open: true,
+          message: "Employee updated successfully!",
+          severity: "success",
+        });
+        
+        return response; // Return response for handleSaveAndNext
       }
-
-      setNotification({
-        open: true,
-        message: isEditing
-          ? "Employee updated successfully!"
-          : `Employee created successfully! Employee ID: ${response.data.employee_id}`,
-        severity: "success",
-      });
-
-      // Call resetForm after successful submission
-      resetForm();
     } catch (error: any) {
       console.error("Submit Error:", error);
       const errorMessage =
@@ -460,12 +456,13 @@ const CreateEmployee = () => {
     }
   };
 
+  // Add disabled state
+  const [isEmployeeSelected, setIsEmployeeSelected] = useState(false);
+
   const handleSelectEmployee = async (employeeId: string) => {
     try {
       const response = await employeeService.getEmployee(employeeId);
       const employeeData = response.data;
-
-      console.log('Raw Employee Data:', employeeData); // Debug log
 
       // Map API response fields to form data fields
       const mappedFormData = {
@@ -480,12 +477,12 @@ const CreateEmployee = () => {
           ? new Date(employeeData.DATE_OF_BIRTH)
           : null,
         designation: employeeData.DESIGNATION,
-        permanentAddress: employeeData.PERMANENT_ADDRESS || '',
+        permanentAddress: employeeData.PERMANENT_ADDRESS || "",
         email: employeeData.EMAIL,
         localAddress: employeeData.LOCAL_ADDRESS || "",
         panNo: employeeData.PAN_NO || "",
-        permanentCity: employeeData.PERMANENT_CITY || '',
-        permanentPinNo: employeeData.PERMANENT_PIN || '',
+        permanentCity: employeeData.PERMANENT_CITY || "",
+        permanentPinNo: employeeData.PERMANENT_PIN || "",
         drivingLicNo: employeeData.DRIVING_LICENSE_NO || "",
         sex: employeeData.SEX || "",
         status: employeeData.STATUS || "",
@@ -507,8 +504,18 @@ const CreateEmployee = () => {
         profileImage: null, // Reset profile image since we'll load it separately
       };
 
-      console.log('Mapped Form Data:', mappedFormData); // Debug log
       setFormData(mappedFormData);
+
+      // Handle profile image
+      if (employeeData.PROFILE_IMAGE) {
+        // Store the full image URL/data in localStorage
+        saveToLocalStorage('currentEmployeePhoto', employeeData.PROFILE_IMAGE);
+        setPhotoPreview(employeeData.PROFILE_IMAGE);
+      }
+
+      // Save to localStorage
+      saveToLocalStorage('currentEmployeeData', mappedFormData);
+      saveToLocalStorage('currentEmployeeId', employeeId);
 
       // Handle profile image if exists
       if (employeeData.PROFILE_IMAGE) {
@@ -517,6 +524,7 @@ const CreateEmployee = () => {
 
       setOpenSearch(false);
       setIsEditing(true);
+      setIsEmployeeSelected(true);  // Enable buttons when employee is selected
       setCurrentEmployeeId(employeeId);
 
       // Show notification
@@ -535,6 +543,14 @@ const CreateEmployee = () => {
     }
   };
 
+  // Add this useEffect to load photo on component mount
+  useEffect(() => {
+    const savedPhoto = loadFromLocalStorage('currentEmployeePhoto', null);
+    if (savedPhoto) {
+      setPhotoPreview(savedPhoto);
+    }
+  }, []);
+
   // Add this helper to determine button text
   const getSubmitButtonText = () => {
     if (isEditing) {
@@ -542,6 +558,43 @@ const CreateEmployee = () => {
     }
     return "Save Employee Details";
   };
+
+  // Add this function near other handlers
+  const handleNextClick = () => {
+    if (!currentEmployeeId) {
+      setNotification({
+        open: true,
+        message: "Please select an employee first",
+        severity: "error"
+      });
+      return;
+    }
+    navigate(`/dashboard/establishment/academic-qualification?empId=${currentEmployeeId}`);
+  };
+
+  const handleSaveAndNext = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await handleSubmit(e);  // Wait for save to complete
+      if (response && currentEmployeeId) {     // Only navigate if save was successful
+        handleNextClick();
+      }
+    } catch (error) {
+      console.error("Error in save and next:", error);
+    }
+  };
+
+  useEffect(() => {
+    const savedEmployeeId = loadFromLocalStorage('currentEmployeeId', null);
+    const savedEmployeeData = loadFromLocalStorage('currentEmployeeData', null);
+    
+    if (savedEmployeeId && savedEmployeeData) {
+      setCurrentEmployeeId(savedEmployeeId);
+      setFormData(savedEmployeeData);
+      setIsEmployeeSelected(true);
+      setIsEditing(true);
+    }
+  }, []);
 
   return (
     <Paper elevation={3} sx={{ p: 0.5, m: 0.25, maxHeight: "98vh" }}>
@@ -572,7 +625,7 @@ const CreateEmployee = () => {
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                   {isEditing
                     ? `Edit Employee: ${currentEmployeeId}`
-                    : "Create Employee"}
+                    : "Employee Details"}
                 </Typography>
                 <Button
                   variant="outlined"
@@ -582,16 +635,6 @@ const CreateEmployee = () => {
                 >
                   Search Employee
                 </Button>
-                {isEditing && (
-                  <Button
-                    variant="outlined"
-                    color="info"
-                    size="small"
-                    onClick={resetForm}
-                  >
-                    Create New Employee
-                  </Button>
-                )}
               </Stack>
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Avatar
@@ -852,7 +895,7 @@ const CreateEmployee = () => {
                 rows={1}
                 label="Permanent Address"
                 name="permanentAddress"
-                value={formData.permanentAddress}  // Add value binding
+                value={formData.permanentAddress} // Add value prop
                 onChange={handleAddressChange}
                 placeholder="e.g. 123, Main Street, Apartment 4B"
               />
@@ -862,7 +905,7 @@ const CreateEmployee = () => {
                   fullWidth
                   label="City"
                   name="permanentCity"
-                  value={formData.permanentCity}  // Add value binding
+                  value={formData.permanentCity} // Add value prop
                   onChange={handleAddressChange}
                   placeholder="e.g. Mumbai"
                 />
@@ -871,7 +914,7 @@ const CreateEmployee = () => {
                   fullWidth
                   label="PIN"
                   name="permanentPinNo"
-                  value={formData.permanentPinNo}  // Add value binding
+                  value={formData.permanentPinNo} // Add value prop
                   onChange={handleAddressChange}
                   placeholder="e.g. 400001"
                 />
@@ -1072,25 +1115,40 @@ const CreateEmployee = () => {
               mt: 2,
             }}
           >
-            {isEditing && (
-              <Button
-                type="button"
-                variant="outlined"
-                color="secondary"
-                size="small"
-                onClick={resetForm}
-              >
-                Cancel Edit
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              onClick={resetForm}
+            >
+              Clear
+            </Button>
             <Button
               type="submit"
               variant="contained"
-              color={isEditing ? "primary" : "primary"}
+              color="primary"
               size="small"
-              sx={{ minWidth: 150 }}
+              disabled={!isEmployeeSelected}
             >
-              {getSubmitButtonText()}
+              Save
+            </Button>
+            <Button
+              onClick={handleSaveAndNext}
+              variant="contained"
+              color="primary"
+              size="small"
+              disabled={!isEmployeeSelected}
+            >
+              Save & Next
+            </Button>
+            <Button
+              onClick={handleNextClick}
+              variant="contained"
+              color="primary"
+              size="small"
+              disabled={!isEmployeeSelected}
+            >
+              Next
             </Button>
           </Grid>
         </Grid>
