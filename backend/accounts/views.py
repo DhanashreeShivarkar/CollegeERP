@@ -9,7 +9,7 @@ from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
     UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM, BRANCH, DASHBOARD_MASTER,
-    YEAR, SEMESTER, SEMESTER_DURATION
+    YEAR, SEMESTER, SEMESTER_DURATION, CASTE_MASTER, QUOTA_MASTER, ADMISSION_QUOTA_MASTER
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -19,7 +19,8 @@ from .serializers import (
     CurrencySerializer, LanguageSerializer, DesignationSerializer,
     CategorySerializer, UniversitySerializer, InstituteSerializer, 
     DepartmentSerializer, ProgramSerializer, BranchSerializer, 
-    DashboardMasterSerializer, YearSerializer, SemesterSerializer, SemesterDurationSerializer
+    DashboardMasterSerializer, YearSerializer, SemesterSerializer, SemesterDurationSerializer, 
+    CasteSerializer, QuotaSerializer, AdmissionQuotaSerializer
 )
 
 from rest_framework import viewsets
@@ -978,4 +979,44 @@ class DashboardMasterViewSet(BaseModelViewSet):
         self.perform_destroy(instance)
         return Response(status=204)
 
+class CasteListCreateView(BaseModelViewSet):
+    queryset =CASTE_MASTER.objects.all()   
+    serializer_class = CasteSerializer
+    
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
+class QuotaListCreateView(BaseModelViewSet):
+    queryset = QUOTA_MASTER.objects.all()
+    serializer_class = QuotaSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      
+class AdmissionListCreateView(BaseModelViewSet):
+      queryset =ADMISSION_QUOTA_MASTER.objects.all()   
+      serializer_class = AdmissionQuotaSerializer
+      
+      def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
