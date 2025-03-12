@@ -88,6 +88,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       ],
     },
     {
+      icon: "bi-building-fill",
+      text: "Student Section",
+      children: [
+        {
+          icon: "bi-database-fill",
+          text: "Master Entry",
+          children: [
+            {
+              icon: "bi-table",
+              text: "Master Entry",
+              path: "/dashboard/student-section/",
+              exact: true,
+            }
+          ],
+        },
+      ],
+     },
+    {
       icon: "bi-building",
       text: "University",
       path: "/dashboard/master/university",
