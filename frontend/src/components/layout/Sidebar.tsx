@@ -70,6 +70,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       ],
     },
     {
+      icon: "bi-building-fill",
+      text: "Establishment",
+      children: [
+        {
+          icon: "bi-database-fill",
+          text: "Master",
+          children: [
+            {
+              icon: "bi-table",
+              text: "Master Entry",
+              path: "/dashboard/establishment/master",
+              exact: true,
+            }
+          ],
+        },
+        {
+          icon: "bi-people-fill",
+          text: "Employee Master",
+          children: [
+            {
+              icon: "bi-person-vcard-fill",
+              text: "Employee Details",
+              path: "/dashboard/establishment/employeedetails",
+              exact: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      icon: "bi-building-fill",
+      text: "Student Section",
+      children: [
+        {
+          icon: "bi-database-fill",
+          text: "Master Entry",
+          children: [
+            {
+              icon: "bi-table",
+              text: "Master Entry",
+              path: "/dashboard/student-section/",
+              exact: true,
+            }
+          ],
+        },
+      ],
+     },
+    {
       icon: "bi-building",
       text: "University",
       path: "/dashboard/master/university",
@@ -86,16 +134,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "System Settings",
       path: "/dashboard/settings",
     },
-    // {
-    //   icon: "bi-building",
-    //   text: "Master University",
-    //   path: "/dashboard/master/university",
-    // },
-    // {
-    //   icon: "bi-building",
-    //   text: "Master Institute",
-    //   path: "/dashboard/master/institute",
-    // },
     {
       icon: "bi-calendar",
       text: "Academic Year Master",
@@ -105,6 +143,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       icon: "bi bi-hourglass",
       text: "Semester Duration",
       path: "/dashboard/master/semesterduration",
+    },
+    {
+      icon: "bi-speedometer2",
+      text: "Dashboard Master",
+      path: "/dashboard/dashboardmaster",
     },
     { icon: "bi-shield-lock", text: "Roles & Permissions", path: "/roles" },
     { icon: "bi-sliders", text: "Configuration", path: "/config" },

@@ -18,17 +18,20 @@ router.register(r'master/academic-years', views.AcademicYearViewSet, basename='a
 router.register(r'master/program', views.ProgramListCreateView, basename='program')
 router.register(r'master/semester-duration', views.SemesterDurationViewSet, basename='semester-duration')
 router.register(r'master/branch', views.BranchListCreateView, basename='branch')
+router.register(r'master/dashboard-master', views.DashboardMasterViewSet, basename='dashboard-master')
 router.register(r'master/year', views.YearListCreateView, basename='year')
 router.register(r'master/semester', views.SemesterListCreateView, basename='semester')
-
+router.register(r'master/caste', views.CasteListCreateView, basename='caste')
+router.register(r'master/quota', views.QuotaListCreateView, basename='quota')
+router.register(r'master/admission', views.AdmissionListCreateView, basename='admission')
 
 app_name = 'accounts'
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('auth/login/', views.LoginView.as_view(), name='login'),  # Updated path
-    path('auth/send-otp/', views.SendOTPView.as_view(), name='send-otp'),  # Updated path
-    path('auth/verify-otp/', views.VerifyOTPView.as_view(), name='verify-otp'),  # Updated path
+    path('auth/login/', views.LoginView.as_view(), name='login'),
+    path('auth/send-otp/', views.SendOTPView.as_view(), name='send-otp'),
+    path('auth/verify-otp/', views.VerifyOTPView.as_view(), name='verify-otp'),
     path('auth/request-password-reset/', views.RequestPasswordResetView.as_view(), name='request-password-reset'),
     path('auth/verify-reset-otp/', views.VerifyResetOTPView.as_view(), name='verify-reset-otp'),
     path('auth/reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
@@ -37,5 +40,4 @@ urlpatterns = [
     path('api/master/academic-years', include(router.urls)),
     path('api/master/semester-duration', include(router.urls)),
     path('api/program-master/', views.ProgramTableListView.as_view(), name='program-master'),
-
 ]
