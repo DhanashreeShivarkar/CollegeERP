@@ -34,7 +34,7 @@ const CasteEntryForm = () => {
           </div>
           <div className="d-flex gap-2">
             <Button type="submit" variant="contained" color="primary">Save</Button>
-            <Button type="button" variant="outlined" color="secondary" onClick={() => reset()}>Clear</Button>
+            <Button type="button" variant="outlined" color="error" onClick={() => reset()}>Clear</Button>
           </div>
         </form>
       </motion.div>
