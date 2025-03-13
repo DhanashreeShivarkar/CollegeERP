@@ -323,7 +323,7 @@ interface FormData {
           const token = localStorage.getItem("token");
           if (!token) return;
     
-          const response = await axiosInstance.get("/api/master/quotas/", {
+          const response = await axiosInstance.get("/api/master/quota/", {
             headers: { Authorization: `Bearer ${token}` },
           });
     
