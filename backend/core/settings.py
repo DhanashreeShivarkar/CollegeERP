@@ -243,9 +243,9 @@ FRONTEND_URL = 'http://localhost:3000'  # Add this if not already present
 
 # Session Settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_COOKIE_AGE = 1200  # 20 minutes in seconds (changed from 3600)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_SECURE = True  # Enable in production (requires HTTPS)
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_NAME = 'collegeERP_sessionid'
