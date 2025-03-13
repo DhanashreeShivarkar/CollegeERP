@@ -918,3 +918,22 @@ class ADMISSION_QUOTA_MASTER(AuditModel):
 
     def __str__(self):
         return f"{self.NAME} - {self.ADMN_QUOTA_ID}"
+    
+
+class STUDENT_MASTER(AuditModel):
+    STUDENT_MASTER_ID = models.AutoField(primary_key=True, db_column='STUDENT_MASTER_ID')
+    FULL_NAME = models.CharField(max_length=255, db_column='FULL_NAME', null=False, default='Unknown Student')
+    CONTACT_NUMBER = models.CharField(max_length=15, db_column='CONTACT_NUMBER', null=True, blank=True)  
+    EMAIL = models.EmailField(unique=True, db_column='EMAIL', null=False)
+    ADDRESS = models.TextField(db_column='ADDRESS', null=True, blank=True)
+    IS_ACTIVE = models.BooleanField(default=True, db_column='IS_ACTIVE')
+    CREATED_BY = models.CharField(max_length=50, db_column='CREATED_BY', default='system')
+    UPDATED_BY = models.CharField(max_length=50, db_column='UPDATED_BY', default='system')
+
+    class Meta:
+        db_table = '"ADMIN"."STUDENT_MASTER"'
+        verbose_name = 'Student Master'
+        verbose_name_plural = 'Student Masters'
+
+    def __str__(self):
+        return f"{self.FULL_NAME} - {self.EMAIL}"

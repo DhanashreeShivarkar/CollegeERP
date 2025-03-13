@@ -83,19 +83,20 @@ class EMPLOYEE_MASTER(AuditModel):
     EMP_NAME = models.CharField(max_length=100, db_column='EMP_NAME')
     FATHER_NAME = models.CharField(max_length=100, db_column='FATHER_NAME', null=True, blank=True)
     MOTHER_NAME = models.CharField(max_length=100, db_column='MOTHER_NAME', null=True, blank=True)
-    DATE_OF_BIRTH = models.DateField(db_column='DATE_OF_BIRTH')
+    DATE_OF_BIRTH = models.DateField(db_column='DATE_OF_BIRTH', default='2021-01-01')
     DESIGNATION = models.ForeignKey(
         'accounts.DESIGNATION',
         to_field='DESIGNATION_ID',  # Changed back to ID
         on_delete=models.PROTECT,
         db_column='DESIGNATION_ID'  # Changed column name
     )
-    PERMANENT_ADDRESS = models.TextField(db_column='PERMANENT_ADDRESS')
+    PERMANENT_ADDRESS = models.TextField(db_column='PERMANENT_ADDRESS', default='NA')
     EMAIL = models.EmailField(db_column='EMAIL', unique=True)
     LOCAL_ADDRESS = models.TextField(db_column='LOCAL_ADDRESS', null=True, blank=True)
     PAN_NO = models.CharField(max_length=10, db_column='PAN_NO', null=True, blank=True)
-    PERMANENT_CITY = models.CharField(max_length=50, db_column='PERMANENT_CITY')
-    PERMANENT_PIN = models.CharField(max_length=6, db_column='PERMANENT_PIN')
+    PERMANENT_CITY = models.CharField(max_length=50, db_column='PERMANENT_CITY',default='NA')
+    PERMANENT_PIN = models.CharField(max_length=6, db_column='PERMANENT_PIN', default='NA')
+    
     DRIVING_LICENSE_NO = models.CharField(max_length=20, db_column='DRIVING_LICENSE_NO', null=True, blank=True)
     SEX = models.CharField(max_length=10, db_column='SEX', choices=[
         ('male', 'Male'),
@@ -114,15 +115,15 @@ class EMPLOYEE_MASTER(AuditModel):
         ('married', 'Married'),
         ('other', 'Other')
     ])
-    DATE_OF_JOIN = models.DateField(db_column='DATE_OF_JOIN')
+    DATE_OF_JOIN = models.DateField(db_column='DATE_OF_JOIN', default='2021-01-01')
     LOCAL_CITY = models.CharField(max_length=50, db_column='LOCAL_CITY', null=True, blank=True)
     LOCAL_PIN = models.CharField(max_length=6, db_column='LOCAL_PIN', null=True, blank=True)
-    POSITION = models.CharField(max_length=50, db_column='POSITION')
+    POSITION = models.CharField(max_length=50, db_column='POSITION', default='Employee')
     SHIFT = models.ForeignKey(SHIFT_MASTER, on_delete=models.PROTECT, db_column='SHIFT')
     BLOOD_GROUP = models.CharField(max_length=5, db_column='BLOOD_GROUP', null=True, blank=True)
     IS_ACTIVE = models.CharField(max_length=3, db_column='IS_ACTIVE', default='yes')
     PHONE_NO = models.CharField(max_length=15, db_column='PHONE_NO', null=True, blank=True)
-    MOBILE_NO = models.CharField(max_length=15, db_column='MOBILE_NO')
+    MOBILE_NO = models.CharField(max_length=15, db_column='MOBILE_NO', default='0')
     CATEGORY = models.ForeignKey(
         'accounts.CATEGORY',
         to_field='CATEGORY_ID',  # Changed back to ID
