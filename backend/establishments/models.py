@@ -96,6 +96,7 @@ class EMPLOYEE_MASTER(AuditModel):
     PAN_NO = models.CharField(max_length=10, db_column='PAN_NO', null=True, blank=True)
     PERMANENT_CITY = models.CharField(max_length=50, db_column='PERMANENT_CITY',default='NA')
     PERMANENT_PIN = models.CharField(max_length=6, db_column='PERMANENT_PIN', default='NA')
+    
     DRIVING_LICENSE_NO = models.CharField(max_length=20, db_column='DRIVING_LICENSE_NO', null=True, blank=True)
     SEX = models.CharField(max_length=10, db_column='SEX', choices=[
         ('male', 'Male'),
