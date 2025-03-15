@@ -7,14 +7,15 @@ from django.core.mail import send_mail
 from django.conf import settings
 from utils.id_generators import generate_employee_id, generate_password
 from accounts.models import CustomUser, DESIGNATION
-from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER  # Add this import
-from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer, EmployeeMasterSerializer
+from .models import TYPE_MASTER, STATUS_MASTER, SHIFT_MASTER, EMPLOYEE_MASTER, EMPLOYEE_QUALIFICATION  # Add this import
+from .serializers import TypeMasterSerializer, StatusMasterSerializer, ShiftMasterSerializer, EmployeeMasterSerializer, EmployeeQualificationSerializer
 import logging
 from django.utils import timezone
 from django.db.models import Q
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 import os
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -350,3 +351,90 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(detail=True, methods=['post'])
+    def add_qualification(self, request, pk=None):
+        try:
+            employee = self.get_object()
+            
+            # Debug log the incoming data
+            logger.debug(f"Received qualification data: {request.data}")
+            
+            # Add employee ID to the qualification data
+            qualification_data = request.data.copy()
+            qualification_data['EMPLOYEE'] = employee.EMPLOYEE_ID
+            
+            # Convert numeric fields
+            numeric_fields = ['TOTAL_MARKS', 'OBTAINED_MARKS', 'PERCENTAGE']
+            for field in numeric_fields:
+                if field in qualification_data:
+                    qualification_data[field] = float(qualification_data[field])
+            
+            # Handle date fields
+            date_fields = ['JOINING_DATE_COLLEGE', 'JOINING_DATE_SANSTHA', 
+                         'REGISTRATION_DATE', 'VALID_UPTO_DATE', 'PASSING_DATE']
+            for field in date_fields:
+                if field in qualification_data:
+                    if qualification_data[field]:
+                        try:
+                            # Parse the date string if it's not empty
+                            date_obj = datetime.strptime(qualification_data[field], '%Y-%m-%d')
+                            qualification_data[field] = date_obj.date()
+                        except ValueError:
+                            return Response({
+                                'error': f'Invalid date format for {field}'
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        qualification_data[field] = None
+
+            logger.debug(f"Processed qualification data: {qualification_data}")
+            
+            serializer = EmployeeQualificationSerializer(data=qualification_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                logger.error(f"Validation errors: {serializer.errors}")
+                return Response({
+                    'error': 'Validation failed',
+                    'details': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            logger.error(f"Error saving qualification: {str(e)}")
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def qualifications(self, request, pk=None):
+        employee = self.get_object()
+        qualifications = EMPLOYEE_QUALIFICATION.objects.filter(EMPLOYEE=employee)
+        serializer = EmployeeQualificationSerializer(qualifications, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'])
+    def update_qualification(self, request, pk=None):
+        try:
+            employee = self.get_object()
+            qualification_id = request.query_params.get('qualification_id')
+            qualification = get_object_or_404(
+                EMPLOYEE_QUALIFICATION, 
+                EMPLOYEE=employee,
+                RECORD_ID=qualification_id
+            )
+
+            qualification_data = request.data.copy()
+            serializer = EmployeeQualificationSerializer(
+                qualification, 
+                data=qualification_data, 
+                partial=True
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
