@@ -160,3 +160,40 @@ class EMPLOYEE_MASTER(AuditModel):
         if self.PAN_NO:
             self.PAN_NO = self.PAN_NO.upper()
         super().save(*args, **kwargs)
+
+class EMPLOYEE_QUALIFICATION(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
+    EMPLOYEE = models.ForeignKey(
+        EMPLOYEE_MASTER,
+        to_field='EMPLOYEE_ID',
+        on_delete=models.CASCADE,
+        db_column='EMPLOYEE_ID',
+        related_name='qualifications'
+    )
+    ORDER_TYPE = models.CharField(max_length=20, db_column='ORDER_TYPE')  # Changed to CharField
+    EMPLOYEE_TYPE = models.CharField(max_length=20, db_column='EMPLOYEE_TYPE')
+    JOINING_DATE_COLLEGE = models.DateField(db_column='JOINING_DATE_COLLEGE', null=True, blank=True)
+    JOINING_DATE_SANSTHA = models.DateField(db_column='JOINING_DATE_SANSTHA', null=True, blank=True)
+    DEGREE = models.CharField(max_length=50, db_column='DEGREE')
+    UNIVERSITY_BOARD = models.CharField(max_length=200, db_column='UNIVERSITY_BOARD')
+    COLLEGE_NAME = models.CharField(max_length=200, db_column='COLLEGE_NAME')
+    REGISTRATION_NUMBER = models.CharField(max_length=50, db_column='REGISTRATION_NUMBER', null=True, blank=True)
+    REGISTRATION_DATE = models.DateField(db_column='REGISTRATION_DATE', null=True, blank=True)
+    VALID_UPTO_DATE = models.DateField(db_column='VALID_UPTO_DATE', null=True, blank=True)
+    COUNCIL_NAME = models.CharField(max_length=200, db_column='COUNCIL_NAME', null=True, blank=True)
+    PASSING_DATE = models.DateField(db_column='PASSING_DATE')
+    SPECIALIZATION = models.CharField(max_length=100, db_column='SPECIALIZATION', null=True, blank=True)
+    PASSING_MONTH = models.CharField(max_length=20, db_column='PASSING_MONTH')
+    PASSING_YEAR = models.CharField(max_length=4, db_column='PASSING_YEAR')
+    TOTAL_MARKS = models.DecimalField(max_digits=10, decimal_places=2, db_column='TOTAL_MARKS')
+    OBTAINED_MARKS = models.DecimalField(max_digits=10, decimal_places=2, db_column='OBTAINED_MARKS')
+    PERCENTAGE = models.DecimalField(max_digits=5, decimal_places=2, db_column='PERCENTAGE')
+    DIVISION = models.CharField(max_length=20, db_column='DIVISION')
+
+    class Meta:
+        db_table = '"ESTABLISHMENT"."EMPLOYEE_QUALIFICATION"'
+        ordering = ['EMPLOYEE', 'ORDER_TYPE']
+
+    def __str__(self):
+        return f"{self.EMPLOYEE.EMPLOYEE_ID} - {self.DEGREE}"
+
