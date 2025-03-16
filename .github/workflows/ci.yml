@@ -23,7 +23,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.11'
 
     - name: Debug Info
       run: |
@@ -39,19 +39,16 @@ jobs:
         pip install -r backend/requirements.txt
         pip install -e .
 
-    - name: Check Package Version
-      run: |
-        python -c "import django; print('Django version:', django.get_version())"
-        python -c "import collegeERP; print('CollegeERP version:', collegeERP.__version__)"
-
     - name: Run Django migrations
       env:
         DJANGO_SETTINGS_MODULE: core.settings
+        SECRET_KEY: 'django-insecure-test-key-123'
         DB_NAME: test_db
         DB_USER: postgres
         DB_PASSWORD: 7889
         DB_HOST: localhost
         DB_PORT: 5432
+        DEBUG: 'True'
       run: |
         cd backend
         python manage.py migrate --noinput
@@ -59,11 +56,13 @@ jobs:
     - name: Run tests
       env:
         DJANGO_SETTINGS_MODULE: core.settings
+        SECRET_KEY: 'django-insecure-test-key-123'
         DB_NAME: test_db
         DB_USER: postgres
-        DB_PASSWORD: postgres
+        DB_PASSWORD: 7889
         DB_HOST: localhost
         DB_PORT: 5432
+        DEBUG: 'True'
       run: |
         cd backend
-        python manage.py test
+        python -m pytest
