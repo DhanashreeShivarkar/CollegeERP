@@ -55,8 +55,9 @@ jobs:
         PGPASSWORD=7889 psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS test_db;"
         PGPASSWORD=7889 psql -h localhost -U postgres -c "CREATE DATABASE test_db;"
         
-        # Create schemas
+        # Create schemas and grant permissions
         PGPASSWORD=7889 psql -h localhost -U postgres -d test_db -f schema.sql
+        PGPASSWORD=7889 psql -h localhost -U postgres -d test_db -c "GRANT ALL ON SCHEMA \"ADMIN\", \"ACADEMIC\", \"ESTABLISHMENT\", \"FACULTY\", \"STUDENT\", \"AUTH\", \"PUBLIC\", \"CORE\", \"ACCOUNTS\" TO postgres;"
         
         # Run migrations in correct order
         python manage.py migrate auth --noinput
