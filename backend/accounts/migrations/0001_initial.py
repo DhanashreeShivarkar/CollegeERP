@@ -12,9 +12,14 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
+        ('core', '0001_create_schemas'),  # Add this dependency
     ]
 
     operations = [
+        # Ensure schema exists before creating tables
+        migrations.RunSQL(
+            'CREATE SCHEMA IF NOT EXISTS "ADMIN";'
+        ),
         migrations.CreateModel(
             name='CustomUser',
             fields=[
