@@ -5,14 +5,14 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:latest
         env:
           POSTGRES_DB: test_db
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: 7889
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -25,22 +25,36 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Debug Info
+      run: |
+        pwd
+        ls -la
+        python --version
+        pip --version
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install wheel setuptools
         pip install -r backend/requirements.txt
+        pip install -e .
+
+    - name: Check Package Version
+      run: |
+        python -c "import django; print('Django version:', django.get_version())"
+        python -c "import collegeERP; print('CollegeERP version:', collegeERP.__version__)"
 
     - name: Run Django migrations
       env:
         DJANGO_SETTINGS_MODULE: core.settings
         DB_NAME: test_db
         DB_USER: postgres
-        DB_PASSWORD: postgres
+        DB_PASSWORD: 7889
         DB_HOST: localhost
         DB_PORT: 5432
       run: |
         cd backend
-        python manage.py migrate
+        python manage.py migrate --noinput
 
     - name: Run tests
       env:
