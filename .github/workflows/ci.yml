@@ -1,0 +1,86 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 7889
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Debug Info
+      run: |
+        pwd
+        ls -la
+        python --version
+        pip --version
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools
+        pip install -r backend/requirements.txt
+        pip install -e .
+
+    - name: Run Django migrations
+      env:
+        DJANGO_SETTINGS_MODULE: core.settings
+        SECRET_KEY: 'django-insecure-test-key-123'
+        DB_NAME: test_db
+        DB_USER: postgres
+        DB_PASSWORD: 7889
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DEBUG: 'True'
+      run: |
+        cd backend
+        # Drop and recreate the test database
+        PGPASSWORD=7889 psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS test_db;"
+        PGPASSWORD=7889 psql -h localhost -U postgres -c "CREATE DATABASE test_db;"
+        
+        # Create schemas and grant permissions
+        PGPASSWORD=7889 psql -h localhost -U postgres -d test_db -f schema.sql
+        PGPASSWORD=7889 psql -h localhost -U postgres -d test_db -c "GRANT ALL ON SCHEMA \"ADMIN\", \"ACADEMIC\", \"ESTABLISHMENT\", \"FACULTY\", \"STUDENT\", \"AUTH\", \"PUBLIC\", \"CORE\", \"ACCOUNTS\" TO postgres;"
+        
+        # Run migrations in correct order
+        python manage.py migrate auth --noinput
+        python manage.py migrate contenttypes --noinput
+        python manage.py migrate admin --noinput
+        python manage.py migrate accounts --noinput
+        python manage.py migrate core --noinput
+        python manage.py migrate establishments --noinput
+        python manage.py migrate academic --noinput
+        python manage.py migrate faculty --noinput
+        python manage.py migrate student --noinput
+        python manage.py migrate sessions --noinput
+
+    - name: Run tests
+      env:
+        DJANGO_SETTINGS_MODULE: core.settings
+        SECRET_KEY: 'django-insecure-test-key-123'
+        DB_NAME: test_db
+        DB_USER: postgres
+        DB_PASSWORD: 7889
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DEBUG: 'True'
+      run: |
+        cd backend
+        python manage.py test --verbosity=2
