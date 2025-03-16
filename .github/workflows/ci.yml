@@ -51,15 +51,24 @@ jobs:
         DEBUG: 'True'
       run: |
         cd backend
-        python manage.py migrate accounts 0001_initial --noinput
-        python manage.py migrate accounts 0002_initial_data --noinput
+        # Drop and recreate the test database
+        PGPASSWORD=7889 psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS test_db;"
+        PGPASSWORD=7889 psql -h localhost -U postgres -c "CREATE DATABASE test_db;"
+        
+        # Create schemas
+        PGPASSWORD=7889 psql -h localhost -U postgres -d test_db -f schema.sql
+        
+        # Run migrations in correct order
+        python manage.py migrate auth --noinput
+        python manage.py migrate contenttypes --noinput
+        python manage.py migrate admin --noinput
         python manage.py migrate accounts --noinput
         python manage.py migrate core --noinput
         python manage.py migrate establishments --noinput
         python manage.py migrate academic --noinput
         python manage.py migrate faculty --noinput
         python manage.py migrate student --noinput
-        python manage.py migrate --noinput
+        python manage.py migrate sessions --noinput
 
     - name: Run tests
       env:
