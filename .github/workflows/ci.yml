@@ -51,6 +51,14 @@ jobs:
         DEBUG: 'True'
       run: |
         cd backend
+        python manage.py migrate accounts 0001_initial --noinput
+        python manage.py migrate accounts 0002_initial_data --noinput
+        python manage.py migrate accounts --noinput
+        python manage.py migrate core --noinput
+        python manage.py migrate establishments --noinput
+        python manage.py migrate academic --noinput
+        python manage.py migrate faculty --noinput
+        python manage.py migrate student --noinput
         python manage.py migrate --noinput
 
     - name: Run tests
