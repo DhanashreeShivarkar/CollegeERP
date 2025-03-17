@@ -123,7 +123,8 @@ class BranchSerializer(serializers.ModelSerializer):
 class DashboardMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = DASHBOARD_MASTER
-        fields = ['DBM_ID', 'EMP_ID', 'DASHBOARD_NAME', 'INSTITUTE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+        fields = ['DBM_ID', 'EMP_ID', 'DASHBOARD_NAME', 'INSTITUTE']
+        read_only_fields = ['DBM_ID']
 
 class YearSerializer(serializers.ModelSerializer):
     BRANCH_CODE = serializers.CharField(source='BRANCH.CODE', read_only=True)
