@@ -4,6 +4,7 @@ import axios from "axios";
 import axiosInstance from '../../api/axios';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useForm } from "react-hook-form";
+import { saveStudentData } from "../../api/studentService";
 
 // Define types for form data
 interface FormData {
@@ -76,7 +77,7 @@ interface FormData {
 
   const StudentInfoForm = () => {
   const [formData, setFormData] = useState<FormData>({
-    academicYear: "",
+     academicYear: "",
     university: "",
     institute: "",
     program: "",
@@ -349,11 +350,11 @@ interface FormData {
     };
 
 
-  // Handle form submission
+    
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form Data Submitted:", formData);
-    axios.post("/api/student-info", formData)
+    axios.post("/api/StudentMaster/StudentInfoForm/", formData)
       .then(() => alert("Student Information Saved Successfully"))
       .catch((err) => console.error("Error submitting form:", err));
   };
