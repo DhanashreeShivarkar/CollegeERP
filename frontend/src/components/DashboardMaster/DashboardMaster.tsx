@@ -5,6 +5,7 @@ import { instituteService } from "../../api/instituteService";
 import { universityService } from "../../api/universityService";
 import {masterService} from '../../api/masterService';
 import employeeService from '../../api/MasterEmployeeService';
+import { dashboardMasterService } from '../../api/dashboardMaster';
 
 interface FormData {
   academicYear: {
@@ -185,60 +186,45 @@ const DashboardMaster: React.FC = () => {
     e.preventDefault();
     
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Token not found. Please log in again.");
-        return;
-      }
-  
-      const payload = {
-        academicYear: formData.academicYear,
-        universityId: formData.universityId,
-        instituteId: formData.instituteId,
-        courseName: formData.courseName,
-        department: formData.department,
-        conditionType: formData.conditionType,
-        selectedEmployees: formData.selectedEmployees,
-        UPDATED_BY: 1,
-        CREATED_BY: 1,
-      };
-      
-      if (editingId) {
-        await axiosInstance.put(`/api/master/program/${editingId}/`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        alert("Program updated successfully!");
-      } else {
-        await axiosInstance.post("/api/master/program/", payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        alert("Program saved successfully!");
-      }
-  
-      // Reset form state
-      setFormData((prev) => ({
-        ...prev,
-        academicYear: { from: '2024', to: '2025' },
-        universityId: '',
-        instituteId: '',
-        courseName: 'MDS',
-        department: '',
-        conditionType: 'Dashboard College Wise',
-        selectedEmployees: [],
-      }));
-  
-    } catch (error) {
-      console.error("Error saving program:", error);
-      alert("Failed to save the program. Please try again.");
+        // Validate required fields
+        if (!formData.instituteId) {
+            alert("Please select an institute");
+            return;
+        }
+        
+        if (formData.selectedEmployees.length === 0) {
+            alert("Please select at least one employee");
+            return;
+        }
+
+        const payload = {
+            selectedEmployees: formData.selectedEmployees,
+            conditionType: formData.conditionType,
+            instituteId: formData.instituteId.toString(), // Convert to string
+        };
+        
+        console.log("Sending payload:", payload); // Debug log
+        
+        const response = await dashboardMasterService.createDashboard(payload);
+        console.log("Response:", response); // Debug log
+        
+        if (response.status === 201) {
+            alert("Dashboard configurations saved successfully!");
+            setFormData({
+                academicYear: { from: '2024', to: '2025' },
+                universityId: '',
+                instituteId: '',
+                courseName: 'MDS',
+                department: '',
+                conditionType: 'Dashboard College Wise',
+                selectedEmployees: [],
+            });
+        }
+    } catch (error: any) {
+        console.error("Error saving dashboard:", error);
+        alert(error.response?.data?.message || "Failed to save dashboard configurations");
     }
-  };
-  
+};
   
 
   
