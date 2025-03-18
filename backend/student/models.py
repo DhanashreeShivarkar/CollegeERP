@@ -111,3 +111,99 @@ class STUDENT_RESULT(AuditModel):
 
     def __str__(self):
         return f"{self.STUDENT.ENROLLMENT_NO} - {self.CURRICULUM.COURSE.CODE} - {self.EXAMINATION.NAME}"
+
+class STUDENT_MASTER(AuditModel):
+    STUDENT_MASTER_ID = models.AutoField(primary_key=True, db_column='STUDENT_MASTER_ID')
+    STUDENT_ID = models.CharField(max_length=20, unique=True, db_column='STUDENT_ID')
+    INSTITUTE = models.CharField(max_length=20, db_column='INSTITUTE_CODE')
+    ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR')
+    BATCH = models.CharField(max_length=10, db_column='BATCH')
+    ADMISSION_CATEGORY = models.CharField(max_length=20, db_column='ADMISSION_CATEGORY')
+    FORM_NO = models.IntegerField(db_column='FORM_NO')
+    VALIDITY = models.DateField(db_column='VALIDITY')
+    NAME_ON_CERTIFICATE = models.CharField(max_length=100, db_column='NAME_ON_CERTIFICATE')
+    NAME = models.CharField(max_length=100, db_column='NAME')
+    SURNAME = models.CharField(max_length=100, db_column='SURNAME')
+    PARENT_NAME = models.CharField(max_length=100, db_column='PARENT_NAME')
+    MOTHER_NAME = models.CharField(max_length=100, db_column='MOTHER_NAME')
+    FATHER_NAME = models.CharField(max_length=100, db_column='FATHER_NAME')
+    GENDER = models.CharField(max_length=10, db_column='GENDER', choices=[
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other')
+    ])
+    DOB = models.DateField(db_column='DOB')
+    DOP = models.DateField(db_column='DOP', null=True, blank=True)
+    PER_ADDRESS = models.TextField(db_column='PER_ADDRESS')
+    LOC_ADDRESS = models.TextField(db_column='LOC_ADDRESS')
+    PER_STATE_ID = models.IntegerField(db_column='PER_STATE_ID')
+    LOC_STATE_ID = models.IntegerField(db_column='LOC_STATE_ID')
+    PER_PHONE_NO = models.CharField(max_length=15, db_column='PER_PHONE_NO')
+    LOC_PHONE_NO = models.CharField(max_length=15, db_column='LOC_PHONE_NO')
+    MOB_NO = models.CharField(max_length=15, db_column='MOB_NO')
+    EMAIL_ID = models.EmailField(db_column='EMAIL_ID')
+    PER_CITY = models.CharField(max_length=50, db_column='PER_CITY')
+    LOC_CITY = models.CharField(max_length=50, db_column='LOC_CITY')
+    NATIONALITY = models.CharField(max_length=50, db_column='NATIONALITY')
+    BLOOD_GR = models.CharField(max_length=5, db_column='BLOOD_GR')
+    CASTE = models.CharField(max_length=50, db_column='CASTE')
+    BRANCH_ID = models.ForeignKey(
+        'accounts.BRANCH',
+        to_field='BRANCH_ID',
+        on_delete=models.PROTECT,
+        db_column='BRANCH_ID'
+    )
+    ENROLMENT_NO = models.CharField(max_length=20, db_column='ENROLMENT_NO')
+    ACTIVE = models.CharField(max_length=3, db_column='ACTIVE')
+    HANDICAPPED = models.CharField(max_length=3, db_column='HANDICAPPED')
+    MARK_ID = models.CharField(max_length=20, db_column='MARK_ID')
+    ADMISSION_DATE = models.DateField(db_column='ADMISSION_DATE')
+    QUOTA_ID = models.IntegerField(db_column='QUOTA_ID')
+    ENTRYPERSON = models.CharField(max_length=100, db_column='ENTRYPERSON')
+    DATEOFENTRY = models.DateField(auto_now_add=True, db_column='DATEOFENTRY')
+    DATEOFEDIT = models.DateField(auto_now=True, db_column='DATEOFEDIT')
+    PER_PIN = models.CharField(max_length=6, db_column='PER_PIN')
+    LOC_PIN = models.CharField(max_length=6, db_column='LOC_PIN')
+    YEAR_SEM_ID = models.IntegerField(db_column='YEAR_SEM_ID')
+    DATE_LEAVING = models.DateField(db_column='DATE_LEAVING', null=True, blank=True)
+    RELIGION = models.CharField(max_length=50, db_column='RELIGION')
+    DOB_WORD = models.CharField(max_length=100, db_column='DOB_WORD')
+    ADMN_ROUND = models.CharField(max_length=10, db_column='ADMN_ROUND')
+    BANK_NAME = models.CharField(max_length=100, db_column='BANK_NAME')
+    BANK_ACC_NO = models.CharField(max_length=20, db_column='BANK_ACC_NO')
+    EMERGENCY_NO = models.CharField(max_length=15, db_column='EMERGENCY_NO')
+    PER_TALUKA = models.CharField(max_length=50, db_column='PER_TALUKA')
+    PER_DIST = models.CharField(max_length=50, db_column='PER_DIST')
+    LOC_TALUKA = models.CharField(max_length=50, db_column='LOC_TALUKA')
+    LOC_DIST = models.CharField(max_length=50, db_column='LOC_DIST')
+    EDITPERSON = models.CharField(max_length=100, db_column='EDITPERSON')
+    ADMN_QUOTA_ID = models.IntegerField(db_column='ADMN_QUOTA_ID', default=0)
+    STATUS = models.CharField(max_length=20, db_column='STATUS')
+    JOINING_STATUS = models.CharField(max_length=20, db_column='JOINING_STATUS')
+    REGISTRATION_DATE = models.DateField(db_column='REGISTRATION_DATE')
+    LATERAL_STATUS = models.CharField(max_length=20, db_column='LATERAL_STATUS')
+    JOINING_STATUS_DATE = models.DateField(db_column='JOINING_STATUS_DATE')
+    RETENTION_STATUS_DATE = models.DateField(db_column='RETENTION_STATUS_DATE')
+
+    def save(self, *args, **kwargs):
+        if not self.STUDENT_ID:
+            latest_entry = STUDENT_MASTER.objects.filter(
+                BATCH=self.BATCH, 
+                BRANCH_ID=self.BRANCH_ID
+            ).count() + 1
+            program_code = self.BRANCH_ID.PROGRAM_CODE
+            self.STUDENT_ID = f"{program_code}{self.BATCH[-2:]}{latest_entry:03d}"
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_MASTER"'
+        verbose_name = 'Student Master'
+        verbose_name_plural = 'Student Masters'
+        indexes = [
+            models.Index(fields=['STUDENT_ID']),
+            models.Index(fields=['EMAIL_ID']),
+            models.Index(fields=['MOB_NO'])
+        ]
+
+    def __str__(self):
+        return f"{self.STUDENT_ID} - {self.NAME} {self.SURNAME}"
