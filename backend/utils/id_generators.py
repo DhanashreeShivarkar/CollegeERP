@@ -2,6 +2,8 @@ import random
 import string
 from datetime import datetime
 from accounts.models import CustomUser
+from django.db import transaction
+from student.models import STUDENT_MASTER
 
 def generate_employee_id(designation_name, year=None):
     if year is None:
@@ -81,3 +83,18 @@ def generate_password(length=10):
     random.shuffle(password)
     
     return ''.join(password)
+
+
+def generate_student_id(program_code, batch):
+    """Generates unique STUDENT_ID based on program, batch, and calculated entry number."""
+    with transaction.atomic():  # Ensures concurrency safety
+        # Count existing students with the same BATCH and PROGRAM
+        latest_entry = (
+            STUDENT_MASTER.objects.filter(
+                BRANCH_ID__PROGRAM_CODE=program_code,
+                BATCH=batch
+            ).count() + 1
+        )
+
+        student_id = f"{program_code}{batch[-2:]}{latest_entry:03d}"
+        return student_id
