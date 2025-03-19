@@ -17,6 +17,9 @@ import ProgramTable from "../CourseMaster/Programtable";
 import ProgramList from "../CourseMaster/ProgramList";
 import DashboardMaster from "../DashboardMaster/DashboardMaster";
 import SemesterDurationTableView from "../master/SemesterDurationTableView";
+import StudentInfoForm from "../StudentMaster/StudentInfoForm";
+// import EmployeeDetail from "../employeeDetails/employeedetail";
+// import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
 
 
@@ -85,6 +88,10 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
+            />
+            <Route
+              path="/student-master/student"
+              element={<StudentInfoForm />}
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
             <Route path="/admissionMaster" element={<AdmissionTable />} />
