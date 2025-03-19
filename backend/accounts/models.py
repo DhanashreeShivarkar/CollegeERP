@@ -852,7 +852,7 @@ class ACADEMIC_YEAR(AuditModel):
 
 class DASHBOARD_MASTER(AuditModel):
     DBM_ID = models.AutoField(primary_key=True, db_column='DBM_ID')
-    EMP_ID = models.CharField(max_length=50, unique=True, db_column='EMP_ID')
+    EMP_ID = models.CharField(max_length=50, db_column='EMP_ID')  # Removed unique=True
     DASHBOARD_NAME = models.CharField(max_length=50, db_column='DASHBOARD_NAME')
     INSTITUTE = models.CharField(max_length=50, db_column='INSTITUTE_ID')
 

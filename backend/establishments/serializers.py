@@ -5,7 +5,8 @@ from .models import (
     TYPE_MASTER, 
     STATUS_MASTER, 
     SHIFT_MASTER,
-    EMPLOYEE_MASTER  # Add this import
+    EMPLOYEE_MASTER,
+    EMPLOYEE_QUALIFICATION
 )
 
 logger = logging.getLogger(__name__)
@@ -102,6 +103,10 @@ class ShiftMasterSerializer(BaseAuditSerializer):
         read_only_fields = ['ID', 'CREATED_AT', 'UPDATED_AT', 'CREATED_BY_NAME', 'UPDATED_BY_NAME']
 
 class EmployeeMasterSerializer(BaseAuditSerializer):
+    # Add these nested serializers
+    DESIGNATION_NAME = serializers.CharField(source='DESIGNATION.NAME', read_only=True)
+    DEPARTMENT_NAME = serializers.CharField(source='DEPARTMENT.NAME', read_only=True)
+
     def validate(self, data):
         # Add back validation for unique fields
         if self.instance is None:  # Only for create, not update
@@ -172,3 +177,83 @@ class EmployeeMasterSerializer(BaseAuditSerializer):
         return value
 
     # Remove the create method - let the viewset handle EMPLOYEE_ID
+
+class EmployeeQualificationSerializer(BaseAuditSerializer):
+    class Meta:
+        model = EMPLOYEE_QUALIFICATION
+        fields = [
+            'RECORD_ID',
+            'EMPLOYEE',
+            'ORDER_TYPE',
+            'EMPLOYEE_TYPE',
+            'JOINING_DATE_COLLEGE',
+            'JOINING_DATE_SANSTHA',
+            'DEGREE',
+            'UNIVERSITY_BOARD',
+            'COLLEGE_NAME',
+            'REGISTRATION_NUMBER',
+            'REGISTRATION_DATE',
+            'VALID_UPTO_DATE',
+            'COUNCIL_NAME',
+            'PASSING_DATE',
+            'SPECIALIZATION',
+            'PASSING_MONTH',
+            'PASSING_YEAR',
+            'TOTAL_MARKS',
+            'OBTAINED_MARKS',
+            'PERCENTAGE',
+            'DIVISION'
+        ]
+        read_only_fields = ['RECORD_ID']
+        # Add required fields
+        extra_kwargs = {
+            'EMPLOYEE': {'required': True},
+            'ORDER_TYPE': {'required': True},
+            'EMPLOYEE_TYPE': {'required': True},
+            'DEGREE': {'required': True},
+            'UNIVERSITY_BOARD': {'required': True},
+            'COLLEGE_NAME': {'required': True}, 
+            'PASSING_DATE': {'required': True},
+            'TOTAL_MARKS': {'required': True},
+            'OBTAINED_MARKS': {'required': True},
+            'DIVISION': {'required': True}
+        }
+
+    def validate(self, data):
+        # First validate required fields
+        required_fields = [
+            'EMPLOYEE', 'ORDER_TYPE', 'EMPLOYEE_TYPE', 'DEGREE',
+            'UNIVERSITY_BOARD', 'COLLEGE_NAME', 'PASSING_DATE',
+            'TOTAL_MARKS', 'OBTAINED_MARKS', 'DIVISION'
+        ]
+
+        for field in required_fields:
+            if field not in data:
+                raise serializers.ValidationError({field: f"{field} is required"})
+
+        # Extract month and year from passing date
+        if 'PASSING_DATE' in data and data['PASSING_DATE']:
+            passing_date = data['PASSING_DATE']
+            data['PASSING_MONTH'] = passing_date.strftime('%b').upper()  # 3-letter month name
+            data['PASSING_YEAR'] = passing_date.strftime('%Y')  # 4-digit year
+            logger.debug(f"Extracted PASSING_MONTH: {data['PASSING_MONTH']}, PASSING_YEAR: {data['PASSING_YEAR']}")
+
+        # Validate and calculate percentage
+        if 'TOTAL_MARKS' in data and 'OBTAINED_MARKS' in data:
+            total_marks = float(data['TOTAL_MARKS'])
+            obtained_marks = float(data['OBTAINED_MARKS'])
+            
+            if total_marks <= 0:
+                raise serializers.ValidationError({
+                    "TOTAL_MARKS": "Total marks must be greater than 0"
+                })
+            
+            if obtained_marks > total_marks:
+                raise serializers.ValidationError({
+                    "OBTAINED_MARKS": "Obtained marks cannot be greater than total marks"
+                })
+            
+            percentage = (obtained_marks / total_marks) * 100
+            data['PERCENTAGE'] = round(percentage, 2)
+
+        return data

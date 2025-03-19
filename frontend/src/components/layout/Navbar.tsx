@@ -23,6 +23,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useSettings } from "../../context/SettingsContext";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { SessionTimer } from './SessionTimer';
 
 // Styled components
 const Search = styled("div")(({ theme }) => ({
@@ -173,6 +174,12 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
     setNotificationEl(event.currentTarget);
   };
 
+  const handleSessionTimeout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
   return (
     <AppBar
       position="static"
@@ -252,6 +259,9 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
 
         {/* Right Section */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Add Session Timer */}
+          <SessionTimer onTimeout={handleSessionTimeout} />
+
           {/* Dark Mode Toggle */}
           <Tooltip title={darkMode ? "Light mode" : "Dark mode"}>
             <IconButton onClick={toggleDarkMode} color="inherit">
