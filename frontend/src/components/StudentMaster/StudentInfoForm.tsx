@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useForm } from "react-hook-form";
 import { saveStudentData } from "../../api/studentService";
 
+
 // Define types for form data
 interface FormData {
   academicYear: string;
@@ -27,13 +28,10 @@ interface FormData {
   mobileNo: string;
   emailId: string;
   status: string;
+  [key: string]: any; 
  }
 
- // Define a type for dropdown options
- interface DropdownOption {
-  id: number;
-  name: string;
- }
+
  interface University {
     UNIVERSITY_ID: number;
     NAME: string;
@@ -77,7 +75,7 @@ interface FormData {
 
   const StudentInfoForm = () => {
   const [formData, setFormData] = useState<FormData>({
-     academicYear: "",
+    academicYear: "",
     university: "",
     institute: "",
     program: "",
@@ -104,6 +102,7 @@ interface FormData {
     const [institutes, setInstitutes] = useState<Institute[]>([]);
     const [programs, setPrograms] = useState<Program[]>([]);
     const [branches, setBranches] = useState<Branch[]>([]);
+    const [branchId, setBranchId] = useState("");
     const [years, setYears] = useState<Year[]>([]);
     const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -351,13 +350,55 @@ interface FormData {
 
 
     
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("Form Data Submitted:", formData);
-    axios.post("/api/StudentMaster/StudentInfoForm/", formData)
-      .then(() => alert("Student Information Saved Successfully"))
-      .catch((err) => console.error("Error submitting form:", err));
-  };
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+    
+      // Create a JSON object to store form data
+      const formDataObj: Record<string, any> = {};
+    
+      // Convert FormData entries to JSON format
+      const formData = new FormData(e.currentTarget);
+      formData.forEach((value, key) => {
+        // Ensure the value is a string before processing
+        if (typeof value === "string") {
+          // Convert specific fields to their correct types (e.g., numbers, dates)
+          if (key === "BRANCH_ID" || key === "ADMN_QUOTA_ID" || key === "FORM_NO") {
+            formDataObj[key] = Number(value); // Convert to number
+          } else if (key === "DOB") {
+            // Convert the date string to a Date object and format it as YYYY-MM-DD
+            formDataObj[key] = new Date(value).toISOString().split("T")[0];
+          } else {
+            formDataObj[key] = value; // Keep as string
+          }
+        } else {
+          console.warn(`Skipping non-string value for key: ${key}`);
+        }
+      });
+
+      formDataObj["BRANCH_ID"] = Number(branchId);
+    
+      // Debugging: Log the payload being sent
+      console.log("Form data payload:", formDataObj);
+    
+      try {
+        // Send JSON data to the API
+        const response = await saveStudentData(formDataObj);
+    
+        // Handle success
+        if (response) {
+          alert("Student information saved successfully!");
+        } else {
+          alert("Failed to save data. Please check the input and try again.");
+        }
+      } catch (error) {
+        // Handle errors
+        console.error("Error submitting form:", error);
+        alert("Something went wrong. Please try again.");
+      }
+    };
+  
+  
+  
 
   return (
     <div className="container mt-4">

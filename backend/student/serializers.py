@@ -1,42 +1,47 @@
 from rest_framework import serializers
-from .models import Student
+
 from .models import STUDENT_MASTER
 
-class StudentMasterSerializer(serializers.ModelSerializer):
-    ACTIVE = serializers.CharField(default='YES')
-    VALIDITY = serializers.DateField(required=False, allow_null=True)
-    ENTRYPERSON = serializers.CharField(default='Admin')
-    
+class StudentMasterSerializer(serializers.ModelSerializer):    
     class Meta:
-        model = STUDENT_MASTER
-        fields = [
-            'ACADEMIC_YEAR',
-            'STATUS',
-            'INSTITUTE',
-            'BRANCH_ID',
-            'ADMISSION_CATEGORY',
-            'ADMN_QUOTA_ID',
-            'BATCH',
-            'FORM_NO',
-            'NAME',
-            'FATHER_NAME',
-            'SURNAME',
-            'NAME_ON_CERTIFICATE',
-            'EMAIL_ID',
-            'GENDER',
-            'DOB',
-            'MOB_NO',
-            'VALIDITY',
-            'ACTIVE',
-            'ENTRYPERSON'
-        ]
+
+     model = STUDENT_MASTER 
+     fields = [
+        'ACADEMIC_YEAR',
+        'STATUS',
+        'INSTITUTE',
+        'BRANCH_ID',
+        'PROGRAM_CODE',  # Added PROGRAM_CODE field
+        'ADMISSION_CATEGORY',
+        'ADMN_QUOTA_ID',
+        'BATCH',
+        'FORM_NO',
+        'NAME',
+        'FATHER_NAME',
+        'SURNAME',
+        'NAME_ON_CERTIFICATE',
+        'EMAIL_ID',
+        'GENDER',
+        'DOB',
+        'MOB_NO',
+        'STUDENT_ID',  # Added missing field
+        'ACTIVE',      # Added missing field
+        'ADMISSION_DATE'  # Added missing field
+    ]
+
+
+    def validate_PROGRAM_CODE(self, value):
+        if not value:
+            raise serializers.ValidationError("Program code is required.")
+        return value
 
     def validate_EMAIL_ID(self, value):
-        if STUDENT_MASTER.objects.filter(EMAIL_ID=value).exists():
-            raise serializers.ValidationError("Email ID already exists.")
+
+        if not value:
+            raise serializers.ValidationError("Email ID is required.")
         return value
 
     def validate_MOB_NO(self, value):
-        if len(value) != 10 or not value.isdigit():
-            raise serializers.ValidationError("Enter a valid 10-digit mobile number.")
+        if not value:
+            raise serializers.ValidationError("Mobile number is required.")
         return value
