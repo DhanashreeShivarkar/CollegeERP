@@ -1,5 +1,6 @@
 import axios from "../utils/axios";
-interface StudentData {
+
+interface FormData {
     "ACADEMIC_YEAR": "2024-25",
     "STATUS": "Active",
     "INSTITUTE": "INST001",
@@ -22,35 +23,31 @@ interface StudentData {
 const API_URL = "http://localhost:8000/api";
 
 // Save student data
-export const saveStudentData = async (studentData: StudentData): Promise<any> => {
-    try {
-      const response = await axios.post(`${API_URL}/student/StudentMaster/`, studentData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken(), // If CSRF token is required
-        },
-      });
-      return response.data; // Return response data if successful
-    } catch (error: any) {
-      console.error("Error saving student data:", error.response?.data || error.message);
-      throw error; // Propagate error for handling in calling function
-    }
-  };
+export const saveStudentData = async (formData: Record<string, any>): Promise<FormData> => {
+  try {
+const response = await axios.post(`${API_URL}/studentMaster/student/`, JSON.stringify(formData), {
 
-  // Fetch student data
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+
+        },
+    });
+    return response.data; // Return response data if successful
+ } catch (error: any) {
+    console.error("Error saving student data:", error.response?.data || error.message);
+    throw error; // Propagate error for handling in calling function
+}
+};
+
+
+// Fetch student data
 export const getStudentData = async (studentId: string): Promise<any> => {
     try {
-      const response = await axios.get(`${API_URL}/student/StudentMaster/${studentId}/`);
+      const response = await axios.get(`${API_URL}/studentMaster/student${studentId}/`);
       return response.data;
     } catch (error: any) {
       console.error("Error fetching student data:", error.response?.data || error.message);
       throw error;
     }
   };
-  
-  // CSRF Token Helper (for Django)
-  const getCSRFToken = (): string | undefined => {
-    return document.cookie.split('; ')
-      .find(row => row.startsWith('csrftoken='))
-      ?.split('=')[1];
-  };
+
