@@ -598,33 +598,20 @@ class InstituteViewSet(BaseModelViewSet):
     serializer_class = InstituteSerializer
     
     def list(self, request, *args, **kwargs):
-        institutes = self.queryset.filter(IS_ACTIVE=True)
-        serializer = self.get_serializer(institutes, many=True)
-        return Response(serializer.data)
-
-    def list(self, request, *args, **kwargs):
         university_id = request.query_params.get('university_id', None)
         
-        # Filter institutes by IS_ACTIVE and optionally by university_id
         if university_id:
-            institutes = self.queryset.filter(IS_ACTIVE=True, UNIVERSITY_id=university_id)
+            institutes = self.queryset.filter(
+                IS_ACTIVE=True, 
+                UNIVERSITY_id=university_id
+            ).values('INSTITUTE_ID', 'CODE', 'NAME')  # Make sure to include CODE
         else:
-            institutes = self.queryset.filter(IS_ACTIVE=True)
+            institutes = self.queryset.filter(
+                IS_ACTIVE=True
+            ).values('INSTITUTE_ID', 'CODE', 'NAME')  # Make sure to include CODE
         
-        serializer = self.get_serializer(institutes, many=True)
-        return Response(serializer.data)
+        return Response(institutes)
 
-    def list(self, request, *args, **kwargs):
-        university_id = request.query_params.get('university_id', None)
-        
-        # Filter institutes by IS_ACTIVE and optionally by university_id
-        if university_id:
-            institutes = self.queryset.filter(IS_ACTIVE=True, UNIVERSITY_id=university_id)
-        else:
-            institutes = self.queryset.filter(IS_ACTIVE=True)
-        
-        serializer = self.get_serializer(institutes, many=True)
-        return Response(serializer.data)
             
 class AcademicYearViewSet(BaseModelViewSet):
     queryset = ACADEMIC_YEAR.objects.all()

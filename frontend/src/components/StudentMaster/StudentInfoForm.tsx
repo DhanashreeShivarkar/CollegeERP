@@ -5,9 +5,51 @@ import axiosInstance from '../../api/axios';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useForm } from "react-hook-form";
 import { saveStudentData } from "../../api/studentService";
-
+import { AxiosError } from 'axios';  // Add this import
 
 // Define types for form data
+interface StudentData {
+  INSTITUTE_CODE: string;
+  ACADEMIC_YEAR: string;
+  BATCH: string;
+  ADMISSION_CATEGORY: string;
+  ADMISSION_QUOTA: string;
+  FORM_NO: number;
+  NAME: string;
+  SURNAME: string;
+  PARENT_NAME: string;
+  FATHER_NAME: string;
+  MOTHER_NAME: string;
+  GENDER: string;
+  DOB: string;
+  DOB_WORD: string;
+  MOB_NO: string;
+  EMAIL_ID: string;
+  BRANCH_ID: number;
+  NAME_ON_CERTIFICATE: string;
+  PER_ADDRESS: string;
+  LOC_ADDRESS: string;
+  PER_STATE_ID?: number;
+  LOC_STATE_ID?: number;
+  PER_PHONE_NO: string;
+  LOC_PHONE_NO: string;
+  PER_CITY: string;
+  LOC_CITY: string;
+  NATIONALITY: string;
+  BLOOD_GR: string;
+  PER_PIN: string;
+  LOC_PIN: string;
+  RELIGION: string;
+  BANK_NAME: string;
+  BANK_ACC_NO: string;
+  IS_ACTIVE: string;
+  EMERGENCY_NO: string;
+  PER_TALUKA: string;
+  PER_DIST: string;
+  LOC_TALUKA: string;
+  LOC_DIST: string;
+}
+
 interface FormData {
   academicYear: string;
   university: string;
@@ -28,6 +70,28 @@ interface FormData {
   mobileNo: string;
   emailId: string;
   status: string;
+  perAddress: string;
+  locAddress: string;
+  perStateId: string;
+  locStateId: string;
+  perPhoneNo: string;
+  locPhoneNo: string;
+  perCity: string;
+  locCity: string;
+  nationality: string;
+  bloodGroup: string;
+  caste: string;
+  bankName: string;
+  bankAccNo: string;
+  emergencyNo: string;
+  perTaluka: string;
+  perDist: string;
+  locTaluka: string;
+  locDist: string;
+  perPin: string;
+  locPin: string;
+  religion: string;
+  dobWord: string;
   [key: string]: any; 
  }
 
@@ -41,6 +105,7 @@ interface FormData {
   interface Institute {
     INSTITUTE_ID: number;
     CODE: string;
+    NAME: string;  // Add NAME for display
   }
 
   interface Program {
@@ -94,6 +159,28 @@ interface FormData {
     mobileNo: "",
     emailId: "",
     status: "Active",
+    perAddress: "",
+    locAddress: "",
+    perStateId: "",
+    locStateId: "",
+    perPhoneNo: "",
+    locPhoneNo: "",
+    perCity: "",
+    locCity: "",
+    nationality: "",
+    bloodGroup: "",
+    caste: "",
+    bankName: "",
+    bankAccNo: "",
+    emergencyNo: "",
+    perTaluka: "",
+    perDist: "",
+    locTaluka: "",
+    locDist: "",
+    perPin: "",
+    locPin: "",
+    religion: "",
+    dobWord: "",
   });
 
     // Explicitly define the types of state variables
@@ -175,13 +262,15 @@ interface FormData {
     };
 
     const handleInstituteChange = (e: React.ChangeEvent<HTMLElement>) => {
-            const target = e.target as HTMLSelectElement; // Explicitly cast
-            const instituteId = parseInt(target.value, 10);
-            setSelectedInstitute(instituteId.toString());
-        
-            if (instituteId) {
-                fetchPrograms(instituteId);
-            }
+      const target = e.target as HTMLSelectElement;
+      const instituteCode = target.value;  // Get code directly
+      setSelectedInstitute(instituteCode);  // Store code instead of ID
+      
+      // Find institute by code to get ID for fetching programs
+      const institute = institutes.find(i => i.CODE === instituteCode);
+      if (institute) {
+        fetchPrograms(institute.INSTITUTE_ID);
+      }
     };
 
     const fetchPrograms = async (instituteId: number) => {
@@ -348,52 +437,75 @@ interface FormData {
         setFormData({ ...formData, [name]: value });
     };
 
+    const handleBatchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const { name, value } = e.target;
+      console.log(`Batch selected: ${value}`); // Debug log
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    };
 
-    
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-    
-      // Create a JSON object to store form data
-      const formDataObj: Record<string, any> = {};
-    
-      // Convert FormData entries to JSON format
-      const formData = new FormData(e.currentTarget);
-      formData.forEach((value, key) => {
-        // Ensure the value is a string before processing
-        if (typeof value === "string") {
-          // Convert specific fields to their correct types (e.g., numbers, dates)
-          if (key === "BRANCH_ID" || key === "ADMN_QUOTA_ID" || key === "FORM_NO") {
-            formDataObj[key] = Number(value); // Convert to number
-          } else if (key === "DOB") {
-            // Convert the date string to a Date object and format it as YYYY-MM-DD
-            formDataObj[key] = new Date(value).toISOString().split("T")[0];
-          } else {
-            formDataObj[key] = value; // Keep as string
-          }
-        } else {
-          console.warn(`Skipping non-string value for key: ${key}`);
-        }
-      });
-
-      formDataObj["BRANCH_ID"] = Number(branchId);
-    
-      // Debugging: Log the payload being sent
-      console.log("Form data payload:", formDataObj);
-    
+      
       try {
-        // Send JSON data to the API
-        const response = await saveStudentData(formDataObj);
+        const studentData: StudentData = {
+          INSTITUTE_CODE: selectedInstitute,
+          ACADEMIC_YEAR: selectedAcademicYear,
+          BATCH: formData.batch,
+          ADMISSION_CATEGORY: selectedCategory,
+          ADMISSION_QUOTA: selectedQuota,
+          FORM_NO: parseInt(formData.formNo),
+          NAME: formData.name,
+          SURNAME: formData.surname,
+          PARENT_NAME: formData.father,
+          FATHER_NAME: formData.father,
+          DOB_WORD: formData.dobWord,
+          NAME_ON_CERTIFICATE: formData.certificateName,
+          MOTHER_NAME: formData.mother || '',
+          GENDER: formData.gender.toLowerCase(),
+          DOB: formData.dateOfBirth,
+          MOB_NO: formData.mobileNo,
+          EMAIL_ID: formData.emailId,
+          BRANCH_ID: parseInt(selectedBranch),
+          PER_ADDRESS: formData.perAddress || '',
+          LOC_ADDRESS: formData.locAddress || '',
+          PER_STATE_ID: parseInt(formData.perStateId) || 1,
+          LOC_STATE_ID: parseInt(formData.locStateId) || 1,
+          PER_PHONE_NO: formData.perPhoneNo || '',
+          LOC_PHONE_NO: formData.locPhoneNo || '',
+          PER_CITY: formData.perCity || '',
+          LOC_CITY: formData.locCity || '',
+          NATIONALITY: formData.nationality || 'INDIAN',
+          BLOOD_GR: formData.bloodGroup || 'NA',
+          PER_PIN: formData.perPin || '',
+          LOC_PIN: formData.locPin || '',
+          RELIGION: formData.religion || '',
+          BANK_NAME: formData.bankName || '',
+          BANK_ACC_NO: formData.bankAccNo || '',
+          IS_ACTIVE: 'YES',
+          // Other required fields with default values
+          EMERGENCY_NO: formData.emergencyNo || formData.mobileNo,
+          PER_TALUKA: formData.perTaluka || '',
+          PER_DIST: formData.perDist || '',
+          LOC_TALUKA: formData.locTaluka || '',
+          LOC_DIST: formData.locDist || ''
+        };
     
-        // Handle success
+        console.log('Sending data:', studentData);
+        const response = await saveStudentData(studentData);
+        
         if (response) {
           alert("Student information saved successfully!");
-        } else {
-          alert("Failed to save data. Please check the input and try again.");
         }
       } catch (error) {
-        // Handle errors
-        console.error("Error submitting form:", error);
-        alert("Something went wrong. Please try again.");
+        if (error instanceof AxiosError) {
+          console.error("API Error Response:", error.response?.data);
+          alert(error.response?.data?.error || "Failed to save student data");
+        } else {
+          alert("An error occurred while saving student data");
+        }
       }
     };
   
@@ -408,7 +520,7 @@ interface FormData {
         <div className="row">
           <div className="col-md-3">
           <Form.Group>
-            <Form.Label>Academic Year</Form.Label>
+            <Form.Label>Academic Year *</Form.Label>
             <Form.Control 
                 as="select"
                 value={selectedAcademicYear}
@@ -434,7 +546,7 @@ interface FormData {
         <div className="row mt-2">
           <div className="col-md-3">
                                 <Form.Group>
-                                    <Form.Label>University</Form.Label>
+                                    <Form.Label>University *</Form.Label>
                                     <Form.Control as="select" value={selectedUniversity} onChange={handleUniversityChange} // No need for additional casting
                                     >
                                         <option value="" disabled>Select University</option>
@@ -447,12 +559,19 @@ interface FormData {
 
           <div className="col-md-3">
                                 <Form.Group>
-                                    <Form.Label>Institute</Form.Label>
-                                    <Form.Control as="select" value={selectedInstitute} onChange={handleInstituteChange} disabled={!selectedUniversity}>
-                                        <option value="" disabled>Select Institute</option>
-                                        {institutes.map((i: Institute) => (
-                                            <option key={i.INSTITUTE_ID} value={i.INSTITUTE_ID}>{i.CODE}</option>
-                                        ))}
+                                    <Form.Label>Institute *</Form.Label>
+                                    <Form.Control 
+                                      as="select" 
+                                      value={selectedInstitute}
+                                      onChange={handleInstituteChange} 
+                                      disabled={!selectedUniversity}
+                                    >
+                                      <option value="" disabled>Select Institute</option>
+                                      {institutes.map((i: Institute) => (
+                                        <option key={i.INSTITUTE_ID} value={i.CODE}>  {/* Change value to CODE */}
+                                          {i.CODE} - {i.NAME}  {/* Show both code and name */}
+                                        </option>
+                                      ))}
                                     </Form.Control>
                                 </Form.Group>
           </div>
@@ -473,7 +592,7 @@ interface FormData {
         <div className="row mt-2">
           <div className="col-md-3">
           <Form.Group>
-                                    <Form.Label>Branch</Form.Label>
+                                    <Form.Label>Branch *</Form.Label>
                                     <Form.Control as="select" value={selectedBranch} onChange={handleBranchChange} disabled={!selectedProgram}>
                                         <option value="" disabled>Select Branch</option>
                                         {branches.map((b) => (
@@ -500,7 +619,7 @@ interface FormData {
           </div>
 
           <div className="col-md-3">
-          <label>Admission Category</label>
+          <label>Admission Category *</label>
           <select
             className="form-control"
             name="admissionCategory"
@@ -538,10 +657,17 @@ interface FormData {
 </div>
 
           <div className="col-md-3">
-          <label>Batch</label>
-          <select className="form-control" name="batch" value={formData.batch} onChange={handleChange}>
+          <label>Batch *</label>
+          <select 
+            className="form-control" 
+            name="batch"
+            value={formData.batch} 
+            onChange={handleBatchChange}
+            required
+          >
+            <option value="">Select Batch</option>
             {Array.from({ length: 15 }, (_, i) => 2025 + i).map((year) => (
-                <option key={year} value={year}>
+                <option key={year} value={year.toString()}>
                     {year}
                 </option>
             ))}
@@ -550,7 +676,7 @@ interface FormData {
           </div>
 
           <div className="col-md-3">
-            <label>Form No</label>
+            <label>Form No *</label>
             <input type="text" className="form-control" name="formNo" value={formData.formNo} onChange={handleChange} />
           </div>
         </div>
@@ -558,17 +684,17 @@ interface FormData {
         {/* Other Fields */}
         <div className="row mt-2">
           <div className="col-md-3">
-            <label>Name</label>
+            <label>Name *</label>
             <input type="text" className="form-control" name="name" value={formData.name} onChange={handleChange} required />
           </div>
 
           <div className="col-md-3">
-            <label>Father's Name</label>
+            <label>Father's Name *</label>
             <input type="text" className="form-control" name="father" value={formData.father} onChange={handleChange} required />
           </div>
 
           <div className="col-md-3">
-            <label>Surname</label>
+            <label>Surname *</label>
             <input type="text" className="form-control" name="surname" value={formData.surname} onChange={handleChange} required />
           </div>
         </div>
@@ -581,7 +707,7 @@ interface FormData {
           </div>
 
           <div className="col-md-3">
-            <label>Email ID</label>
+            <label>Email ID *</label>
             <input type="email" className="form-control" name="emailId" value={formData.emailId} onChange={handleChange} />
           </div>
         </div>
@@ -589,7 +715,7 @@ interface FormData {
         {/* Gender, DOB, Mobile, Email */}
         <div className="row mt-2">
           <div className="col-md-3">
-            <label>Gender</label>
+            <label>Gender *</label>
             <select className="form-control" name="gender" value={formData.gender} onChange={handleChange}>
               <option>Male</option>
               <option>Female</option>
@@ -598,13 +724,94 @@ interface FormData {
           </div>
 
           <div className="col-md-3">
-            <label>Date of Birth</label>
+            <label>Date of Birth *</label>
             <input type="date" className="form-control" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
           </div>
 
           <div className="col-md-3">
-            <label>Mobile No</label>
+            <label>Mobile No *</label>
             <input type="text" className="form-control" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required />
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <h4 className="bg-dark text-white p-2 mt-4">CONTACT INFORMATION</h4>
+        <div className="row mt-2">
+          <div className="col-md-6">
+            <label>Permanent Address</label>
+            <textarea className="form-control" name="perAddress" value={formData.perAddress} onChange={handleChange} />
+          </div>
+          <div className="col-md-6">
+            <label>Local Address</label>
+            <textarea className="form-control" name="locAddress" value={formData.locAddress} onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="row mt-2">
+          <div className="col-md-3">
+            <label>Permanent City</label>
+            <input type="text" className="form-control" name="perCity" value={formData.perCity} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Local City</label>
+            <input type="text" className="form-control" name="locCity" value={formData.locCity} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Permanent Pin</label>
+            <input type="text" className="form-control" name="perPin" value={formData.perPin} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Local Pin</label>
+            <input type="text" className="form-control" name="locPin" value={formData.locPin} onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="row mt-2">
+          <div className="col-md-3">
+            <label>Permanent Phone</label>
+            <input type="text" className="form-control" name="perPhoneNo" value={formData.perPhoneNo} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Local Phone</label>
+            <input type="text" className="form-control" name="locPhoneNo" value={formData.locPhoneNo} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Emergency Contact</label>
+            <input type="text" className="form-control" name="emergencyNo" value={formData.emergencyNo} onChange={handleChange} />
+          </div>
+        </div>
+
+        {/* Additional Information */}
+        <h4 className="bg-dark text-white p-2 mt-4">ADDITIONAL INFORMATION</h4>
+        <div className="row mt-2">
+          <div className="col-md-3">
+            <label>Nationality</label>
+            <input type="text" className="form-control" name="nationality" value={formData.nationality} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Blood Group</label>
+            <input type="text" className="form-control" name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>Religion</label>
+            <input type="text" className="form-control" name="religion" value={formData.religion} onChange={handleChange} />
+          </div>
+          <div className="col-md-3">
+            <label>DOB in Words</label>
+            <input type="text" className="form-control" name="dobWord" value={formData.dobWord} onChange={handleChange} />
+          </div>
+        </div>
+
+        {/* Bank Details */}
+        <h4 className="bg-dark text-white p-2 mt-4">BANK DETAILS</h4>
+        <div className="row mt-2">
+          <div className="col-md-6">
+            <label>Bank Name</label>
+            <input type="text" className="form-control" name="bankName" value={formData.bankName} onChange={handleChange} />
+          </div>
+          <div className="col-md-6">
+            <label>Bank Account Number</label>
+            <input type="text" className="form-control" name="bankAccNo" value={formData.bankAccNo} onChange={handleChange} />
           </div>
         </div>
 
@@ -612,6 +819,11 @@ interface FormData {
         <div className="mt-4">
           <button type="submit" className="btn btn-primary">Save</button>
           <button type="reset" className="btn btn-secondary ms-2">Clear</button>
+        </div>
+
+        {/* Note about required fields */}
+        <div className="mb-3">
+          <small className="text-muted">Fields marked with * are required</small>
         </div>
       </form>
     </div>

@@ -1,5 +1,6 @@
 from django.db import models
 from core.models import AuditModel
+from django.utils import timezone
 from accounts.models import BRANCH, PROGRAM
 from academic.models import ACADEMIC_YEAR, EXAMINATION, CURRICULUM
 
@@ -98,7 +99,7 @@ class STUDENT_RESULT(AuditModel):
     MARKS_OBTAINED = models.DecimalField(max_digits=5, decimal_places=2, db_column='MARKS_OBTAINED')
     IS_PASS = models.BooleanField(db_column='IS_PASS')
     GRADE = models.CharField(max_length=2, db_column='GRADE')
-    GRADE_POINTS = models.DecimalField(max_digits=3, decimal_places=1, db_column='GRADE_POINTS')
+    GRADE_POINTS = models.DecimalField(max_digits=10, decimal_places=1, db_column='GRADE_POINTS')
     ATTEMPT_NUMBER = models.IntegerField(default=1, db_column='ATTEMPT_NUMBER')
     REMARKS = models.CharField(max_length=255, null=True, blank=True, db_column='REMARKS')
     IS_VERIFIED = models.BooleanField(default=False, db_column='IS_VERIFIED')
@@ -117,16 +118,20 @@ class STUDENT_MASTER(AuditModel):
     STUDENT_ID = models.CharField(max_length=20, unique=True, db_column='STUDENT_ID')
     INSTITUTE = models.CharField(max_length=20, db_column='INSTITUTE_CODE')
     ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR')
-    BATCH = models.CharField(max_length=10, db_column='BATCH')
+    BATCH = models.CharField(
+        max_length=4,
+        db_column='BATCH',
+        help_text='Expected graduation/passout year (e.g., 2025)'
+    )
     ADMISSION_CATEGORY = models.CharField(max_length=20, db_column='ADMISSION_CATEGORY')
     FORM_NO = models.IntegerField(db_column='FORM_NO')
-    VALIDITY = models.DateField(db_column='VALIDITY')
-    NAME_ON_CERTIFICATE = models.CharField(max_length=100, db_column='NAME_ON_CERTIFICATE')
+    VALIDITY = models.DateField(db_column='VALIDITY', default=timezone.now)
+    NAME_ON_CERTIFICATE = models.CharField(max_length=100, db_column='NAME_ON_CERTIFICATE', blank=True, default='')
     NAME = models.CharField(max_length=100, db_column='NAME')
     SURNAME = models.CharField(max_length=100, db_column='SURNAME')
-    PARENT_NAME = models.CharField(max_length=100, db_column='PARENT_NAME')
-    MOTHER_NAME = models.CharField(max_length=100, db_column='MOTHER_NAME')
-    FATHER_NAME = models.CharField(max_length=100, db_column='FATHER_NAME')
+    PARENT_NAME = models.CharField(max_length=100, db_column='PARENT_NAME', default='')
+    MOTHER_NAME = models.CharField(max_length=100, db_column='MOTHER_NAME', blank=True, default='')
+    FATHER_NAME = models.CharField(max_length=100, db_column='FATHER_NAME', default='')
     GENDER = models.CharField(max_length=10, db_column='GENDER', choices=[
         ('male', 'Male'),
         ('female', 'Female'),
@@ -134,56 +139,54 @@ class STUDENT_MASTER(AuditModel):
     ])
     DOB = models.DateField(db_column='DOB')
     DOP = models.DateField(db_column='DOP', null=True, blank=True)
-    PER_ADDRESS = models.TextField(db_column='PER_ADDRESS')
-    LOC_ADDRESS = models.TextField(db_column='LOC_ADDRESS')
-    PER_STATE_ID = models.IntegerField(db_column='PER_STATE_ID')
-    LOC_STATE_ID = models.IntegerField(db_column='LOC_STATE_ID')
-    PER_PHONE_NO = models.CharField(max_length=15, db_column='PER_PHONE_NO')
-    LOC_PHONE_NO = models.CharField(max_length=15, db_column='LOC_PHONE_NO')
+    PER_ADDRESS = models.TextField(db_column='PER_ADDRESS', blank=True, default='')
+    LOC_ADDRESS = models.TextField(db_column='LOC_ADDRESS', blank=True, default='')
+    PER_STATE_ID = models.IntegerField(db_column='PER_STATE_ID', default=1)
+    LOC_STATE_ID = models.IntegerField(db_column='LOC_STATE_ID', default=1)
+    PER_PHONE_NO = models.CharField(max_length=15, db_column='PER_PHONE_NO', blank=True, default='')
+    LOC_PHONE_NO = models.CharField(max_length=15, db_column='LOC_PHONE_NO', blank=True, default='')
     MOB_NO = models.CharField(max_length=15, db_column='MOB_NO')
     EMAIL_ID = models.EmailField(db_column='EMAIL_ID')
-    PER_CITY = models.CharField(max_length=50, db_column='PER_CITY')
-    LOC_CITY = models.CharField(max_length=50, db_column='LOC_CITY')
-    NATIONALITY = models.CharField(max_length=50, db_column='NATIONALITY')
-    BLOOD_GR = models.CharField(max_length=5, db_column='BLOOD_GR')
-    CASTE = models.CharField(max_length=50, db_column='CASTE')
+    PER_CITY = models.CharField(max_length=50, db_column='PER_CITY', blank=True, default='')
+    LOC_CITY = models.CharField(max_length=50, db_column='LOC_CITY', blank=True, default='')
+    NATIONALITY = models.CharField(max_length=50, db_column='NATIONALITY', default='INDIAN')
+    BLOOD_GR = models.CharField(max_length=5, db_column='BLOOD_GR', default='O+')
+    CASTE = models.CharField(max_length=50, db_column='CASTE', default='GENERAL')
     BRANCH_ID = models.ForeignKey(
         'accounts.BRANCH',
         to_field='BRANCH_ID',
         on_delete=models.PROTECT,
         db_column='BRANCH_ID'
     )
-    ENROLMENT_NO = models.CharField(max_length=20, db_column='ENROLMENT_NO')
-    IS_ACTIVE = models.CharField(max_length=3, db_column='IS_ACTIVE', default=True)  # Changed from ACTIVE
-    HANDICAPPED = models.CharField(max_length=3, db_column='HANDICAPPED')
-    MARK_ID = models.CharField(max_length=20, db_column='MARK_ID')
-    ADMISSION_DATE = models.DateField(db_column='ADMISSION_DATE')
-    QUOTA_ID = models.IntegerField(db_column='QUOTA_ID')
-    ENTRYPERSON = models.CharField(max_length=100, db_column='ENTRYPERSON')
-    DATEOFENTRY = models.DateField(auto_now_add=True, db_column='DATEOFENTRY')
-    DATEOFEDIT = models.DateField(auto_now=True, db_column='DATEOFEDIT')
-    PER_PIN = models.CharField(max_length=6, db_column='PER_PIN')
-    LOC_PIN = models.CharField(max_length=6, db_column='LOC_PIN')
-    YEAR_SEM_ID = models.IntegerField(db_column='YEAR_SEM_ID')
+    ENROLMENT_NO = models.CharField(max_length=20, db_column='ENROLMENT_NO', blank=True, default='')
+    IS_ACTIVE = models.CharField(max_length=8, db_column='IS_ACTIVE', default='YES')
+    HANDICAPPED = models.CharField(max_length=10, db_column='HANDICAPPED', default='NO')
+    MARK_ID = models.CharField(max_length=20, db_column='MARK_ID', blank=True, default='0')
+    ADMISSION_DATE = models.DateField(db_column='ADMISSION_DATE', default=timezone.now)
+    QUOTA_ID = models.IntegerField(db_column='QUOTA_ID', default=1)
+    
+    PER_PIN = models.CharField(max_length=6, db_column='PER_PIN', blank=True, default='')
+    LOC_PIN = models.CharField(max_length=6, db_column='LOC_PIN', blank=True, default='')
+    YEAR_SEM_ID = models.IntegerField(db_column='YEAR_SEM_ID', default=1)
     DATE_LEAVING = models.DateField(db_column='DATE_LEAVING', null=True, blank=True)
-    RELIGION = models.CharField(max_length=50, db_column='RELIGION')
-    DOB_WORD = models.CharField(max_length=100, db_column='DOB_WORD')
-    ADMN_ROUND = models.CharField(max_length=10, db_column='ADMN_ROUND')
-    BANK_NAME = models.CharField(max_length=100, db_column='BANK_NAME')
-    BANK_ACC_NO = models.CharField(max_length=20, db_column='BANK_ACC_NO')
-    EMERGENCY_NO = models.CharField(max_length=15, db_column='EMERGENCY_NO')
-    PER_TALUKA = models.CharField(max_length=50, db_column='PER_TALUKA')
-    PER_DIST = models.CharField(max_length=50, db_column='PER_DIST')
-    LOC_TALUKA = models.CharField(max_length=50, db_column='LOC_TALUKA')
-    LOC_DIST = models.CharField(max_length=50, db_column='LOC_DIST')
-    EDITPERSON = models.CharField(max_length=100, db_column='EDITPERSON')
+    RELIGION = models.CharField(max_length=50, db_column='RELIGION', blank=True, default='')
+    DOB_WORD = models.CharField(max_length=100, db_column='DOB_WORD', blank=True, default='')
+    ADMN_ROUND = models.CharField(max_length=10, db_column='ADMN_ROUND', default='1')
+    BANK_NAME = models.CharField(max_length=100, db_column='BANK_NAME', blank=True, default='')
+    BANK_ACC_NO = models.CharField(max_length=20, db_column='BANK_ACC_NO', blank=True, default='')
+    EMERGENCY_NO = models.CharField(max_length=15, db_column='EMERGENCY_NO', blank=True, default='')
+    PER_TALUKA = models.CharField(max_length=50, db_column='PER_TALUKA', blank=True, default='')
+    PER_DIST = models.CharField(max_length=50, db_column='PER_DIST', blank=True, default='')
+    LOC_TALUKA = models.CharField(max_length=50, db_column='LOC_TALUKA', blank=True, default='')
+    LOC_DIST = models.CharField(max_length=50, db_column='LOC_DIST', blank=True, default='')
+    EDITPERSON = models.CharField(max_length=100, db_column='EDITPERSON', default='SYSTEM')
     ADMN_QUOTA_ID = models.IntegerField(db_column='ADMN_QUOTA_ID', default=0)
-    STATUS = models.CharField(max_length=20, db_column='STATUS')
-    JOINING_STATUS = models.CharField(max_length=20, db_column='JOINING_STATUS')
-    REGISTRATION_DATE = models.DateField(db_column='REGISTRATION_DATE')
-    LATERAL_STATUS = models.CharField(max_length=20, db_column='LATERAL_STATUS')
-    JOINING_STATUS_DATE = models.DateField(db_column='JOINING_STATUS_DATE')
-    RETENTION_STATUS_DATE = models.DateField(db_column='RETENTION_STATUS_DATE')
+    STATUS = models.CharField(max_length=20, db_column='STATUS', default='ACTIVE')
+    JOINING_STATUS = models.CharField(max_length=20, db_column='JOINING_STATUS', default='JOINED')
+    REGISTRATION_DATE = models.DateField(db_column='REGISTRATION_DATE', default=timezone.now)
+    LATERAL_STATUS = models.CharField(max_length=20, db_column='LATERAL_STATUS', default='NO')
+    JOINING_STATUS_DATE = models.DateField(db_column='JOINING_STATUS_DATE', default=timezone.now)
+    RETENTION_STATUS_DATE = models.DateField(db_column='RETENTION_STATUS_DATE', default=timezone.now)
 
     def save(self, *args, **kwargs):
         if not self.STUDENT_ID:
@@ -191,7 +194,7 @@ class STUDENT_MASTER(AuditModel):
                 BATCH=self.BATCH, 
                 BRANCH_ID=self.BRANCH_ID
             ).count() + 1
-            program_code = self.BRANCH_ID.PROGRAM_CODE
+            program_code = self.BRANCH_ID.PROGRAM_id
             self.STUDENT_ID = f"{program_code}{self.BATCH[-2:]}{latest_entry:03d}"
         super().save(*args, **kwargs)
 

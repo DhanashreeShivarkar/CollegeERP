@@ -85,16 +85,32 @@ def generate_password(length=10):
     return ''.join(password)
 
 
-def generate_student_id(program_code, batch):
-    """Generates unique STUDENT_ID based on program, batch, and calculated entry number."""
-    with transaction.atomic():  # Ensures concurrency safety
-        # Count existing students with the same BATCH and PROGRAM
-        latest_entry = (
-            STUDENT_MASTER.objects.filter(
-                BRANCH_ID__PROGRAM_CODE=program_code,
-                BATCH=batch
-            ).count() + 1
-        )
-
-        student_id = f"{program_code}{batch[-2:]}{latest_entry:03d}"
-        return student_id
+def generate_student_id(program_code: str, batch: str) -> str:
+    """
+    Generates student ID in format: AAA2025S001
+    program_code: Program code (takes first 3 chars)
+    batch: Batch year (4 digits)
+    S: Static for Student
+    001: Sequential number
+    """
+    from student.models import STUDENT_MASTER
+    
+    # Take first 3 chars of program code and convert to uppercase
+    prefix = program_code[:3].upper()
+    
+    # Get last student ID for this program and batch
+    last_student = STUDENT_MASTER.objects.filter(
+        STUDENT_ID__startswith=f"{prefix}{batch}S"
+    ).order_by('-STUDENT_ID').first()
+    
+    if last_student:
+        # Extract sequence number and increment
+        last_seq = int(last_student.STUDENT_ID[-3:])
+        new_seq = str(last_seq + 1).zfill(3)
+    else:
+        # Start with 001
+        new_seq = '001'
+    
+    # Combine all parts
+    student_id = f"{prefix}{batch}S{new_seq}"
+    return student_id
