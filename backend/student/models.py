@@ -113,7 +113,7 @@ class STUDENT_RESULT(AuditModel):
         return f"{self.STUDENT.ENROLLMENT_NO} - {self.CURRICULUM.COURSE.CODE} - {self.EXAMINATION.NAME}"
 
 class STUDENT_MASTER(AuditModel):
-    STUDENT_MASTER_ID = models.AutoField(primary_key=True, db_column='STUDENT_MASTER_ID')
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
     STUDENT_ID = models.CharField(max_length=20, unique=True, db_column='STUDENT_ID')
     INSTITUTE = models.CharField(max_length=20, db_column='INSTITUTE_CODE')
     ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR')
@@ -154,7 +154,7 @@ class STUDENT_MASTER(AuditModel):
         db_column='BRANCH_ID'
     )
     ENROLMENT_NO = models.CharField(max_length=20, db_column='ENROLMENT_NO')
-    ACTIVE = models.CharField(max_length=3, db_column='ACTIVE')
+    IS_ACTIVE = models.CharField(max_length=3, db_column='IS_ACTIVE', default=True)  # Changed from ACTIVE
     HANDICAPPED = models.CharField(max_length=3, db_column='HANDICAPPED')
     MARK_ID = models.CharField(max_length=20, db_column='MARK_ID')
     ADMISSION_DATE = models.DateField(db_column='ADMISSION_DATE')
