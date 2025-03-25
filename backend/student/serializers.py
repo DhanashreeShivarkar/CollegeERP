@@ -2,73 +2,98 @@ from rest_framework import serializers
 from .models import STUDENT_MASTER
 from django.utils import timezone
 
+# Define required fields at module level
+BASIC_REQUIRED_FIELDS = [
+    'INSTITUTE',
+    'ACADEMIC_YEAR',
+    'BATCH',
+    'ADMISSION_CATEGORY',
+    'FORM_NO',
+    'NAME',
+    'SURNAME',
+    'FATHER_NAME',
+    'GENDER',
+    'DOB',
+    'MOB_NO',
+    'EMAIL_ID',
+    'PER_ADDRESS',
+    'BRANCH_ID'
+]
+
 class StudentMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = STUDENT_MASTER
         fields = '__all__'
         read_only_fields = ['STUDENT_ID']
-        # Add this to make fields nullable/blankable
+        # Now BASIC_REQUIRED_FIELDS is accessible here
         extra_kwargs = {
-            'NAME_ON_CERTIFICATE': {'allow_blank': True, 'required': False},
-            'MOTHER_NAME': {'allow_blank': True, 'required': False},
-            'LOC_ADDRESS': {'allow_blank': True, 'required': False},
-            'PER_PHONE_NO': {'allow_blank': True, 'required': False},
-            'LOC_PHONE_NO': {'allow_blank': True, 'required': False},
-            'PER_PIN': {'allow_blank': True, 'required': False},
-            'LOC_PIN': {'allow_blank': True, 'required': False},
-            'RELIGION': {'allow_blank': True, 'required': False},
-            'DOB_WORD': {'allow_blank': True, 'required': False},
-            'BANK_NAME': {'allow_blank': True, 'required': False},
-            'BANK_ACC_NO': {'allow_blank': True, 'required': False},
-            'PER_TALUKA': {'allow_blank': True, 'required': False},
-            'PER_DIST': {'allow_blank': True, 'required': False},
-            'LOC_TALUKA': {'allow_blank': True, 'required': False},
-            'LOC_DIST': {'allow_blank': True, 'required': False},
-            'IS_ACTIVE': {'allow_null': False, 'required': True}
+            field: {'required': True} for field in BASIC_REQUIRED_FIELDS
         }
 
     def to_internal_value(self, data):
-        # Map INSTITUTE_CODE to INSTITUTE
-        if 'INSTITUTE_CODE' in data and 'INSTITUTE' not in data:
-            data['INSTITUTE'] = data['INSTITUTE_CODE']
-        
-        # Set defaults before validation
-        current_date = timezone.now().date()
-        
-        # Set default values
+        # Set defaults for all non-required fields
         defaults = {
-            'VALIDITY': current_date,
-            'ADMISSION_DATE': current_date,
-            'REGISTRATION_DATE': current_date,
-            'JOINING_STATUS_DATE': current_date,
-            'RETENTION_STATUS_DATE': current_date,
+            # System fields
+            'VALIDITY': timezone.now().date(),
+            'ADMISSION_DATE': timezone.now().date(),
+            'REGISTRATION_DATE': timezone.now().date(),
+            'JOINING_STATUS_DATE': timezone.now().date(),
+            'RETENTION_STATUS_DATE': timezone.now().date(),
             'ENTRYPERSON': 'SYSTEM',
             'EDITPERSON': 'SYSTEM',
-            'ENROLMENT_NO': data.get('STUDENT_ID', ''),
-            'IS_ACTIVE': 'YES'
+            'IS_ACTIVE': 'YES',
+            
+            # Optional personal info fields
+            'NAME_ON_CERTIFICATE': '',
+            'MOTHER_NAME': '',
+            'PARENT_NAME': '',
+            'DOB_WORD': '',
+            'DOP': None,
+            
+            # Optional contact fields
+            'LOC_ADDRESS': '',
+            'PER_PHONE_NO': '',
+            'LOC_PHONE_NO': '',
+            'EMERGENCY_NO': '',
+            'PER_CITY': '',
+            'LOC_CITY': '',
+            'PER_PIN': '',
+            'LOC_PIN': '',
+            'PER_TALUKA': '',
+            'PER_DIST': '',
+            'LOC_TALUKA': '',
+            'LOC_DIST': '',
+            'PER_STATE_ID': 1,
+            'LOC_STATE_ID': 1,
+            
+            # Optional other fields
+            'NATIONALITY': 'INDIAN',
+            'BLOOD_GR': 'O+',
+            'CASTE': 'GENERAL',
+            'RELIGION': '',
+            'HANDICAPPED': 'NO',
+            'MARK_ID': '0',
+            'QUOTA_ID': 1,
+            'YEAR_SEM_ID': 1,
+            'ADMN_ROUND': '1',
+            'ADMN_QUOTA_ID': 0,
+            'STATUS': 'ACTIVE',
+            'JOINING_STATUS': 'JOINED',
+            'LATERAL_STATUS': 'NO',
+            'BANK_NAME': '',
+            'BANK_ACC_NO': '',
+            'ENROLMENT_NO': ''
         }
 
-        # Update data with defaults
-        for key, value in defaults.items():
-            if key not in data or not data[key]:
-                data[key] = value
+        # Apply defaults for missing fields
+        for field, default in defaults.items():
+            if field not in data or not data[field]:
+                data = data.copy() if not isinstance(data, dict) else data
+                data[field] = default
 
-        # Empty strings for optional fields
-        optional_fields = [
-            'NAME_ON_CERTIFICATE', 'MOTHER_NAME', 'LOC_ADDRESS',
-            'PER_PHONE_NO', 'LOC_PHONE_NO', 'PER_PIN', 'LOC_PIN',
-            'RELIGION', 'DOB_WORD', 'BANK_NAME', 'BANK_ACC_NO',
-            'PER_TALUKA', 'PER_DIST', 'LOC_TALUKA', 'LOC_DIST'
-        ]
-
-        for field in optional_fields:
-            if field not in data or data[field] is None:
-                data[field] = ''
-
-        # Convert IS_ACTIVE to uppercase
-        if 'IS_ACTIVE' in data:
-            data = data.copy()
-            data['IS_ACTIVE'] = str(data['IS_ACTIVE']).upper()
+        # Map INSTITUTE_CODE to INSTITUTE if needed
+        if 'INSTITUTE_CODE' in data and 'INSTITUTE' not in data:
+            data['INSTITUTE'] = data['INSTITUTE_CODE']
 
         return super().to_internal_value(data)
 
