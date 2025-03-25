@@ -8,6 +8,7 @@ BASIC_REQUIRED_FIELDS = [
     'ACADEMIC_YEAR',
     'BATCH',
     'ADMISSION_CATEGORY',
+    'ADMISSION_QUOTA',  # Added this field
     'FORM_NO',
     'NAME',
     'SURNAME',
@@ -73,10 +74,10 @@ class StudentMasterSerializer(serializers.ModelSerializer):
             'RELIGION': '',
             'HANDICAPPED': 'NO',
             'MARK_ID': '0',
-            'QUOTA_ID': 1,
+            'QUOTA_ID': int(data.get('ADMISSION_QUOTA', 1)),  # Use selected quota ID 
             'YEAR_SEM_ID': 1,
             'ADMN_ROUND': '1',
-            'ADMN_QUOTA_ID': 0,
+            'ADMN_QUOTA_ID': int(data.get('ADMISSION_QUOTA', 0)),  # Use selected quota ID
             'STATUS': 'ACTIVE',
             'JOINING_STATUS': 'JOINED',
             'LATERAL_STATUS': 'NO',
