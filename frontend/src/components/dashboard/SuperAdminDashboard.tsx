@@ -11,7 +11,6 @@ import InstituteMaster from "../master/InstituteMaster";
 import SettingsPanel from "../adminfeatures/Settings/SettingsPanel";
 import EmployeeTypeEntry from "../Employee/employeeTypeEntry";
 import NameEntryForm from "../CourseMaster/ProgramEntryForm";
-import SemesterDurationForm from "../master/SemesterDuration";
 import CreateEmployee from "../MasterEmployee/CreateEmployee";
 import ProgramTable from "../CourseMaster/Programtable";
 import ProgramList from "../CourseMaster/ProgramList";
