@@ -27,156 +27,74 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            # Debug prints
             print("=== Student Creation Debug ===")
             print("Request data:", request.data)
-            print("Content type:", request.content_type)
-            print("Headers:", request.headers)
-
-            logger.info("=== Starting Student Creation Process ===")
-            logger.debug(f"Incoming request data: {request.data}")
-
-            branch_id = request.data.get('BRANCH_ID')
-            if not branch_id:
-                return Response({'error': 'BRANCH_ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-            branch_obj = BRANCH.objects.select_related('PROGRAM').get(BRANCH_ID=branch_id)
-            if not branch_obj:
-                return Response({'error': f"BRANCH_ID {branch_id} not found"},
-                              status=status.HTTP_400_BAD_REQUEST)
-
-            batch = request.data.get('BATCH')
-            if not batch:
-                return Response({'error': 'BATCH is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Generate Student ID
-            student_id = generate_student_id(branch_obj.PROGRAM.CODE, batch)
-
-            # Create request data with generated ID
-            student_data = request.data.copy()
-            student_data['STUDENT_ID'] = student_id
-            student_data['IS_ACTIVE'] = True
-
-            serializer = self.get_serializer(data=student_data)
-            if not serializer.is_valid():
-                print("Validation errors:", serializer.errors)
-                logger.error(f"Validation errors: {serializer.errors}")
+            
+            # Check for required fields
+            required_fields = [
+                'INSTITUTE', 'ACADEMIC_YEAR', 'BATCH', 'ADMISSION_CATEGORY',
+                'ADMISSION_QUOTA',  # Added this field
+                'FORM_NO', 'NAME', 'SURNAME', 'FATHER_NAME', 'GENDER',
+                'DOB', 'MOB_NO', 'EMAIL_ID', 'PER_ADDRESS', 'BRANCH_ID'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in request.data]
+            if missing_fields:
                 return Response({
-                    'error': 'Validation failed',
-                    'details': serializer.errors
+                    'status': 'error',
+                    'message': f'Missing required fields: {", ".join(missing_fields)}'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            student = serializer.save()
-            logger.info(f"Created student with ID: {student_id}")
-
-            # After successful student creation, create user account
+            # Validate branch
+            branch_id = request.data.get('BRANCH_ID')
             try:
-                # Get student designation
-                student_designation = DESIGNATION.objects.get(CODE='STUDENT')
-                
-                # Generate username from email
-                email = student_data.get('EMAIL_ID')
-                username = email.split('@')[0]
-                
-                # Generate random password
-                password = generate_password(8)
-                
-                # Create user account
-                User = get_user_model()
-                user = User.objects.create(
-                    USER_ID=student_id,
-                    USERNAME=username,
-                    EMAIL=email,
-                    FIRST_NAME=student_data.get('NAME', ''),
-                    DESIGNATION=student_designation,
-                    IS_ACTIVE=True
-                )
-                user.set_password(password)
-                user.save()
-
-                # Send credentials via email
-                email_body = f"""
-                Dear {student_data.get('NAME')},
-
-                Your student account has been created successfully.
-                Please use the following credentials to login:
-
-                User ID: {student_id}
-                Username: {username}
-                Password: {password}
-
-                Please change your password after first login.
-
-                Best regards,
-                College ERP Team
-                """
-
-                send_mail(
-                    subject='College ERP - Login Credentials',
-                    message=email_body,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
-
+                branch = BRANCH.objects.select_related('PROGRAM').get(BRANCH_ID=branch_id)
+            except BRANCH.DoesNotExist:
                 return Response({
-                    'message': 'Student created successfully with user account',
-                    'student_id': student_id,
+                    'status': 'error',
+                    'message': 'Invalid Branch ID'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Add quota validation if needed
+            admission_quota = request.data.get('ADMISSION_QUOTA')
+            if not admission_quota:
+                return Response({
+                    'status': 'error',
+                    'message': 'ADMISSION_QUOTA is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                student = serializer.save()
+                return Response({
+                    'status': 'success',
+                    'message': 'Student created successfully',
                     'data': serializer.data
                 }, status=status.HTTP_201_CREATED)
-
-            except Exception as user_error:
-                # If user creation fails, log error but don't fail student creation
-                logger.error(f"Error creating user account: {str(user_error)}")
+            else:
                 return Response({
-                    'message': 'Student created but user account creation failed',
-                    'student_id': student_id,
-                    'error': str(user_error),
-                    'data': serializer.data
-                }, status=status.HTTP_201_CREATED)
+                    'status': 'error',
+                    'message': 'Validation failed',
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            print(f"Error in create: {str(e)}")
-            logger.error(f"Error in create process: {str(e)}", exc_info=True)
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f"Error creating student: {str(e)}", exc_info=True)
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def list(self, request, *args, **kwargs):
         try:
-            # Get query parameters
-            page = int(request.query_params.get('page', 1))
-            limit = int(request.query_params.get('limit', 10))
-            batch = request.query_params.get('batch')
-            branch = request.query_params.get('branch')
-            academic_year = request.query_params.get('academicYear')
-
-            # Apply filters
-            queryset = self.queryset
-            if batch:
-                queryset = queryset.filter(BATCH=batch)
-            if branch:
-                queryset = queryset.filter(BRANCH_ID=branch)
-            if academic_year:
-                queryset = queryset.filter(ACADEMIC_YEAR=academic_year)
-
-            # Calculate pagination
-            start = (page - 1) * limit
-            end = start + limit
-            total = queryset.count()
-
-            # Get paginated data
-            students = queryset[start:end]
+            students = self.get_queryset()
             serializer = self.get_serializer(students, many=True)
-
             return Response({
                 'status': 'success',
-                'total': total,
-                'page': page,
-                'limit': limit,
                 'data': serializer.data
             })
-
         except Exception as e:
-            logger.error(f"Error listing students: {str(e)}")
+            logger.error(f"Error listing students: {str(e)}", exc_info=True)
             return Response({
                 'status': 'error',
                 'message': str(e)
