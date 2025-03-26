@@ -8,114 +8,125 @@ from django.core.mail import send_mail
 from .models import STUDENT_MASTER, BRANCH
 from .serializers import StudentMasterSerializer
 from django.conf import settings
-from utils.id_generators import generate_employee_id, generate_password
 import logging
-from my_project.logger import logger
-from utils import generate_student_id 
 from django.http import Http404
 from django.utils import timezone
 from django.db.models import Q
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
-import os
 from utils.id_generators import generate_student_id
+from django.contrib.auth import get_user_model
+from utils.id_generators import generate_password
+from accounts.models import DESIGNATION
 
-# Create your views here.
-class StudentViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+logger = logging.getLogger(__name__)
+
+class StudentMasterViewSet(viewsets.ModelViewSet):
+    queryset = STUDENT_MASTER.objects.filter(IS_DELETED=False)
     serializer_class = StudentMasterSerializer
-    queryset = STUDENT_MASTER.objects.filter(ACTIVE='YES')
-    lookup_field = 'STUDENT_ID'
-    lookup_url_kwarg = 'pk'
 
     def create(self, request, *args, **kwargs):
         try:
-            logger.info("=== Starting Student Creation Process ===")
+            print("=== Student Creation Debug ===")
+            print("Request data:", request.data)
+            
+            # Check for required fields
+            required_fields = [
+                'INSTITUTE', 'ACADEMIC_YEAR', 'BATCH', 'ADMISSION_CATEGORY',
+                'ADMISSION_QUOTA',  # Added this field
+                'FORM_NO', 'NAME', 'SURNAME', 'FATHER_NAME', 'GENDER',
+                'DOB', 'MOB_NO', 'EMAIL_ID', 'PER_ADDRESS', 'BRANCH_ID'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in request.data]
+            if missing_fields:
+                return Response({
+                    'status': 'error',
+                    'message': f'Missing required fields: {", ".join(missing_fields)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Generate Student ID
-            branch_obj = BRANCH.objects.get(BRANCH_ID=request.data.get('BRANCH_ID'))
-            batch = request.data.get('BATCH')
-            student_id = generate_student_id(branch_obj.PROGRAM_CODE, batch)
+            # Validate branch
+            branch_id = request.data.get('BRANCH_ID')
+            try:
+                branch = BRANCH.objects.select_related('PROGRAM').get(BRANCH_ID=branch_id)
+            except BRANCH.DoesNotExist:
+                return Response({
+                    'status': 'error',
+                    'message': 'Invalid Branch ID'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            student_data = {key: request.data.get(key) for key in request.data.keys()}
-            student_data['STUDENT_ID'] = student_id
-            student_data['ACTIVE'] = 'YES'
+            # Add quota validation if needed
+            admission_quota = request.data.get('ADMISSION_QUOTA')
+            if not admission_quota:
+                return Response({
+                    'status': 'error',
+                    'message': 'ADMISSION_QUOTA is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer = self.get_serializer(data=student_data)
-            if not serializer.is_valid():
-                return Response({'error': 'Validation failed', 'details': serializer.errors},
-                                status=status.HTTP_400_BAD_REQUEST)
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                student = serializer.save()
+                return Response({
+                    'status': 'success',
+                    'message': 'Student created successfully',
+                    'data': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    'status': 'error',
+                    'message': 'Validation failed',
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            student = serializer.save()
-
-            return Response({
-                'message': 'Student created successfully',
-                'student_id': student.STUDENT_ID,
-                'student_data': serializer.data
-            }, status=status.HTTP_201_CREATED)
         except Exception as e:
-            logger.error(f"Error in create process: {str(e)}", exc_info=True)
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f"Error creating student: {str(e)}", exc_info=True)
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def list(self, request, *args, **kwargs):
+        try:
+            students = self.get_queryset()
+            serializer = self.get_serializer(students, many=True)
+            return Response({
+                'status': 'success',
+                'data': serializer.data
+            })
+        except Exception as e:
+            logger.error(f"Error listing students: {str(e)}", exc_info=True)
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def search(self, request):
-        query = request.query_params.get('query', '')
-        if not query:
-            return Response({'error': 'Search query is required'},
-                             status=status.HTTP_400_BAD_REQUEST)
-
-        students = STUDENT_MASTER.objects.filter(
-            Q(STUDENT_ID__icontains=query) |
-            Q(NAME__icontains=query) |
-            Q(SURNAME__icontains=query) |
-            Q(BRANCH_ID__PROGRAM_CODE__icontains=query),
-            ACTIVE='YES'
-        ).select_related('BRANCH_ID')[:10]
-
-        data = [
-            {
-                'STUDENT_ID': student.STUDENT_ID,
-                'NAME': student.NAME,
-                'SURNAME': student.SURNAME,
-                'BRANCH': student.BRANCH_ID.PROGRAM_CODE,
-            } for student in students
-        ]
-
-        return Response(data)
-
-    def retrieve(self, request, pk=None):
         try:
-            student = get_object_or_404(STUDENT_MASTER, STUDENT_ID=pk, ACTIVE='YES')
-            serializer = self.get_serializer(student)
-            return Response(serializer.data)
+            query = request.query_params.get('query', '')
+            if not query:
+                return Response({
+                    'status': 'error',
+                    'message': 'Search query is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            students = self.queryset.filter(
+                Q(STUDENT_ID__icontains=query) |
+                Q(NAME__icontains=query) |
+                Q(SURNAME__icontains=query) |
+                Q(MOB_NO__icontains=query) |
+                Q(EMAIL_ID__icontains=query)
+            )[:10]
+
+            serializer = self.get_serializer(students, many=True)
+            return Response({
+                'status': 'success',
+                'data': serializer.data
+            })
+
         except Exception as e:
-            return Response({'error': f'Error retrieving student: {str(e)}'},
-                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def update(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            update_data = {key: request.data.get(key) for key in request.data.keys() if key != 'STUDENT_ID'}
-
-            serializer = self.get_serializer(instance, data=update_data, partial=True)
-
-            if not serializer.is_valid():
-                return Response({'error': 'Validation failed', 'details': serializer.errors},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-            updated_student = serializer.save()
-
-            return Response({'message': 'Student updated successfully', 'data': serializer.data})
-        except Http404:
-            return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            logger.error(f"Error updating student: {str(e)}", exc_info=True)
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=['get'])
-    def by_branch(self, request, branch_id=None):
-        try:
-            students = STUDENT_MASTER.objects.filter(BRANCH_ID=branch_id).values('STUDENT_ID')
-            return Response(students)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error(f"Error searching students: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,12 +1,10 @@
-from django.urls import path
-from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from . import views
+from rest_framework.routers import DefaultRouter
+from .views import StudentMasterViewSet
 
 router = DefaultRouter()
-router.register(r'StudentMaster/StudentInfoForm', views.StudentViewSet, basename='student')
+router.register('student', StudentMasterViewSet, basename='student')  # Changed from '' to 'student'
 
-# Correct URL Patterns
 urlpatterns = [
-    path('api/', include(router.urls)),  # Correct inclusion of router URLs
+    path('', include(router.urls)),  # Changed from 'student/' to ''
 ]
