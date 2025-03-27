@@ -18,6 +18,7 @@ from utils.id_generators import generate_student_id
 from django.contrib.auth import get_user_model
 from utils.id_generators import generate_password
 from accounts.models import DESIGNATION
+from accounts.models import CustomUser
 
 logger = logging.getLogger(__name__)
 
@@ -57,24 +58,76 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
                 student = serializer.save()
-                return Response({
-                    'status': 'success',
-                    'message': 'Student created successfully',
-                    'data': serializer.data
-                }, status=status.HTTP_201_CREATED)
-            else:
-                return Response({
-                    'status': 'error',
-                    'message': 'Validation failed',
-                    'errors': serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Create user account with password same as student_id
+            try:
+                username = request.data.get('EMAIL_ID').split('@')[0]
+                password = student.STUDENT_ID  # Use student_id as password
+                
+                user = CustomUser.objects.create(
+                    USER_ID=student.STUDENT_ID,
+                    USERNAME=username,
+                    EMAIL=request.data.get('EMAIL_ID'),
+                    IS_ACTIVE=True,
+                    IS_STAFF=False,
+                    IS_SUPERUSER=False,
+                    DESIGNATION=None,  # Students typically don't have a designation
+                    FIRST_NAME=request.data.get('NAME')
+                )
+                user.set_password(password)
+                user.save()
+                
+                print(f"User created with ID: {user.USER_ID}")
 
+                # Send welcome email (optional)
+                email_subject = "Your Student Account Credentials"
+                email_message = f"""
+                Dear {request.data.get('NAME')},
+
+                Your student account has been created. Here are your login credentials:
+
+                Student ID: {student.STUDENT_ID}
+                Username: {username}
+                Password: {password}
+
+                Please change your password after first login.
+
+                Best regards,
+                College ERP Team
+                """
+
+                send_mail(
+                    email_subject,
+                    email_message,
+                    settings.EMAIL_HOST_USER,
+                    [user.EMAIL],
+                    fail_silently=False,
+                )
+
+            except Exception as user_error:
+                # Rollback student creation if user creation fails
+                student.delete()
+                print(f"User creation failed: {str(user_error)}")
+                raise
+
+            return Response({
+                'status': 'success',
+                'message': 'Student created successfully',
+                'data': serializer.data
+            }, status=status.HTTP_201_CREATED)
+            # else:
+            #     return Response({
+            #         'status': 'error',
+            #         'message': 'Validation failed',
+            #         'errors': serializer.errors
+            #     }, status=status.HTTP_400_BAD_REQUEST)
+            
         except Exception as e:
             logger.error(f"Error creating student: {str(e)}", exc_info=True)
             return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def list(self, request, *args, **kwargs):
         try:
