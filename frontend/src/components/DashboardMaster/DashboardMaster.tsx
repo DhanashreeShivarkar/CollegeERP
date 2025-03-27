@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import axios from 'axios';
 import axiosInstance from "../../api/axios";
@@ -20,6 +21,13 @@ interface FormData {
   selectedEmployees: string[];
 }
 
+
+interface AcademicYear {
+  ACADEMIC_YEAR_ID: number;
+  ACADEMIC_YEAR: string;
+}
+
+
 interface Institute {
   UNIVERSITY_ID: any;
   INSTITUTE_ID: number;
@@ -41,6 +49,7 @@ interface Employee {
   NAME: string;
 }
 
+
 const DashboardMaster: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     academicYear: { from: '2024', to: '2025' },
@@ -48,7 +57,7 @@ const DashboardMaster: React.FC = () => {
     instituteId: '',
     courseName: 'MDS',
     department: '',
-    conditionType: 'Dashboard College Wise',
+    conditionType: 'STUDENT',
     selectedEmployees: [],
   });
 
@@ -56,10 +65,12 @@ const DashboardMaster: React.FC = () => {
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
 
   useEffect(() => {
     fetchUniversities();
     fetchDepartments();
+    fetchAcademicYears();
   }, []);
 
   useEffect(() => {
@@ -78,6 +89,18 @@ const DashboardMaster: React.FC = () => {
     }
   }, [formData.department]);
   
+
+
+  const fetchAcademicYears = async () => {
+    try {
+      const response = await axiosInstance.get("/api/master/academic-years/");
+      if (response.status === 200) {
+        setAcademicYears(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching academic years:', error);
+    }
+  };
 
   const fetchUniversities = async () => {
     try {
@@ -144,10 +167,20 @@ const DashboardMaster: React.FC = () => {
     }
   };
 
+  // const handleInstituteChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  //   const { value } = e.target;
+  //   setFormData((prev) => ({ ...prev, instituteId: value }));
+  // };
   const handleInstituteChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
-    setFormData((prev) => ({ ...prev, instituteId: value }));
+    const selectedInstitute = institutes.find(inst => inst.INSTITUTE_ID.toString() === value);
+    
+    setFormData((prev) => ({ 
+      ...prev, 
+      instituteId: selectedInstitute ? selectedInstitute.CODE : '' // Set CODE instead of ID
+    }));
   };
+  
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
@@ -216,7 +249,7 @@ const DashboardMaster: React.FC = () => {
                 instituteId: '',
                 courseName: 'MDS',
                 department: '',
-                conditionType: 'Dashboard College Wise',
+                conditionType: 'STUDENT',
                 selectedEmployees: [],
             });
         }
@@ -230,20 +263,26 @@ const DashboardMaster: React.FC = () => {
   
 
   return (
-    <div className="container mt-4">
+    <div className="contain er mt-4">
     <h3 className="text-primary">Dashboard Form</h3>
     <form onSubmit={handleSubmit} className="p-4 border rounded bg-light">
       <div className="row mb-3">
         <div className="col-md-6">
           <label>Academic Year</label>
           <div className="d-flex align-items-center">
-            <select name="academicYear.from" value={formData.academicYear.from} onChange={handleChange} className="form-select me-2">
-              {years.map((year) => (<option key={year} value={year}>{year}</option>))}
-            </select>
-            <span className="mx-2">-</span>
-            <select name="academicYear.to" value={formData.academicYear.to} onChange={handleChange} className="form-select">
-              {years.map((year) => (<option key={year} value={year}>{year}</option>))}
-            </select>
+            <select
+              name="academicYear"
+              value={formData.academicYear.from}
+              onChange={handleChange}
+              className="form-select"
+            >
+              <option value="">Select Academic Year</option>
+              {academicYears.map((year) => (
+                <option key={year.ACADEMIC_YEAR_ID} value={year.ACADEMIC_YEAR}>
+                  {year.ACADEMIC_YEAR}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -306,15 +345,15 @@ const DashboardMaster: React.FC = () => {
         </div>
 
         <div className="mb-3">
-          <label>Condition Type</label>
+          <label>Dashboard Name</label>
           <select
             name="conditionType"
             value={formData.conditionType}
             onChange={handleChange}
             className="form-select"
           >
-            <option>Dashboard College Wise</option>
-            <option>Department Wise</option>
+            <option value="STUDENT">Student Dashboard</option>
+            <option value="ESTABLISHMENT">Establishment Dashboard</option>
           </select>
         </div>
 
