@@ -194,8 +194,8 @@ class STUDENT_MASTER(AuditModel):
                 BATCH=self.BATCH, 
                 BRANCH_ID=self.BRANCH_ID
             ).count() + 1
-            program_code = self.BRANCH_ID.PROGRAM_id
-            self.STUDENT_ID = f"{program_code}{self.BATCH[-2:]}{latest_entry:03d}"
+            program_name = self.BRANCH_ID.PROGRAM.NAME
+            self.STUDENT_ID = f"{program_name}{self.BATCH[-2:]}{latest_entry:03d}"
         super().save(*args, **kwargs)
 
     class Meta:
