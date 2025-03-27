@@ -13,7 +13,6 @@ interface StudentData {
   ACADEMIC_YEAR: string;
   BATCH: string;
   ADMISSION_CATEGORY: string;
-  ADMISSION_QUOTA: string;
   FORM_NO: number;
   NAME: string;
   SURNAME: string;
@@ -48,6 +47,8 @@ interface StudentData {
   PER_DIST: string;
   LOC_TALUKA: string;
   LOC_DIST: string;
+  QUOTA_ID: number;
+  ADMN_QUOTA_ID: number;
 }
 
 interface FormData {
@@ -455,7 +456,6 @@ interface FormData {
           ACADEMIC_YEAR: selectedAcademicYear,
           BATCH: formData.batch,
           ADMISSION_CATEGORY: selectedCategory,
-          ADMISSION_QUOTA: selectedQuota,
           FORM_NO: parseInt(formData.formNo),
           NAME: formData.name,
           SURNAME: formData.surname,
@@ -490,7 +490,9 @@ interface FormData {
           PER_TALUKA: formData.perTaluka || '',
           PER_DIST: formData.perDist || '',
           LOC_TALUKA: formData.locTaluka || '',
-          LOC_DIST: formData.locDist || ''
+          LOC_DIST: formData.locDist || '',
+          QUOTA_ID: parseInt(selectedQuota),
+          ADMN_QUOTA_ID: parseInt(selectedQuota),
         };
     
         console.log('Sending data:', studentData);
@@ -577,7 +579,7 @@ interface FormData {
           </div>
         </div>
 
-        {/* Branch, Admission Category, Batch */}
+        {/* Branch, Admission Category, Quota, Batch */}
         <div className="row mt-2">
           <div className="col-md-3">
             <Form.Group>
@@ -601,6 +603,20 @@ interface FormData {
               <option value="">Select Category</option>
               {categories.map((category) => (
                 <option key={category.CATEGORY_ID} value={category.CATEGORY_ID}>{category.CODE}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="col-md-3">
+            <label>Admission Quota</label>
+            <select
+              className="form-control"
+              name="admissionQuota"
+              value={selectedQuota}
+              onChange={handleQuotaChange}>
+              <option value="">Select Quota</option>
+              {quotas.map((quota) => (
+                <option key={quota.QUOTA_ID} value={quota.QUOTA_ID}>{quota.NAME}</option>
               ))}
             </select>
           </div>

@@ -34,6 +34,7 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
             # Check for required fields
             required_fields = [
                 'INSTITUTE', 'ACADEMIC_YEAR', 'BATCH', 'ADMISSION_CATEGORY',
+                'ADMISSION_QUOTA',  # Added this field
                 'FORM_NO', 'NAME', 'SURNAME', 'FATHER_NAME', 'GENDER',
                 'DOB', 'MOB_NO', 'EMAIL_ID', 'PER_ADDRESS', 'BRANCH_ID'
             ]
@@ -53,6 +54,14 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 return Response({
                     'status': 'error',
                     'message': 'Invalid Branch ID'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Add quota validation if needed
+            admission_quota = request.data.get('ADMISSION_QUOTA')
+            if not admission_quota:
+                return Response({
+                    'status': 'error',
+                    'message': 'ADMISSION_QUOTA is required'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = self.get_serializer(data=request.data)
