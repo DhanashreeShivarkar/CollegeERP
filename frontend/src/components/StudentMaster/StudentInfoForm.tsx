@@ -627,6 +627,23 @@ interface FormData {
             <label>Form No *</label>
             <input type="text" className="form-control" name="formNo" value={formData.formNo} onChange={handleChange} required />
           </div>
+
+          <div className="col-md-3">
+  <label>Admission Quota</label>
+  <select
+    className="form-control"
+    name="admissionQuota"
+    value={selectedQuota}
+    onChange={handleQuotaChange}
+  >
+        <option value="">Select Quota</option>
+        {quotas.map((quota) => (
+          <option key={quota.QUOTA_ID} value={quota.QUOTA_ID}>
+            {quota.NAME}
+          </option>
+        ))}
+      </select>
+</div>
         </div>
 
         {/* Name Details */}
