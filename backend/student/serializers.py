@@ -8,7 +8,7 @@ BASIC_REQUIRED_FIELDS = [
     'ACADEMIC_YEAR',
     'BATCH',
     'ADMISSION_CATEGORY',
-    'ADMISSION_QUOTA',  # Added this field
+    'ADMN_QUOTA_ID',  # Added this field
     'FORM_NO',
     'NAME',
     'SURNAME',

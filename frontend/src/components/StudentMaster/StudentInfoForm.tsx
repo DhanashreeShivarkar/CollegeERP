@@ -58,7 +58,7 @@ interface FormData {
   program: string;
   branch: string;
   admissionCategory: string;
-  admissionQuota: string;
+  admnQuota: string;
   batch: string;
   formNo: string;
   year: string;
@@ -147,7 +147,7 @@ interface FormData {
     program: "",
     branch: "",
     admissionCategory: "",
-    admissionQuota: "",
+    admnQuota: "",
     batch: "",
     formNo: "",
     year: "",

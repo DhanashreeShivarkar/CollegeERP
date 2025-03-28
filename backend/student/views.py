@@ -34,7 +34,7 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
             # Check for required fields
             required_fields = [
                 'INSTITUTE', 'ACADEMIC_YEAR', 'BATCH', 'ADMISSION_CATEGORY',
-                'ADMISSION_QUOTA',  # Added this field
+                'ADMN_QUOTA_ID',  # Added this field
                 'FORM_NO', 'NAME', 'SURNAME', 'FATHER_NAME', 'GENDER',
                 'DOB', 'MOB_NO', 'EMAIL_ID', 'PER_ADDRESS', 'BRANCH_ID'
             ]
@@ -57,11 +57,11 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             # Add quota validation if needed
-            admission_quota = request.data.get('ADMISSION_QUOTA')
+            admission_quota = request.data.get('ADMN_QUOTA_ID')
             if not admission_quota:
                 return Response({
                     'status': 'error',
-                    'message': 'ADMISSION_QUOTA is required'
+                    'message': 'ADMN_QUOTA_ID is required'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = self.get_serializer(data=request.data)
@@ -124,12 +124,7 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 'message': 'Student created successfully',
                 'data': serializer.data
             }, status=status.HTTP_201_CREATED)
-            # else:
-            #     return Response({
-            #         'status': 'error',
-            #         'message': 'Validation failed',
-            #         'errors': serializer.errors
-            #     }, status=status.HTTP_400_BAD_REQUEST)
+            
             
         except Exception as e:
             logger.error(f"Error creating student: {str(e)}", exc_info=True)
