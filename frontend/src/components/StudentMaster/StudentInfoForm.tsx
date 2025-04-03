@@ -49,6 +49,7 @@ interface StudentData {
   LOC_DIST: string;
   QUOTA_ID: number;
   ADMN_QUOTA_ID: number;
+  YEAR_SEM_ID: number;
 }
 
 interface FormData {
@@ -493,6 +494,7 @@ interface FormData {
           LOC_DIST: formData.locDist || '',
           QUOTA_ID: parseInt(selectedQuota),
           ADMN_QUOTA_ID: parseInt(selectedQuota),
+          YEAR_SEM_ID: Number(selectedYear),
         };
     
         console.log('Sending data:', studentData);
@@ -588,6 +590,22 @@ interface FormData {
                 <option value="" disabled>Select Branch</option>
                 {branches.map((b) => (
                   <option key={b.BRANCH_ID} value={b.BRANCH_ID}>{b.NAME}</option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </div>
+
+          <div className="col-md-3">
+            <Form.Group>
+              <Form.Label>Year</Form.Label>
+              <Form.Control 
+                as="select"
+                value={selectedYear}
+                onChange={(e) => handleYearChange(e as unknown as React.ChangeEvent<HTMLSelectElement>)}
+                disabled={!selectedBranch}>
+                <option value="" disabled>Select Year</option>
+                  {years.map((y) => (
+                <option key={y.YEAR_ID} value={y.YEAR_ID}>{y.YEAR}</option>
                 ))}
               </Form.Control>
             </Form.Group>

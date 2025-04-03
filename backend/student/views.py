@@ -34,7 +34,7 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
             # Check for required fields
             required_fields = [
                 'INSTITUTE', 'ACADEMIC_YEAR', 'BATCH', 'ADMISSION_CATEGORY',
-                'ADMN_QUOTA_ID',  # Added this field
+                'ADMN_QUOTA_ID', 'YEAR_SEM_ID',  # Added this field
                 'FORM_NO', 'NAME', 'SURNAME', 'FATHER_NAME', 'GENDER',
                 'DOB', 'MOB_NO', 'EMAIL_ID', 'PER_ADDRESS', 'BRANCH_ID'
             ]
@@ -63,6 +63,18 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                     'status': 'error',
                     'message': 'ADMN_QUOTA_ID is required'
                 }, status=status.HTTP_400_BAD_REQUEST)
+                
+            # Validate that YEAR_ID is provided
+            year_id = request.data.get('year_id') or request.data.get('yearId')
+            if not year_id:
+                return Response({
+                    'status': 'error',
+                    'message': 'YEAR_ID is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Map YEAR_ID to YEAR_SEM_ID
+            request.data._mutable = True  # Allow modification of request data
+            request.data['YEAR_SEM_ID'] = year_id  
 
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():

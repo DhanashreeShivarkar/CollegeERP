@@ -61,7 +61,7 @@ export const saveStudentData = async (data: StudentData): Promise<AxiosResponse>
       HANDICAPPED: 'NO',
       CASTE: 'GENERAL',
       MARK_ID: '0',
-      YEAR_SEM_ID: 1,
+      YEAR_SEM_ID: data.YEAR_SEM_ID,
       QUOTA_ID: 1,
       ADMN_ROUND: '1'
     };
