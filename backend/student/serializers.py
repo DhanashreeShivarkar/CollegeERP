@@ -8,7 +8,7 @@ BASIC_REQUIRED_FIELDS = [
     'ACADEMIC_YEAR',
     'BATCH',
     'ADMISSION_CATEGORY',
-    'ADMISSION_QUOTA',  # Added this field
+    'ADMN_QUOTA_ID',  # Added this field
     'FORM_NO',
     'NAME',
     'SURNAME',
@@ -18,7 +18,8 @@ BASIC_REQUIRED_FIELDS = [
     'MOB_NO',
     'EMAIL_ID',
     'PER_ADDRESS',
-    'BRANCH_ID'
+    'BRANCH_ID',
+    'YEAR_SEM_ID',
 ]
 
 class StudentMasterSerializer(serializers.ModelSerializer):
@@ -30,6 +31,8 @@ class StudentMasterSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             field: {'required': True} for field in BASIC_REQUIRED_FIELDS
         }
+        
+      
 
     def to_internal_value(self, data):
         # Set defaults for all non-required fields
@@ -75,7 +78,7 @@ class StudentMasterSerializer(serializers.ModelSerializer):
             'HANDICAPPED': 'NO',
             'MARK_ID': '0',
             'QUOTA_ID': int(data.get('ADMISSION_QUOTA', 1)),  # Use selected quota ID 
-            'YEAR_SEM_ID': 1,
+            'YEAR_SEM_ID': int(data.get('YEAR_SEM_ID') or 1),
             'ADMN_ROUND': '1',
             'ADMN_QUOTA_ID': int(data.get('ADMISSION_QUOTA', 0)),  # Use selected quota ID
             'STATUS': 'ACTIVE',
