@@ -9,7 +9,7 @@ from .models import (
     CustomUser, COUNTRY, STATE, CITY, 
     CURRENCY, LANGUAGE, DESIGNATION, CATEGORY,
     UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM, BRANCH, DASHBOARD_MASTER,
-    YEAR, SEMESTER, SEMESTER_DURATION, CASTE_MASTER, QUOTA_MASTER, ADMISSION_QUOTA_MASTER
+    YEAR, SEMESTER, SEMESTER_DURATION, CASTE_MASTER, QUOTA_MASTER, ADMISSION_QUOTA_MASTER, CHECK_LIST_DOCUMENTS
 )
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
@@ -20,7 +20,7 @@ from .serializers import (
     CategorySerializer, UniversitySerializer, InstituteSerializer, 
     DepartmentSerializer, ProgramSerializer, BranchSerializer, 
     DashboardMasterSerializer, YearSerializer, SemesterSerializer, SemesterDurationSerializer, 
-    CasteSerializer, QuotaSerializer, AdmissionQuotaSerializer
+    CasteSerializer, QuotaSerializer, AdmissionQuotaSerializer, CheckListDoumentsSerializer
 )
 
 from rest_framework import viewsets
@@ -1034,6 +1034,19 @@ class AdmissionListCreateView(BaseModelViewSet):
       serializer_class = AdmissionQuotaSerializer
       
       def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CheckListDocumnetsCreateView(BaseModelViewSet):
+     queryset = CHECK_LIST_DOCUMENTS.objects.all()   
+     serializer_class = CheckListDoumentsSerializer
+      
+     def create(self, request, *args, **kwargs):
         data = request.data
         serializer = self.get_serializer(data=data)
         

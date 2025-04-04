@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM, BRANCH, YEAR, SEMESTER, ACADEMIC_YEAR, SEMESTER_DURATION, DASHBOARD_MASTER, CASTE_MASTER, QUOTA_MASTER, ADMISSION_QUOTA_MASTER
+from .models import COUNTRY, STATE, CITY, CURRENCY, LANGUAGE, DESIGNATION, CATEGORY, UNIVERSITY, INSTITUTE, DEPARTMENT, PROGRAM, BRANCH, YEAR, SEMESTER, ACADEMIC_YEAR, SEMESTER_DURATION, DASHBOARD_MASTER, CASTE_MASTER, QUOTA_MASTER, ADMISSION_QUOTA_MASTER, CHECK_LIST_DOCUMENTS
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -167,3 +167,8 @@ class AdmissionQuotaSerializer(serializers.ModelSerializer):
     class Meta:
         model =ADMISSION_QUOTA_MASTER
         fields =['ADMN_QUOTA_ID','NAME']
+
+class CheckListDoumentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CHECK_LIST_DOCUMENTS
+        fields=['RECORD_ID','NAME', 'IS_MANDATORY']
