@@ -31,6 +31,8 @@ class StudentMasterSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             field: {'required': True} for field in BASIC_REQUIRED_FIELDS
         }
+        
+      
 
     def to_internal_value(self, data):
         # Set defaults for all non-required fields

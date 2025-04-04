@@ -216,56 +216,56 @@ class STUDENT_DETAILS(AuditModel):
     RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
 
     STUDENT_ID = models.OneToOneField(
-        'STUDENT_MASTER', 
+        'STUDENT_MASTER',
+        to_field='STUDENT_ID', 
         on_delete=models.CASCADE, 
         db_column='STUDENT_ID'
     )
 
-    PLACE_OF_BIRTH = models.CharField(max_length=100, db_column='PLACE_OF_BIRTH', blank=True, default='')
-    LAST_CLG_ATTEND = models.CharField(max_length=255, db_column='LAST_CLG_ATTEND', blank=True, default='')
-    LAST_CLG_ADD = models.CharField(db_column='LAST_CLG_ADD', blank=True, default='')
-    LAST_CLG_CITY = models.CharField(max_length=100, db_column='LAST_CLG_CITY', blank=True, default='')
-    LAST_CLG_UNIV = models.CharField(max_length=255, db_column='LAST_CLG_UNIV', blank=True, default='')
-    LAST_CLG_ROLL = models.CharField(max_length=50, db_column='LAST_CLG_ROLL', blank=True, default='')
+    PLACE_OF_BIRTH = models.CharField(max_length=100, db_column='PLACE_OF_BIRTH', null=True, blank=True, default='')
+    LAST_CLG_ATTEND = models.CharField(max_length=255, db_column='LAST_CLG_ATTEND', null=True, blank=True, default='')
+    LAST_CLG_ADD = models.CharField(db_column='LAST_CLG_ADD', null=True, blank=True, default='')
+    LAST_CLG_CITY = models.CharField(max_length=100, db_column='LAST_CLG_CITY', null=True, blank=True, default='')
+    LAST_CLG_UNIV = models.CharField(max_length=255, db_column='LAST_CLG_UNIV', null=True, blank=True, default='')
+    LAST_CLG_ROLL = models.CharField(max_length=50, db_column='LAST_CLG_ROLL', null=True, blank=True, default='')
 
-    PCM_MARKS = models.DecimalField(max_digits=6, decimal_places=2, db_column='PCM_MARKS', null=True, blank=True)
-    PCM_OUTOF = models.DecimalField(max_digits=6, decimal_places=2, db_column='PCM_OUTOF', null=True, blank=True)
-    TOT_MARKS_OBTAIN = models.DecimalField(max_digits=6, decimal_places=2, db_column='TOT_MARKS_OBTAIN', null=True, blank=True)
-    TOT_MAX_MARKS = models.DecimalField(max_digits=6, decimal_places=2, db_column='TOT_MAX_MARKS', null=True, blank=True)
-    SCORE = models.DecimalField(max_digits=6, decimal_places=2, db_column='SCORE', null=True, blank=True)
-    MERIT = models.DecimalField(max_digits=6, decimal_places=2, db_column='MERIT', null=True, blank=True)
+    PCM_MARKS = models.DecimalField(max_digits=6, decimal_places=2, db_column='PCM_MARKS', null=True, blank=True, default=None)
+    PCM_OUTOF = models.DecimalField(max_digits=6, decimal_places=2, db_column='PCM_OUTOF', null=True, blank=True, default=None)
+    TOT_MARKS_OBTAIN = models.DecimalField(max_digits=6, decimal_places=2, db_column='TOT_MARKS_OBTAIN', null=True, blank=True, default=None)
+    TOT_MAX_MARKS = models.DecimalField(max_digits=6, decimal_places=2, db_column='TOT_MAX_MARKS', null=True, blank=True, default=None)
+    SCORE = models.DecimalField(max_digits=6, decimal_places=2, db_column='SCORE', null=True, blank=True, default=None)
+    MERIT = models.DecimalField(max_digits=6, decimal_places=2, db_column='MERIT', null=True, blank=True, default=None)
 
-    NATIONALITY = models.CharField(max_length=50, db_column='NATIONALITY', default='INDIAN')
-    DOMICILE_ID = models.IntegerField(max_length=50, db_column='DOMICILE_ID', blank=True, default='')
+    NATIONALITY = models.CharField(max_length=50, db_column='NATIONALITY', null=True, blank=True, default='INDIAN')
+    
 
-    ADMISSION_QUOTA = models.IntegerField(max_length=50, db_column='ADMISSION_QUOTA', blank=True, default='')
-    QUALIFYING_EXAM = models.CharField(max_length=100, db_column='QUALIFYING_EXAM', blank=True, default='')
-    MONTH_OF_PASSING = models.CharField(max_length=20, db_column='MONTH_OF_PASSING', blank=True, default='')
-    YEAR_OF_PASSING = models.IntegerField(db_column='YEAR_OF_PASSING', null=True, blank=True)
+    ADMISSION_QUOTA = models.IntegerField(db_column='ADMISSION_QUOTA', null=True, blank=True, default=None)
+    QUALIFYING_EXAM = models.CharField(max_length=100, db_column='QUALIFYING_EXAM', null=True, blank=True, default='')
+    MONTH_OF_PASSING = models.CharField(max_length=20, db_column='MONTH_OF_PASSING', null=True, blank=True, default='')
+    YEAR_OF_PASSING = models.IntegerField(db_column='YEAR_OF_PASSING', null=True, blank=True, default=None)
 
-    MEDIUM = models.CharField(max_length=50, db_column='MEDIUM', blank=True, default='')
-    DRV_LICENSE = models.CharField(max_length=20, db_column='DRV_LICENSE', blank=True, default='')
-    AADHAR_NO = models.CharField(max_length=12, db_column='AADHAR_NO', blank=True, default='')
+    MEDIUM = models.CharField(max_length=50, db_column='MEDIUM', null=True, blank=True, default='')
+    DRV_LICENSE = models.CharField(max_length=20, db_column='DRV_LICENSE', null=True, blank=True, default='')
+    AADHAR_NO = models.CharField(max_length=12, db_column='AADHAR_NO', null=True, blank=True, default='')
 
-    BANK_NAME = models.CharField(max_length=100, db_column='BANK_NAME', blank=True, default='')
-    BRANCH_NAME = models.CharField(max_length=100, db_column='BRANCH_NAME', blank=True, default='')
-    BANK_ACCOUNT_NO = models.CharField(max_length=20, db_column='BANK_ACCOUNT_NO', blank=True, default='')
-    BANK_CITY = models.CharField(max_length=100, db_column='BANK_CITY', blank=True, default='')
+    BANK_NAME = models.CharField(max_length=100, db_column='BANK_NAME', null=True, blank=True, default='')
+    BRANCH_NAME = models.CharField(max_length=100, db_column='BRANCH_NAME', null=True, blank=True, default='')
+    BANK_ACCOUNT_NO = models.CharField(max_length=20, db_column='BANK_ACCOUNT_NO', null=True, blank=True, default='')
+    BANK_CITY = models.CharField(max_length=100, db_column='BANK_CITY', null=True, blank=True, default='')
 
     MINORITY = models.CharField(max_length=3, db_column='MINORITY', choices=[('YES', 'Yes'), ('NO', 'No')], default='NO')
     HOSTELER = models.CharField(max_length=3, db_column='HOSTELER', choices=[('YES', 'Yes'), ('NO', 'No')], default='NO')
 
-    MOTHER_MOB = models.CharField(max_length=15, db_column='MOTHER_MOB', blank=True, default='')
-    PARENT_MAIL = models.EmailField(db_column='PARENT_MAIL', blank=True, default='')
-    FATHER_MOB = models.CharField(max_length=15, db_column='FATHER_MOB', blank=True, default='')
+    MOTHER_MOB = models.CharField(max_length=15, db_column='MOTHER_MOB', null=True, blank=True, default='')
+    PARENT_MAIL = models.EmailField(db_column='PARENT_MAIL', null=True, blank=True, default='')
+    FATHER_MOB = models.CharField(max_length=15, db_column='FATHER_MOB', null=True, blank=True, default='')
 
-    INCOME = models.DecimalField(max_digits=10, decimal_places=2, db_column='INCOME', null=True, blank=True)
-    PAN_NO = models.CharField(max_length=10, db_column='PAN_NO', blank=True, default='')
+    INCOME = models.DecimalField(max_digits=10, decimal_places=2, db_column='INCOME', null=True, blank=True, default=None)
+    PAN_NO = models.CharField(max_length=10, db_column='PAN_NO', null=True, blank=True, default='')
     
-    COLLEGE_PREFERENCE = models.TextField(db_column='COLLEGE_PREFERENCE', blank=True, default='')
+    COLLEGE_PREFERENCE = models.TextField(db_column='COLLEGE_PREFERENCE', null=True, blank=True, default='')
 
-    CREATED_AT = models.DateTimeField(auto_now_add=True, db_column='CREATED_AT')
-    UPDATED_AT = models.DateTimeField(auto_now=True, db_column='UPDATED_AT')
+    
 
     class Meta:
         db_table = '"STUDENT"."STUDENT_DETAILS"'
