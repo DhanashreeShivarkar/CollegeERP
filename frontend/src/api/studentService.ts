@@ -51,6 +51,7 @@ interface StudentData {
 // Create new student
 export const saveStudentData = async (data: StudentData): Promise<AxiosResponse> => {
   try {
+  
     const formattedData = {
       ...data,
       INSTITUTE: data.INSTITUTE_CODE,
@@ -61,7 +62,7 @@ export const saveStudentData = async (data: StudentData): Promise<AxiosResponse>
       HANDICAPPED: 'NO',
       CASTE: 'GENERAL',
       MARK_ID: '0',
-      YEAR_SEM_ID: 1,
+      YEAR_ID: data.YEAR_SEM_ID,
       QUOTA_ID: 1,
       ADMN_ROUND: '1'
     };
