@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
-from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS
+from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, STUDENT_ACADEMIC_RECORD
 from .serializers import StudentMasterSerializer
 from django.conf import settings
 import logging
@@ -92,6 +92,21 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 
                 # Save student_id in STUDENT_DETAILS table
                 STUDENT_DETAILS.objects.create(STUDENT_ID=STUDENT_MASTER.objects.get(STUDENT_ID=student.STUDENT_ID))
+                
+                # Also save entry in STUDENT_ACADEMIC_RECORD table
+                STUDENT_ACADEMIC_RECORD.objects.create(
+                    STUDENT_ID=student.STUDENT_ID,
+                    INSTITUTE_ID=student.INSTITUTE,
+                    CATEGORY=int(student.ADMISSION_CATEGORY),
+                    BATCH=student.BATCH,
+                    ACADEMIC_YEAR=student.ACADEMIC_YEAR,
+                    CLASS_YEAR=student.YEAR_SEM_ID,
+                    ADMISSION_DATE=student.ADMISSION_DATE,
+                    FORM_NO=student.FORM_NO,
+                    QUOTA_ID=student.ADMN_QUOTA_ID,
+                    STATUS=student.STATUS, 
+                    FEE_CATEGORY_ID=int(student.ADMISSION_CATEGORY),
+                )
                 
                 # Create user account with password same as student_id
             try:

@@ -279,3 +279,25 @@ class STUDENT_DETAILS(AuditModel):
 
     def __str__(self):
         return f"Details of {self.STUDENT_ID}"    
+    
+class STUDENT_ACADEMIC_RECORD(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
+    STUDENT_ID = models.CharField(max_length=20, db_column='STUDENT_ID')
+    INSTITUTE_ID = models.CharField(max_length=20, db_column='INSTITUTE_ID')
+    CATEGORY = models.IntegerField(db_column='CATEGORY')
+    BATCH = models.CharField(max_length=4, db_column='BATCH')
+    ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR')
+    CLASS_YEAR = models.IntegerField(db_column='CLASS_YEAR')
+    ADMISSION_DATE = models.DateField(db_column='ADMISSION_DATE')
+    FORM_NO = models.IntegerField(db_column='FORM_NO')
+    QUOTA_ID = models.IntegerField(db_column='QUOTA_ID')
+    STATUS = models.CharField(max_length=20, db_column='STATUS', default='ACTIVE')  # A for Active, you can customize
+    FEE_CATEGORY_ID = models.IntegerField(db_column='FEE_CATEGORY_ID')
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_ACADEMIC_RECORD"'
+        verbose_name = 'Student Academic Record'
+        verbose_name_plural = 'Student Academic Records'
+
+    def __str__(self):
+        return f"{self.STUDENT_ID} - {self.ACADEMIC_YEAR}"
