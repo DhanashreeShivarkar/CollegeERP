@@ -17,7 +17,8 @@ import { SettingsProvider } from "./context/SettingsContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import CssBaseline from "@mui/material/CssBaseline";
 import "./styles/globals.css";
-
+import StudentRollForm from "./components/StudentMaster/StudentRollNo";
+import Sidebar from "./components/layout/Sidebar";
 interface User {
   user_id: string;
   username: string;
@@ -175,6 +176,14 @@ const App = () => {
                 )
               }
             />
+            <Route path="/student-roll-form" element={<StudentRollForm />} />
+
+            {/* Teacher Route */}
+          
+          
+
+          
+
 
             {/* Administrative Routes */}
             <Route

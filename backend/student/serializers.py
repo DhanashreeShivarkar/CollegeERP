@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import STUDENT_MASTER
+from .models import STUDENT_MASTER , STUDENT_ROLL_NUMBER_DETAILS
 from django.utils import timezone
 
 # Define required fields at module level
@@ -117,3 +117,27 @@ class StudentMasterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         print("Final data being saved:", validated_data)
         return super().create(validated_data)
+
+
+class StudentRollNumberDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = STUDENT_ROLL_NUMBER_DETAILS
+        fields = [
+            'RECORD_ID', 'INSTITUTE', 'PROGRAM', 'BRANCH', 'YEAR', 'STUDENT',
+            'ACADEMIC_YEAR', 'ROLL_NO', 'SEMESTER'
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['STUDENT'] = {
+            'STUDENT_ID': instance.STUDENT.STUDENT_ID,
+            'ENROLLMENT_NO': instance.STUDENT.ENROLLMENT_NO,
+            'NAME': instance.STUDENT.NAME
+        }
+        representation['ACADEMIC_YEAR'] = instance.ACADEMIC_YEAR.ACADEMIC_YEAR
+        representation['INSTITUTE'] = instance.INSTITUTE.NAME
+        representation['PROGRAM'] = instance.PROGRAM.NAME
+        representation['BRANCH'] = instance.BRANCH.NAME
+        representation['YEAR'] = instance.YEAR.YEAR
+        representation['SEMESTER'] = instance.SEMESTER.SEMESTER
+        return representation

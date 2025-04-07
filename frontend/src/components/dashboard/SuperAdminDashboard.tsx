@@ -20,6 +20,7 @@ import StudentInfoForm from "../StudentMaster/StudentInfoForm";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
+import StudentRollNo from "../StudentMaster/StudentRollNo";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -83,9 +84,14 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/dashboardmaster" element={<DashboardMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
+            {/* <Route path="/StudentRollForm" element={<StudentRollNo />} /> */}
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
+            />
+             <Route
+              path="/student-master/studentrollno"
+              element={<StudentRollNo />}
             />
             <Route
               path="/student-master/student"
