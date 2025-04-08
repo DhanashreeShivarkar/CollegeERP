@@ -1,149 +1,276 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import axiosInstance from "../../api/axios";
+import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../api/axios';
 import {
-  Paper,
-  Button,
   TextField,
-  FormControlLabel,
-  Checkbox,
+  Paper,
+  Typography,
+  CircularProgress,
   Grid,
-} from "@mui/material";
+  Checkbox,
+  Button,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 
-interface StudentDocumentFormInputs {
-  studentId: string;
-  instituteId: string;
-  branch: string;
-  category: string;
-  yearSem: string;
-  quota: string;
-  name: string;
-  documentSubmitted: boolean;
-  documentNotSubmitted: boolean;
+interface StudentData {
+  STUDENT_ID?: string;
+  NAME: string;
+  SURNAME: string;
+  INSTITUTE: string;
+  BRANCH_ID: string;
+  YEAR_SEM_ID: string;
+  ADMISSION_CATEGORY: string;
+  ADMN_QUOTA_ID: string;
+  CASTE: string;
+  [key: string]: any;
 }
 
-const StudentDocumentForm = () => {
-  const { register, handleSubmit, reset, watch, setValue } = useForm<StudentDocumentFormInputs>();
-  const [error, setError] = useState("");
+interface ChecklistDoc {
+  RECORD_ID: number;
+  NAME: string;
+  IS_MANDATORY: boolean;
+}
 
-  // Fetch student details when Student ID is entered
-  const handleStudentChange = async (studentId: string) => {
-    if (!studentId.trim()) return;
+const StudentDocument: React.FC = () => {
+  const [studentId, setStudentId] = useState('');
+  const [student, setStudent] = useState<StudentData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    setError("");
+  const [branchName, setBranchName] = useState('');
+  const [yearSemName, setYearSemName] = useState('');
+  const [quotaName, setQuotaName] = useState('');
 
+  const [checklistDocs, setChecklistDocs] = useState<ChecklistDoc[]>([]);
+  const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error',
+  });
+
+  const fetchChecklistDocuments = async () => {
     try {
-      const response = await axiosInstance.get(`/api/students/${studentId}/`);
-      const data = response.data;
-
-      setValue("name", data.name);
-      setValue("instituteId", data.instituteId);
-      setValue("branch", data.branch);
-      setValue("category", data.category);
-      setValue("yearSem", data.yearSem);
-      setValue("quota", data.quota);
-    } catch (error) {
-      console.error("Error fetching student details:", error);
-      setError("Student ID not found!");
-      reset();
+      const response = await axiosInstance.get('/api/master/checklist');
+      setChecklistDocs(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch checklist documents:', err);
     }
   };
 
-  // Submit Form Data
-  const onSubmit = async (data: StudentDocumentFormInputs) => {
+  useEffect(() => {
+    fetchChecklistDocuments();
+  }, []);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (studentId.trim()) {
+        fetchStudentById();
+      } else {
+        setStudent(null);
+        setError(null);
+      }
+    }, 600);
+    return () => clearTimeout(delayDebounce);
+  }, [studentId]);
+
+  const fetchStudentById = async () => {
+    setLoading(true);
+    setStudent(null);
+    setError(null);
+    setBranchName('');
+    setYearSemName('');
+    setQuotaName('');
+    setSelectedDocs([]);
+
+    try {
+      const response = await axiosInstance.get(`/api/student/${studentId}/`);
+      if (response.data) {
+        setStudent(response.data);
+      } else {
+        setError('Student not found');
+      }
+    } catch (err) {
+      setError('Student not found');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (student) {
+      if (student.BRANCH_ID) {
+        axiosInstance
+          .get(`/api/master/branch/${student.BRANCH_ID}/`)
+          .then((res) => setBranchName(res.data.name || res.data.NAME || 'Unknown Branch'))
+          .catch(() => setBranchName('Unknown Branch'));
+      }
+
+      if (student.YEAR_SEM_ID) {
+        axiosInstance
+          .get(`/api/master/year/${student.YEAR_SEM_ID}/`)
+          .then((res) => setYearSemName(res.data.name || res.data.YEAR || 'Unknown Year/Sem'))
+          .catch(() => setYearSemName('Unknown Year/Sem'));
+      }
+
+      if (student.ADMN_QUOTA_ID) {
+        axiosInstance
+          .get(`/api/master/quota/${student.ADMN_QUOTA_ID}/`)
+          .then((res) => setQuotaName(res.data.name || res.data.NAME || 'Unknown Quota'))
+          .catch(() => setQuotaName('Unknown Quota'));
+      }
+    }
+  }, [student]);
+
+  const handleCheckboxChange = (id: number) => {
+    setSelectedDocs((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((docId) => docId !== id)
+        : [...prevSelected, id]
+    );
+  };
+
+  const handleSubmitDocuments = async () => {
+    if (!student?.STUDENT_ID) return;
+
     try {
       const payload = {
-        STUDENT_ID: data.studentId,
-        INSTITUTE_ID: data.instituteId,
-        BRANCH: data.branch,
-        CATEGORY: data.category,
-        YEAR_SEM: data.yearSem,
-        QUOTA: data.quota,
-        NAME: data.name,
-        DOCUMENT_SUBMITTED: data.documentSubmitted,
-        DOCUMENT_NOT_SUBMITTED: data.documentNotSubmitted,
+        student_id: student.STUDENT_ID,
+        document_ids: selectedDocs,
       };
 
-      console.log("Submitting Payload:", payload);
+      await axiosInstance.post('/api/master/document-submission/', payload);
 
-      await axiosInstance.post("/api/student/documents/", payload);
-      alert("Student Document Details Submitted Successfully!");
-      reset();
-    } catch (error) {
-      console.error("Error submitting data:", error);
-      alert("Error submitting document details! Please try again.");
+      setSnackbar({
+        open: true,
+        message: 'Documents submitted successfully!',
+        severity: 'success',
+      });
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to submit documents',
+        severity: 'error',
+      });
     }
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 4, borderRadius: 2, maxWidth: "800px", margin: "auto", mt: 5 }}>
-      <h3 style={{ textAlign: "center", marginBottom: "15px" }}>Student Document Form</h3>
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3, maxWidth: 1000, margin: 'auto', marginTop: 4 }}>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={2}>
-          {/* Student ID */}
-          <Grid item xs={12}>
-            <TextField
-              label="Student ID"
-              {...register("studentId", { required: true })}
-              fullWidth
-              size="medium"
-              onBlur={(e) => handleStudentChange(e.target.value)}
-            />
-            {error && <p style={{ color: "red", fontSize: "12px" }}>{error}</p>}
-          </Grid>
+      <Typography variant="h5" gutterBottom>
+        Student Information Lookup
+      </Typography>
 
-          {/* Auto-filled Fields */}
-          <Grid item xs={12} sm={6}>
-            <TextField label="Name" {...register("name")} fullWidth size="medium" disabled />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Institute ID" {...register("instituteId")} fullWidth size="medium" disabled />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Branch" {...register("branch")} fullWidth size="medium" disabled />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Category" {...register("category")} fullWidth size="medium" disabled />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Year/Sem" {...register("yearSem")} fullWidth size="medium" disabled />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Quota" {...register("quota")} fullWidth size="medium" disabled />
-          </Grid>
-
-          {/* Document Submission Status */}
-          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
-            <FormControlLabel
-              control={<Checkbox {...register("documentSubmitted")} />}
-              label="Document Submitted"
-            />
-            <FormControlLabel
-              control={<Checkbox {...register("documentNotSubmitted")} />}
-              label="Document Not Submitted"
-              sx={{ marginLeft: "15px" }}
-            />
-          </Grid>
-
-          {/* Buttons */}
-          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center", gap: "15px" }}>
-            <Button type="submit" variant="contained" color="primary" size="medium">
-              Save
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              size="medium"
-              onClick={() => reset()}
-            >
-              Clear
-            </Button>
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Enter Student ID"
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            variant="outlined"
+            fullWidth
+          />
         </Grid>
-      </form>
+
+        {loading && (
+          <Grid item xs={12}>
+            <CircularProgress />
+          </Grid>
+        )}
+
+        {error && (
+          <Grid item xs={12}>
+            <Typography color="error">{error}</Typography>
+          </Grid>
+        )}
+
+        {student && (
+          <>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Full Name" value={`${student.NAME} ${student.SURNAME}`} fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Institute" value={student.INSTITUTE} fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Branch" value={branchName} fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Year / Semester" value={yearSemName} fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Category" value={student.CASTE} fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Quota" value={quotaName} fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+          </>
+        )}
+
+        {/* Checklist Document Section */}
+        <Grid item xs={12} sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Checklist Documents
+          </Typography>
+
+          {checklistDocs.length === 0 ? (
+            <Typography>No documents available.</Typography>
+          ) : (
+            <Paper elevation={1} sx={{ p: 2 }}>
+              {/* Table Header */}
+              <Grid container sx={{ fontWeight: 'bold', borderBottom: '2px solid #ccc', pb: 1 }}>
+                <Grid item xs={1}>ADD</Grid>
+                <Grid item xs={7}>Document Name</Grid>
+                <Grid item xs={4}>Mandatory</Grid>
+              
+              </Grid>
+
+              {/* Document Rows */}
+              {checklistDocs.map((doc) => (
+                <Grid
+                  container
+                  key={doc.RECORD_ID}
+                  alignItems="center"
+                  sx={{ borderBottom: '1px solid #eee', py: 1 }}
+                >
+                  <Grid item xs={1}>
+                    <Checkbox
+                      checked={selectedDocs.includes(doc.RECORD_ID)}
+                      onChange={() => handleCheckboxChange(doc.RECORD_ID)}
+                    />
+                  </Grid>
+                  <Grid item xs={7}>
+                    <Typography>{doc.NAME}</Typography>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Typography color={doc.IS_MANDATORY ? 'error' : 'textSecondary'}>
+                      {doc.IS_MANDATORY ? 'Mandatory' : 'Optional'}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2 }}
+                onClick={handleSubmitDocuments}
+                disabled={!student || selectedDocs.length === 0}
+              >
+                Submit Documents
+              </Button>
+            </Paper>
+          )}
+        </Grid>
+      </Grid>
     </Paper>
   );
 };
 
-export default StudentDocumentForm;
+export default StudentDocument;

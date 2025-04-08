@@ -917,16 +917,4 @@ class ADMISSION_QUOTA_MASTER(AuditModel):
         verbose_name_plural = 'Admission Quota Masters'
 
     def __str__(self):
-        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"
-
-class CHECK_LIST_DOCUMENTS(AuditModel):
-    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')  
-    NAME = models.CharField(max_length=50, db_column='NAME', null=True)  
-    IS_MANDATORY = models.BooleanField(default=False, db_column='IS_MANDATORY')
-    class Meta:
-        db_table = 'CHECK_LIST_DOCUMNETS'
-        verbose_name = 'Check List Documents'
-        verbose_name_plural = 'Check List Documents'
-
-    def _str_(self):
-        return f"{self.NAME} - {self.RECORD_ID}"        
+        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"       

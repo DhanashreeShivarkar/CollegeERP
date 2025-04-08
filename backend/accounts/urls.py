@@ -24,8 +24,6 @@ router.register(r'master/semester', views.SemesterListCreateView, basename='seme
 router.register(r'master/caste', views.CasteListCreateView, basename='caste')
 router.register(r'master/quota', views.QuotaListCreateView, basename='quota')
 router.register(r'master/admission', views.AdmissionListCreateView, basename='admission')
-router.register(r'master/checklist', views.CheckListDocumnetsCreateView, basename='checklist')
-
 app_name = 'accounts'
 
 urlpatterns = [
