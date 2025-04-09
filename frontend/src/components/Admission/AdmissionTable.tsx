@@ -9,6 +9,8 @@ import MasterTableView from "./MasterTableView";
 import QuotaEntryForm from "./pages/QuotaEntryForm";
 import AdmissionQuotaEntryForm from "./pages/AdmissionQuotaEntryForm";
 import { TableView } from "@mui/icons-material";
+import ChecklistDocument from "./pages/CheckListDocumentEntryForm";
+import CheckListDocumentEntryForm from "./pages/CheckListDocumentEntryForm";
 
 
 
@@ -27,6 +29,7 @@ const MasterEntryForm = () => {
           <option value="caste">Caste</option>
           <option value="quota">Quota</option>
           <option value="admission_quota">Admission Quota</option> 
+          <option value="check_list_documents">Check List Documents</option> 
         </select>
 
         {/* Create / View Buttons */}
@@ -55,6 +58,7 @@ const MasterEntryForm = () => {
               {selectedForm === "caste" && <CasteEntryForm />}
                {selectedForm === "quota" && <QuotaEntryForm />}
               {selectedForm === "admission_quota" && <AdmissionQuotaEntryForm />} 
+              {selectedForm === "check_list_documents" && <CheckListDocumentEntryForm />} 
             </div>
           </div>
         )}
@@ -69,6 +73,7 @@ const MasterEntryForm = () => {
               {selectedForm === "caste" && <MasterTableView masterType={"caste"} />}
                 {selectedForm === "quota" && <MasterTableView masterType={"quota"} />} 
               {selectedForm === "admission_quota" && <MasterTableView masterType={"admission"} />} 
+              {selectedForm ==="check_list_documents" && <MasterTableView masterType={"checklist"} />} 
             </div>
           </div>
         )}
