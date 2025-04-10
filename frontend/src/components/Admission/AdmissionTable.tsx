@@ -3,15 +3,30 @@ import { Paper } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import CasteEntryForm from "./pages/CasteEntryForm";
+import MasterTableView from "./MasterTableView";
+// import QuotaEntryForm from "./pages/QuotaEntryForm";
+// import AdmissionQuotaEntryForm from "./pages/AdmissionQuotaEntryForm";
+import { TableView } from "@mui/icons-material";
+import ChecklistDocument from "./pages/CheckListDocumentEntryForm";
+import CheckListDocumentEntryForm from "./pages/CheckListDocumentEntryForm";
 
 const NameEntryForm = () => {
   const [selectedAction, setSelectedAction] = useState<"create" | "view">("create");
   const navigate = useNavigate();
+  const [selectedForm, setSelectedForm] = useState<string>("caste");
 
   return (
     <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h2 className="text-center mb-4">Caste Entry Form</h2>
+        <h2 className="text-center mb-4">Master Entry Form</h2>
+
+        {/* Dropdown to Select Entry Type */}
+        <select onChange={(e) => setSelectedForm(e.target.value)} className="form-control mb-3">
+          <option value="caste">Caste</option>
+          <option value="quota">Quota</option>
+          <option value="admission_quota">Admission Quota</option> 
+          <option value="check_list_documents">Check List Documents</option> 
+        </select>
 
         {/* Create / View Buttons */}
         <div className="d-flex justify-content-center gap-2">
@@ -36,7 +51,10 @@ const NameEntryForm = () => {
               <h6 className="mb-0">Caste Master</h6>
             </div>
             <div className="card-body p-2">
-              <CasteEntryForm />
+              {selectedForm === "caste" && <CasteEntryForm />}
+               {/* {selectedForm === "quota" && <QuotaEntryForm />}
+              {selectedForm === "admission_quota" && <AdmissionQuotaEntryForm />}  */}
+              {selectedForm === "check_list_documents" && <CheckListDocumentEntryForm />} 
             </div>
           </div>
         )}
@@ -48,7 +66,10 @@ const NameEntryForm = () => {
               <h6 className="mb-0">Caste List</h6>
             </div>
             <div className="card-body p-2">
-              {/* Table rendering logic here */}
+              {selectedForm === "caste" && <MasterTableView masterType={"caste"} />}
+                {selectedForm === "quota" && <MasterTableView masterType={"quota"} />} 
+              {selectedForm === "admission_quota" && <MasterTableView masterType={"admission"} />} 
+              {selectedForm ==="check_list_documents" && <MasterTableView masterType={"checklist"} />} 
             </div>
           </div>
         )}

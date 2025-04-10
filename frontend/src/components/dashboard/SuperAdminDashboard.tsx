@@ -16,10 +16,11 @@ import ProgramTable from "../CourseMaster/Programtable";
 import ProgramList from "../CourseMaster/ProgramList";
 import DashboardMaster from "../DashboardMaster/DashboardMaster";
 import SemesterDurationTableView from "../master/SemesterDurationTableView";
-import StudentInfoForm from "../studentMaster/StudentInfoForm";
+import StudentInfoForm from "../StudentMaster/StudentInfoForm";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
+import StudentDocumentForm from "../studentTransaction/StudentDocument";
 
 
 const DashboardHome = () => (
@@ -93,8 +94,18 @@ const SuperAdminDashboard = ({ user }: any) => {
               element={<StudentInfoForm />}
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
-            <Route path="/admissionMaster" element={<AdmissionTable />} />
+            <Route 
+              path="/establishment/employeedetails" 
+              element={<EmployeeDetail />} 
+            />
+            <Route 
+              path="/establishment/academic-qualification" 
+              element={<AcademicQualification />} 
+            />
+          <Route path="/student-section" element={<AdmissionTable />} />
+          <Route path="/student-section/document" element={<StudentDocumentForm />} />
           </Routes>
+          
         </div>
       </div>
       <Footer />

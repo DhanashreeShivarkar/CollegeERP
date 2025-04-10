@@ -80,6 +80,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           ],
         },
         {
+          icon: "bi-database-fill",
+          text: "Transaction",
+          children: [
+            {
+              icon: "bi-table",
+              text: "Document Collection",
+              path: "/dashboard/student-section/document",
+              exact: true,
+            }
+          ],
+        },
+        {
           icon: "bi bi-person-badge",
           text: "Student Master",
           children: [

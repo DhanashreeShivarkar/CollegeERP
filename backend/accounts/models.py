@@ -917,4 +917,4 @@ class ADMISSION_QUOTA_MASTER(AuditModel):
         verbose_name_plural = 'Admission Quota Masters'
 
     def __str__(self):
-        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"
+        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"       
