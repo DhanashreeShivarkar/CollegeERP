@@ -340,6 +340,8 @@ class STUDENT_DOCUMENTS(AuditModel):
         db_table = '"STUDENT"."STUDENT_DOCUMENTS"'
         verbose_name = 'Student Documents'
         verbose_name_plural = 'Student Documents'
+        unique_together = ('STUDENT_ID', 'DOCUMENT_ID')
+
 
     def __str__(self):
         return f"Student Document Record {self.RECORDID}"
