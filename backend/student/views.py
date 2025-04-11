@@ -220,14 +220,29 @@ class CheckListDocumnetsCreateView(BaseModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class StudentDocumentsViewSet(BaseModelViewSet):
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from .models import STUDENT_DOCUMENTS
+from .serializers import StudentDocumentsSerializer
+
+class StudentDocumentsViewSet(ModelViewSet):  # or BaseModelViewSet if customized
     queryset = STUDENT_DOCUMENTS.objects.all()
     serializer_class = StudentDocumentsSerializer
 
     def create(self, request, *args, **kwargs):
         data = request.data
+        student_id = data.get('STUDENT_ID')
+        document_id = data.get('DOCUMENT_ID')
+
+        # Check if the same document has already been submitted by this student
+        if STUDENT_DOCUMENTS.objects.filter(STUDENT_ID=student_id, DOCUMENT_ID=document_id).exists():
+            return Response(
+                {"detail": "This document has already been submitted by the student."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         serializer = self.get_serializer(data=data)
-        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
