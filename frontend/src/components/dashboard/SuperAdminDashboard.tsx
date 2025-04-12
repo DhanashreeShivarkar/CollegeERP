@@ -20,6 +20,7 @@ import StudentInfoForm from "../StudentMaster/StudentInfoForm";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
+import StudentDocument from "../studentTransaction/StudentDocument";
 import CollegeExamTypeTableView from "../Exam/CollegeExamTypeTableView";
 
 
@@ -103,6 +104,7 @@ const SuperAdminDashboard = ({ user }: any) => {
               element={<AcademicQualification />} 
             />
             <Route path="/student-section" element={<AdmissionTable />} />
+            <Route path="/student-section/document" element={<StudentDocument />} />
             <Route path="/exam/college-exam-type" element={<CollegeExamTypeTableView />} />
           </Routes>
         </div>

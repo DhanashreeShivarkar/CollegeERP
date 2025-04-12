@@ -53,10 +53,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               path: "/dashboard/coursemaster",
               exact: true,
             },
+          ],
+        },
+      ],
+    },
+    {
+      icon: "bi-building-fill",
+      text: "Establishment",
+      children: [
+        {
+          icon: "bi-database-fill",
+          text: "Master",
+          children: [
             {
-              icon: "bi-people-fill",
-              text: "Admission Master",
-              path: "/dashboard/admissionmaster",
+              icon: "bi-table",
+              text: "Master Entry",
+              path: "/dashboard/establishment/master",
+              exact: true,
+            }
+          ],
+        },
+        {
+          icon: "bi-people-fill",
+          text: "Employee Master",
+          children: [
+            {
+              icon: "bi-person-vcard-fill",
+              text: "Employee Details",
+              path: "/dashboard/establishment/employeedetails",
               exact: true,
             },
           ],
