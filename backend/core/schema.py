@@ -6,7 +6,8 @@ SCHEMAS = [
     'ACADEMIC',
     'STUDENT',
     'FACULTY',
-    'ESTABLISHMENT'
+    'ESTABLISHMENT',
+    'EXAM'
 ]
 
 def create_schemas():
@@ -18,13 +19,14 @@ def create_schemas():
             CREATE SCHEMA IF NOT EXISTS "STUDENT";
             CREATE SCHEMA IF NOT EXISTS "FACULTY";
             CREATE SCHEMA IF NOT EXISTS "ESTABLISHMENT";
+            CREATE SCHEMA IF NOT EXISTS "EXAM";
         """)
         
         # Set search path with uppercase schema names
         db_name = settings.DATABASES['default']['NAME']
         cursor.execute(f'''
             ALTER DATABASE "{db_name}" 
-            SET search_path TO "PUBLIC", "ADMIN", "ACADEMIC", "STUDENT", "FACULTY", "ESTABLISHMENT";
+            SET search_path TO "PUBLIC", "ADMIN", "ACADEMIC", "STUDENT", "FACULTY", "ESTABLISHMENT", "EXAM";
         ''')
 
 def drop_schemas():
@@ -36,4 +38,5 @@ def drop_schemas():
             DROP SCHEMA IF EXISTS "STUDENT" CASCADE;
             DROP SCHEMA IF EXISTS "FACULTY" CASCADE;
             DROP SCHEMA IF EXISTS "ESTABLISHMENT" CASCADE;
+            DROP SCHEMA IF EXISTS "EXAM" CASCADE;
         """)

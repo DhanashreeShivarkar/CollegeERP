@@ -43,7 +43,7 @@ class CustomUserManager(BaseUserManager):
         if not EMAIL:
             raise ValueError('EMAIL is required')
         if not USERNAME:
-            raise ValueValueError('USERNAME is required')
+            raise ValueError('USERNAME is required')
         if not USER_ID:
             raise ValueError('USER_ID is required')
             
