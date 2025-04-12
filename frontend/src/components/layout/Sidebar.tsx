@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         },
       ],
     },
-    {
+    { //stablishment
       icon: "bi-building-fill",
       text: "Establishment",
       children: [
