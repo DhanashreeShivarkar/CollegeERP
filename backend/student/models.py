@@ -1,7 +1,7 @@
 from django.db import models
 from core.models import AuditModel
 from django.utils import timezone
-from accounts.models import BRANCH, PROGRAM
+from accounts.models import BRANCH, PROGRAM, INSTITUTE, SEMESTER, YEAR
 from academic.models import ACADEMIC_YEAR, EXAMINATION, CURRICULUM
 
 class STUDENT(AuditModel):
@@ -210,7 +210,25 @@ class STUDENT_MASTER(AuditModel):
 
     def __str__(self):
         return f"{self.STUDENT_ID} - {self.NAME} {self.SURNAME}"
-    
+
+      
+class STUDENT_ROLL_NUMBER_DETAILS(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
+    INSTITUTE = models.ForeignKey(INSTITUTE, on_delete=models.PROTECT, db_column='INSTITUTE_ID')
+    BRANCH = models.ForeignKey(BRANCH, on_delete=models.PROTECT, db_column='BRANCH_ID')
+    YEAR = models.ForeignKey(YEAR, on_delete=models.PROTECT, db_column='YEAR_ID')
+    STUDENT = models.ForeignKey(STUDENT, on_delete=models.PROTECT, db_column='STUDENT_ID')
+    ACADEMIC_YEAR = models.ForeignKey(ACADEMIC_YEAR, on_delete=models.PROTECT, db_column='ACADEMIC_YEAR_ID')
+    ROLL_NO = models.CharField(max_length=20, db_column='ROLLNO')  # Fixed max_length
+    SEMESTER = models.ForeignKey(SEMESTER, on_delete=models.PROTECT, db_column='SEMESTER_ID')
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_ROLL_NUMBER_DETAILS"'  # Removed schema to avoid Django issues
+        verbose_name = 'Student Roll Number Details'
+        verbose_name_plural = 'Student Roll Number Details'
+
+    def __str__(self):
+        return f"{self.STUDENT.ENROLLMENT_NO} - {self.ROLL_NO}"
 
 class STUDENT_DETAILS(AuditModel):
     RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
@@ -345,4 +363,3 @@ class STUDENT_DOCUMENTS(AuditModel):
 
     def __str__(self):
         return f"Student Document Record {self.RECORDID}"
-
