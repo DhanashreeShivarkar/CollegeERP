@@ -43,7 +43,7 @@ class CustomUserManager(BaseUserManager):
         if not EMAIL:
             raise ValueError('EMAIL is required')
         if not USERNAME:
-            raise ValueValueError('USERNAME is required')
+            raise ValueError('USERNAME is required')
         if not USER_ID:
             raise ValueError('USER_ID is required')
             
@@ -917,4 +917,4 @@ class ADMISSION_QUOTA_MASTER(AuditModel):
         verbose_name_plural = 'Admission Quota Masters'
 
     def __str__(self):
-        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"
+        return f"{self.NAME} - {self.ADMN_QUOTA_ID}"       

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import STUDENT_MASTER
+from .models import STUDENT_MASTER, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS
 from django.utils import timezone
 
 # Define required fields at module level
@@ -120,3 +120,35 @@ class StudentMasterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         print("Final data being saved:", validated_data)
         return super().create(validated_data)
+
+class CheckListDoumentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CHECK_LIST_DOCUMENTS
+        fields=['RECORD_ID','NAME', 'IS_MANDATORY']
+
+class StudentDocumentsSerializer(serializers.ModelSerializer):
+    STUDENT_ID = serializers.SlugRelatedField(
+        queryset=STUDENT_MASTER.objects.all(),
+        slug_field='STUDENT_ID'
+    )
+    DOC_NAME = serializers.SlugRelatedField(
+        queryset=CHECK_LIST_DOCUMENTS.objects.all(),
+        slug_field='NAME'
+    )
+    DOCUMENT_ID = serializers.SlugRelatedField(
+        queryset=CHECK_LIST_DOCUMENTS.objects.all(),
+        slug_field='RECORD_ID'
+    )
+
+    class Meta:
+        model = STUDENT_DOCUMENTS
+        fields = '__all__'
+
+    def validate(self, data):
+        if not data.get('STUDENT_ID'):
+            raise serializers.ValidationError({'STUDENT_ID': 'Student is required'})
+        if not data.get('DOCUMENT_ID'):
+            raise serializers.ValidationError({'DOCUMENT_ID': 'Document ID is required'})
+        if not data.get('DOC_NAME'):
+            raise serializers.ValidationError({'DOC_NAME': 'Document name is required'})
+        return data

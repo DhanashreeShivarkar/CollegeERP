@@ -7,6 +7,8 @@ from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
 from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, STUDENT_ACADEMIC_RECORD
 from .serializers import StudentMasterSerializer
+from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS
+from .serializers import StudentMasterSerializer, CheckListDoumentsSerializer, StudentDocumentsSerializer
 from django.conf import settings
 import logging
 from django.http import Http404
@@ -19,12 +21,14 @@ from django.contrib.auth import get_user_model
 from utils.id_generators import generate_password
 from accounts.models import DESIGNATION
 from accounts.models import CustomUser, YEAR
+from accounts.views import BaseModelViewSet
 
 logger = logging.getLogger(__name__)
 
 class StudentMasterViewSet(viewsets.ModelViewSet):
     queryset = STUDENT_MASTER.objects.filter(IS_DELETED=False)
     serializer_class = StudentMasterSerializer
+    lookup_field = 'STUDENT_ID'  # Very important
     
     def get_or_default(value, default=None, data_type=int):
         """Returns integer value if valid, otherwise returns default"""
@@ -219,3 +223,44 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CheckListDocumnetsCreateView(BaseModelViewSet):
+     queryset = CHECK_LIST_DOCUMENTS.objects.all()   
+     serializer_class = CheckListDoumentsSerializer
+      
+     def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from .models import STUDENT_DOCUMENTS
+from .serializers import StudentDocumentsSerializer
+
+class StudentDocumentsViewSet(ModelViewSet):  # or BaseModelViewSet if customized
+    queryset = STUDENT_DOCUMENTS.objects.all()
+    serializer_class = StudentDocumentsSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        student_id = data.get('STUDENT_ID')
+        document_id = data.get('DOCUMENT_ID')
+
+        # Check if the same document has already been submitted by this student
+        if STUDENT_DOCUMENTS.objects.filter(STUDENT_ID=student_id, DOCUMENT_ID=document_id).exists():
+            return Response(
+                {"detail": "This document has already been submitted by the student."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

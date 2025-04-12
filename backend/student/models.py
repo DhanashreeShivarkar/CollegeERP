@@ -301,3 +301,72 @@ class STUDENT_ACADEMIC_RECORD(AuditModel):
 
     def __str__(self):
         return f"{self.STUDENT_ID} - {self.ACADEMIC_YEAR}"
+        return f"Details of {self.STUDENT_ID}"
+
+class CHECK_LIST_DOCUMENTS(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')  
+    NAME = models.CharField(max_length=1000, db_column='NAME', unique=True, null=True)  
+    IS_MANDATORY = models.BooleanField(default=False, db_column='IS_MANDATORY')
+    class Meta:
+        db_table = '"STUDENT"."CHECK_LIST_DOCUMNETS"'
+        verbose_name = 'Check List Documents'
+        verbose_name_plural = 'Check List Documents'
+
+    def _str_(self):
+        return f"{self.NAME} - {self.RECORD_ID}"
+
+class STUDENT_DOCUMENTS(AuditModel):
+    RECORDID = models.AutoField(primary_key=True)
+
+    STUDENT_ID = models.ForeignKey(
+        'STUDENT_MASTER',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='STUDENT_ID',
+        db_column='STUDENT_ID',
+        related_name='DOCUMENTS_BY_STUDENT'
+    )
+
+    ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR', null=True)
+
+    DOC_NAME = models.ForeignKey(
+        'CHECK_LIST_DOCUMENTS',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='NAME',
+        db_column='DOC_NAME',
+        related_name='DOCUMENTS_BY_NAME'
+    )
+
+    DOCUMENT_ID = models.ForeignKey(
+        'CHECK_LIST_DOCUMENTS',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='RECORD_ID',
+        db_column='DOCUMENT_ID',
+        related_name='DOCUMENTS_BY_ID'
+    )
+
+    TEMPRETURN = models.CharField(max_length=1, blank=True, null=True, db_column='TEMPRETURN')
+    RETURN = models.CharField(max_length=1, blank=True, null=True, db_column='RETURN')
+    DOC_IMAGES = models.CharField(max_length=50, blank=True, null=True, db_column='DOC_IMAGES')
+    VERIFIED = models.CharField(max_length=1, default='V', blank=True, null=True, db_column='VERIFIED')
+    ORIGINAL = models.CharField(max_length=1, blank=True, null=True, db_column='ORIGINAL')
+    PHOTOCOPY = models.CharField(max_length=1, blank=True, null=True, db_column='PHOTOCOPY')
+    REMARKS = models.CharField(max_length=500, blank=True, null=True, db_column='REMARKS')
+    DEFICIENCY = models.CharField(max_length=1, blank=True, null=True, db_column='DEFICIENCY')
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_DOCUMENTS"'
+        verbose_name = 'Student Documents'
+        verbose_name_plural = 'Student Documents'
+        unique_together = ('STUDENT_ID', 'DOCUMENT_ID')
+
+
+    def __str__(self):
+        return f"Student Document Record {self.RECORDID}"
+
+
