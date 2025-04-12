@@ -194,8 +194,8 @@ class STUDENT_MASTER(AuditModel):
                 BATCH=self.BATCH, 
                 BRANCH_ID=self.BRANCH_ID
             ).count() + 1
-            program_code = self.BRANCH_ID.PROGRAM_id
-            self.STUDENT_ID = f"{program_code}{self.BATCH[-2:]}{latest_entry:03d}"
+            program_name = self.BRANCH_ID.PROGRAM.NAME
+            self.STUDENT_ID = f"{program_name}{self.BATCH[-2:]}{latest_entry:03d}"
         super().save(*args, **kwargs)
 
     class Meta:
@@ -210,8 +210,8 @@ class STUDENT_MASTER(AuditModel):
 
     def __str__(self):
         return f"{self.STUDENT_ID} - {self.NAME} {self.SURNAME}"
-    
 
+      
 class STUDENT_ROLL_NUMBER_DETAILS(AuditModel):
     RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
     INSTITUTE = models.ForeignKey(INSTITUTE, on_delete=models.PROTECT, db_column='INSTITUTE_ID')
@@ -229,3 +229,137 @@ class STUDENT_ROLL_NUMBER_DETAILS(AuditModel):
 
     def __str__(self):
         return f"{self.STUDENT.ENROLLMENT_NO} - {self.ROLL_NO}"
+
+class STUDENT_DETAILS(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
+
+    STUDENT_ID = models.OneToOneField(
+        'STUDENT_MASTER',
+        to_field='STUDENT_ID', 
+        on_delete=models.CASCADE, 
+        db_column='STUDENT_ID'
+    )
+
+    PLACE_OF_BIRTH = models.CharField(max_length=100, db_column='PLACE_OF_BIRTH', null=True, blank=True, default='')
+    LAST_CLG_ATTEND = models.CharField(max_length=255, db_column='LAST_CLG_ATTEND', null=True, blank=True, default='')
+    LAST_CLG_ADD = models.CharField(db_column='LAST_CLG_ADD', null=True, blank=True, default='')
+    LAST_CLG_CITY = models.CharField(max_length=100, db_column='LAST_CLG_CITY', null=True, blank=True, default='')
+    LAST_CLG_UNIV = models.CharField(max_length=255, db_column='LAST_CLG_UNIV', null=True, blank=True, default='')
+    LAST_CLG_ROLL = models.CharField(max_length=50, db_column='LAST_CLG_ROLL', null=True, blank=True, default='')
+
+    PCM_MARKS = models.DecimalField(max_digits=6, decimal_places=2, db_column='PCM_MARKS', null=True, blank=True, default=None)
+    PCM_OUTOF = models.DecimalField(max_digits=6, decimal_places=2, db_column='PCM_OUTOF', null=True, blank=True, default=None)
+    TOT_MARKS_OBTAIN = models.DecimalField(max_digits=6, decimal_places=2, db_column='TOT_MARKS_OBTAIN', null=True, blank=True, default=None)
+    TOT_MAX_MARKS = models.DecimalField(max_digits=6, decimal_places=2, db_column='TOT_MAX_MARKS', null=True, blank=True, default=None)
+    SCORE = models.DecimalField(max_digits=6, decimal_places=2, db_column='SCORE', null=True, blank=True, default=None)
+    MERIT = models.DecimalField(max_digits=6, decimal_places=2, db_column='MERIT', null=True, blank=True, default=None)
+
+    NATIONALITY = models.CharField(max_length=50, db_column='NATIONALITY', null=True, blank=True, default='INDIAN')
+    
+
+    ADMISSION_QUOTA = models.IntegerField(db_column='ADMISSION_QUOTA', null=True, blank=True, default=None)
+    QUALIFYING_EXAM = models.CharField(max_length=100, db_column='QUALIFYING_EXAM', null=True, blank=True, default='')
+    MONTH_OF_PASSING = models.CharField(max_length=20, db_column='MONTH_OF_PASSING', null=True, blank=True, default='')
+    YEAR_OF_PASSING = models.IntegerField(db_column='YEAR_OF_PASSING', null=True, blank=True, default=None)
+
+    MEDIUM = models.CharField(max_length=50, db_column='MEDIUM', null=True, blank=True, default='')
+    DRV_LICENSE = models.CharField(max_length=20, db_column='DRV_LICENSE', null=True, blank=True, default='')
+    AADHAR_NO = models.CharField(max_length=12, db_column='AADHAR_NO', null=True, blank=True, default='')
+
+    BANK_NAME = models.CharField(max_length=100, db_column='BANK_NAME', null=True, blank=True, default='')
+    BRANCH_NAME = models.CharField(max_length=100, db_column='BRANCH_NAME', null=True, blank=True, default='')
+    BANK_ACCOUNT_NO = models.CharField(max_length=20, db_column='BANK_ACCOUNT_NO', null=True, blank=True, default='')
+    BANK_CITY = models.CharField(max_length=100, db_column='BANK_CITY', null=True, blank=True, default='')
+
+    MINORITY = models.CharField(max_length=3, db_column='MINORITY', choices=[('YES', 'Yes'), ('NO', 'No')], default='NO')
+    HOSTELER = models.CharField(max_length=3, db_column='HOSTELER', choices=[('YES', 'Yes'), ('NO', 'No')], default='NO')
+
+    MOTHER_MOB = models.CharField(max_length=15, db_column='MOTHER_MOB', null=True, blank=True, default='')
+    PARENT_MAIL = models.EmailField(db_column='PARENT_MAIL', null=True, blank=True, default='')
+    FATHER_MOB = models.CharField(max_length=15, db_column='FATHER_MOB', null=True, blank=True, default='')
+
+    INCOME = models.DecimalField(max_digits=10, decimal_places=2, db_column='INCOME', null=True, blank=True, default=None)
+    PAN_NO = models.CharField(max_length=10, db_column='PAN_NO', null=True, blank=True, default='')
+    
+    COLLEGE_PREFERENCE = models.TextField(db_column='COLLEGE_PREFERENCE', null=True, blank=True, default='')
+
+    
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_DETAILS"'
+        verbose_name = 'Student Details'
+        verbose_name_plural = 'Student Details'
+        indexes = [
+            models.Index(fields=['STUDENT_ID']),
+            models.Index(fields=['AADHAR_NO']),
+            models.Index(fields=['PAN_NO']),
+        ]
+
+    def __str__(self):
+        return f"Details of {self.STUDENT_ID}"
+
+class CHECK_LIST_DOCUMENTS(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')  
+    NAME = models.CharField(max_length=1000, db_column='NAME', unique=True, null=True)  
+    IS_MANDATORY = models.BooleanField(default=False, db_column='IS_MANDATORY')
+    class Meta:
+        db_table = '"STUDENT"."CHECK_LIST_DOCUMNETS"'
+        verbose_name = 'Check List Documents'
+        verbose_name_plural = 'Check List Documents'
+
+    def _str_(self):
+        return f"{self.NAME} - {self.RECORD_ID}"
+
+class STUDENT_DOCUMENTS(AuditModel):
+    RECORDID = models.AutoField(primary_key=True)
+
+    STUDENT_ID = models.ForeignKey(
+        'STUDENT_MASTER',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='STUDENT_ID',
+        db_column='STUDENT_ID',
+        related_name='DOCUMENTS_BY_STUDENT'
+    )
+
+    ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR', null=True)
+
+    DOC_NAME = models.ForeignKey(
+        'CHECK_LIST_DOCUMENTS',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='NAME',
+        db_column='DOC_NAME',
+        related_name='DOCUMENTS_BY_NAME'
+    )
+
+    DOCUMENT_ID = models.ForeignKey(
+        'CHECK_LIST_DOCUMENTS',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='RECORD_ID',
+        db_column='DOCUMENT_ID',
+        related_name='DOCUMENTS_BY_ID'
+    )
+
+    TEMPRETURN = models.CharField(max_length=1, blank=True, null=True, db_column='TEMPRETURN')
+    RETURN = models.CharField(max_length=1, blank=True, null=True, db_column='RETURN')
+    DOC_IMAGES = models.CharField(max_length=50, blank=True, null=True, db_column='DOC_IMAGES')
+    VERIFIED = models.CharField(max_length=1, default='V', blank=True, null=True, db_column='VERIFIED')
+    ORIGINAL = models.CharField(max_length=1, blank=True, null=True, db_column='ORIGINAL')
+    PHOTOCOPY = models.CharField(max_length=1, blank=True, null=True, db_column='PHOTOCOPY')
+    REMARKS = models.CharField(max_length=500, blank=True, null=True, db_column='REMARKS')
+    DEFICIENCY = models.CharField(max_length=1, blank=True, null=True, db_column='DEFICIENCY')
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_DOCUMENTS"'
+        verbose_name = 'Student Documents'
+        verbose_name_plural = 'Student Documents'
+        unique_together = ('STUDENT_ID', 'DOCUMENT_ID')
+
+
+    def __str__(self):
+        return f"Student Document Record {self.RECORDID}"

@@ -27,7 +27,7 @@ const MasterTableView: React.FC<MasterTableViewProps> = ({ masterType }) => {
       const response = await axiosInstance.get(`api/master/${masterType}/`);
       setDataList(
         response.data.map((item: any) => ({
-          id: item.CASTE_ID || item.QUOTA_ID || item.ADMN_QUOTA_ID || item.id, // Adjust based on API response
+          id: item.CASTE_ID || item.QUOTA_ID || item.ADMN_QUOTA_ID  || item.RECORD_ID || item.id, // Adjust based on API response
           NAME: item.NAME,
         }))
       );

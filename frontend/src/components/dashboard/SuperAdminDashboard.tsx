@@ -20,7 +20,11 @@ import StudentInfoForm from "../StudentMaster/StudentInfoForm";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
+
 import StudentRollNo from "../StudentMaster/StudentRollNo";
+
+import StudentDocument from "../studentTransaction/StudentDocument";
+import CollegeExamTypeTableView from "../Exam/CollegeExamTypeTableView";
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -106,7 +110,9 @@ const SuperAdminDashboard = ({ user }: any) => {
               path="/establishment/academic-qualification" 
               element={<AcademicQualification />} 
             />
-          <Route path="/student-section" element={<AdmissionTable />} />
+            <Route path="/student-section" element={<AdmissionTable />} />
+            <Route path="/student-section/document" element={<StudentDocument />} />
+            <Route path="/exam/college-exam-type" element={<CollegeExamTypeTableView />} />
           </Routes>
         </div>
       </div>

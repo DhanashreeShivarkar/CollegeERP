@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import STUDENT_MASTER , STUDENT_ROLL_NUMBER_DETAILS
+from .models import STUDENT_MASTER, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS, STUDENT_ROLL_NUMBER_DETAILS
 from django.utils import timezone
 
 # Define required fields at module level
@@ -8,7 +8,7 @@ BASIC_REQUIRED_FIELDS = [
     'ACADEMIC_YEAR',
     'BATCH',
     'ADMISSION_CATEGORY',
-    'ADMISSION_QUOTA',  # Added this field
+    'ADMN_QUOTA_ID',  # Added this field
     'FORM_NO',
     'NAME',
     'SURNAME',
@@ -18,7 +18,8 @@ BASIC_REQUIRED_FIELDS = [
     'MOB_NO',
     'EMAIL_ID',
     'PER_ADDRESS',
-    'BRANCH_ID'
+    'BRANCH_ID',
+    'YEAR_SEM_ID',
 ]
 
 class StudentMasterSerializer(serializers.ModelSerializer):
@@ -30,6 +31,8 @@ class StudentMasterSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             field: {'required': True} for field in BASIC_REQUIRED_FIELDS
         }
+        
+      
 
     def to_internal_value(self, data):
         # Set defaults for all non-required fields
@@ -75,7 +78,7 @@ class StudentMasterSerializer(serializers.ModelSerializer):
             'HANDICAPPED': 'NO',
             'MARK_ID': '0',
             'QUOTA_ID': int(data.get('ADMISSION_QUOTA', 1)),  # Use selected quota ID 
-            'YEAR_SEM_ID': 1,
+            'YEAR_SEM_ID': int(data.get('YEAR_SEM_ID') or 1),
             'ADMN_ROUND': '1',
             'ADMN_QUOTA_ID': int(data.get('ADMISSION_QUOTA', 0)),  # Use selected quota ID
             'STATUS': 'ACTIVE',
@@ -118,7 +121,6 @@ class StudentMasterSerializer(serializers.ModelSerializer):
         print("Final data being saved:", validated_data)
         return super().create(validated_data)
 
-
 class StudentRollNumberDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = STUDENT_ROLL_NUMBER_DETAILS
@@ -141,3 +143,35 @@ class StudentRollNumberDetailsSerializer(serializers.ModelSerializer):
         representation['YEAR'] = instance.YEAR.YEAR
         representation['SEMESTER'] = instance.SEMESTER.SEMESTER
         return representation
+      
+class CheckListDoumentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CHECK_LIST_DOCUMENTS
+        fields=['RECORD_ID','NAME', 'IS_MANDATORY']
+
+class StudentDocumentsSerializer(serializers.ModelSerializer):
+    STUDENT_ID = serializers.SlugRelatedField(
+        queryset=STUDENT_MASTER.objects.all(),
+        slug_field='STUDENT_ID'
+    )
+    DOC_NAME = serializers.SlugRelatedField(
+        queryset=CHECK_LIST_DOCUMENTS.objects.all(),
+        slug_field='NAME'
+    )
+    DOCUMENT_ID = serializers.SlugRelatedField(
+        queryset=CHECK_LIST_DOCUMENTS.objects.all(),
+        slug_field='RECORD_ID'
+    )
+
+    class Meta:
+        model = STUDENT_DOCUMENTS
+        fields = '__all__'
+
+    def validate(self, data):
+        if not data.get('STUDENT_ID'):
+            raise serializers.ValidationError({'STUDENT_ID': 'Student is required'})
+        if not data.get('DOCUMENT_ID'):
+            raise serializers.ValidationError({'DOCUMENT_ID': 'Document ID is required'})
+        if not data.get('DOC_NAME'):
+            raise serializers.ValidationError({'DOC_NAME': 'Document name is required'})
+        return data
