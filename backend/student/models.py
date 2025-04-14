@@ -215,7 +215,7 @@ class STUDENT_MASTER(AuditModel):
 class STUDENT_DETAILS(AuditModel):
     RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
 
-    STUDENT_ID = models.OneToOneField(
+    STUDENT_ID = models.ForeignKey(
         'STUDENT_MASTER',
         to_field='STUDENT_ID', 
         on_delete=models.CASCADE, 
