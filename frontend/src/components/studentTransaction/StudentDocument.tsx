@@ -162,7 +162,7 @@ const StudentDocument: React.FC = () => {
         formData.append('DOCUMENT_ID', doc?.RECORD_ID.toString() || '');
         formData.append('DOC_NAME', doc?.NAME || '');
         if (uploadedFiles[docId]) {
-          formData.append('file', uploadedFiles[docId]);
+          formData.append('DOC_IMAGES', uploadedFiles[docId]);
         }
 
         return axiosInstance.post('/api/master/document-submission/', formData, {
