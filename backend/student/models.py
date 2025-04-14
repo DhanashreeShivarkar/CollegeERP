@@ -310,6 +310,12 @@ class CHECK_LIST_DOCUMENTS(AuditModel):
     def _str_(self):
         return f"{self.NAME} - {self.RECORD_ID}"
 
+from django.db import models
+
+def student_document_upload_path(instance, filename):
+    # Customize the upload path as needed
+    return f'student_documents/{instance.STUDENT_ID.STUDENT_ID}/{filename}'
+
 class STUDENT_DOCUMENTS(AuditModel):
     RECORDID = models.AutoField(primary_key=True)
 
@@ -347,7 +353,15 @@ class STUDENT_DOCUMENTS(AuditModel):
 
     TEMPRETURN = models.CharField(max_length=1, blank=True, null=True, db_column='TEMPRETURN')
     RETURN = models.CharField(max_length=1, blank=True, null=True, db_column='RETURN')
-    DOC_IMAGES = models.CharField(max_length=50, blank=True, null=True, db_column='DOC_IMAGES')
+
+    # Updated to handle actual file uploads
+    DOC_IMAGES = models.FileField(
+        upload_to=student_document_upload_path,
+        blank=True,
+        null=True,
+        db_column='DOC_IMAGES'
+    )
+
     VERIFIED = models.CharField(max_length=1, default='V', blank=True, null=True, db_column='VERIFIED')
     ORIGINAL = models.CharField(max_length=1, blank=True, null=True, db_column='ORIGINAL')
     PHOTOCOPY = models.CharField(max_length=1, blank=True, null=True, db_column='PHOTOCOPY')
@@ -359,7 +373,6 @@ class STUDENT_DOCUMENTS(AuditModel):
         verbose_name = 'Student Documents'
         verbose_name_plural = 'Student Documents'
         unique_together = ('STUDENT_ID', 'DOCUMENT_ID')
-
 
     def __str__(self):
         return f"Student Document Record {self.RECORDID}"

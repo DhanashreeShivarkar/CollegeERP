@@ -162,8 +162,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Create specific path for employee profile photos
 EMPLOYEE_PROFILE_PATH = os.path.join(MEDIA_ROOT, 'employee_profiles', 'profile_photo')
 
+# Create directory for student document uploads
+STUDENT_DOCUMENTS_PATH = os.path.join(MEDIA_ROOT, 'student_documents')
+
 # Create directory if it doesn't exist
 os.makedirs(EMPLOYEE_PROFILE_PATH, exist_ok=True)
+os.makedirs(STUDENT_DOCUMENTS_PATH, exist_ok=True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
