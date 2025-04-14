@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         },
       ],
     },
-    {
+    { //stablishment
       icon: "bi-building-fill",
       text: "Establishment",
       children: [
@@ -123,6 +123,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               icon: "bi bi-people",
               text: "Basic Student Info",
               path: "/dashboard/student-master/student",
+              exact: true,
+            },
+            {
+              icon: "bi bi-person-lines-fill",
+              text: "Student Roll No",
+              path: "/dashboard/student-master/studentrollno",
               exact: true,
             },
           ],

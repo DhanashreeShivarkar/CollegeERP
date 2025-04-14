@@ -20,6 +20,10 @@ import StudentInfoForm from "../StudentMaster/StudentInfoForm";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
+
+import StudentRollNo from "../StudentMaster/StudentRollNo";
+
+import StudentDocument from "../studentTransaction/StudentDocument";
 import CollegeExamTypeTableView from "../Exam/CollegeExamTypeTableView";
 
 const DashboardHome = () => (
@@ -84,9 +88,14 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/dashboardmaster" element={<DashboardMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
+            {/* <Route path="/StudentRollForm" element={<StudentRollNo />} /> */}
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
+            />
+             <Route
+              path="/student-master/studentrollno"
+              element={<StudentRollNo />}
             />
             <Route
               path="/student-master/student"
@@ -102,6 +111,7 @@ const SuperAdminDashboard = ({ user }: any) => {
               element={<AcademicQualification />} 
             />
             <Route path="/student-section" element={<AdmissionTable />} />
+            <Route path="/student-section/document" element={<StudentDocument />} />
             <Route path="/exam/college-exam-type" element={<CollegeExamTypeTableView />} />
           </Routes>
         </div>
