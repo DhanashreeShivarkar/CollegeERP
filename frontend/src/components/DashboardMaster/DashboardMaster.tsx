@@ -173,13 +173,12 @@ const DashboardMaster: React.FC = () => {
   // };
   const handleInstituteChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
-    const selectedInstitute = institutes.find(inst => inst.INSTITUTE_ID.toString() === value);
-    
+    console.log("Selected Institute :", value);
     setFormData((prev) => ({ 
       ...prev, 
-      instituteId: selectedInstitute ? selectedInstitute.CODE : '' // Set CODE instead of ID
-    }));
-  };
+      instituteId: value
+    }));
+};
   
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {

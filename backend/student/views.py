@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
+from .models import STUDENT_MASTER, BRANCH , STUDENT_ROLL_NUMBER_DETAILS
 from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS
-from .serializers import StudentMasterSerializer, CheckListDoumentsSerializer, StudentDocumentsSerializer
+from .serializers import StudentMasterSerializer, CheckListDoumentsSerializer, StudentDocumentsSerializer, StudentRollNumberDetailsSerializer
 from django.conf import settings
 import logging
 from django.http import Http404
@@ -20,6 +21,7 @@ from utils.id_generators import generate_password
 from accounts.models import DESIGNATION
 from accounts.models import CustomUser, YEAR
 from accounts.views import BaseModelViewSet
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,20 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
             return data_type(value)
         except (ValueError, TypeError):
             return default
+
+    def get_queryset(self):
+     queryset = STUDENT_MASTER.objects.filter(IS_DELETED=False)
+
+     branch_id = self.request.query_params.get('branch_id')
+     academic_year = self.request.query_params.get('academic_year')  # Assuming it's stored as 'ACADEMIC_YEAR' in DB
+
+     if branch_id:
+        queryset = queryset.filter(BRANCH_ID=branch_id)
+     if academic_year:
+        queryset = queryset.filter(ACADEMIC_YEAR=academic_year)
+
+     return queryset
+
 
     def create(self, request, *args, **kwargs):
         try:
@@ -206,6 +222,36 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class StudentRollNumberDetailsViewSet(viewsets.ModelViewSet):
+    queryset = STUDENT_ROLL_NUMBER_DETAILS.objects.all()
+    serializer_class = StudentRollNumberDetailsSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def get_students_with_roll_numbers(self, request):
+        branch_id = request.query_params.get('branch_id')
+        academic_year = request.query_params.get('academic_year')
+        if not branch_id or not academic_year:
+            return Response({"status": "error", "message": "Branch ID and Academic Year are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        students = STUDENT_ROLL_NUMBER_DETAILS.objects.filter(BRANCH=branch_id, ACADEMIC_YEAR__ACADEMIC_YEAR=academic_year)
+        serializer = self.get_serializer(students, many=True)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
 class CheckListDocumnetsCreateView(BaseModelViewSet):
      queryset = CHECK_LIST_DOCUMENTS.objects.all()   
