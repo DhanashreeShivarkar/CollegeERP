@@ -22,6 +22,8 @@ import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
 import StudentDocument from "../studentTransaction/StudentDocument";
 import CollegeExamTypeTableView from "../Exam/CollegeExamTypeTableView";
+import StudentReturnForm from "../StudentMaster/DocumentReturn"; // Corrected path or filename
+
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -92,6 +94,10 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route
               path="/student-master/student"
               element={<StudentInfoForm />}
+            />
+            <Route
+              path="/student-master/documents-return"
+              element={<StudentReturnForm />}
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
             <Route 

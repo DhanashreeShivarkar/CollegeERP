@@ -125,6 +125,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               path: "/dashboard/student-master/student",
               exact: true,
             },
+            {
+              icon: "bi-file-earmark-arrow-up",
+              text: "Documents Return",
+              path: "/dashboard/student-master/documents-return",
+              exact: true,
+            },
+
           ],
         },
       ],
