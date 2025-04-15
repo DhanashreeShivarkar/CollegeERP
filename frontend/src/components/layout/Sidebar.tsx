@@ -125,12 +125,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               path: "/dashboard/student-master/student",
               exact: true,
             },
-            {
-              icon: "bi bi-person-lines-fill",
-              text: "Student Roll No",
-              path: "/dashboard/student-master/studentrollno",
-              exact: true,
-            },
           ],
         },
       ],

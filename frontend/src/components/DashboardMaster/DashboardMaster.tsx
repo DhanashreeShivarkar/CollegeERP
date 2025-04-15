@@ -167,10 +167,7 @@ const DashboardMaster: React.FC = () => {
     }
   };
 
-  // const handleInstituteChange = (e: ChangeEvent<HTMLSelectElement>) => {
-  //   const { value } = e.target;
-  //   setFormData((prev) => ({ ...prev, instituteId: value }));
-  // };
+
   const handleInstituteChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
     console.log("Selected Institute :", value);

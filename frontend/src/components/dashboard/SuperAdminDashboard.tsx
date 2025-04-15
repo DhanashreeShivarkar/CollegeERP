@@ -25,6 +25,8 @@ import StudentRollNo from "../StudentMaster/StudentRollNo";
 
 import StudentDocument from "../studentTransaction/StudentDocument";
 import CollegeExamTypeTableView from "../Exam/CollegeExamTypeTableView";
+import StudentReturnForm from "../StudentMaster/DocumentReturn"; // Corrected path or filename
+
 
 
 const DashboardHome = () => (
@@ -101,6 +103,10 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route
               path="/student-master/student"
               element={<StudentInfoForm />}
+            />
+            <Route
+              path="/student-master/documents-return"
+              element={<StudentReturnForm />}
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
             <Route 
