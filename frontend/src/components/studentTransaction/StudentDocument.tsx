@@ -45,6 +45,7 @@ const StudentDocument: React.FC = () => {
 
   const [checklistDocs, setChecklistDocs] = useState<ChecklistDoc[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: number]: File }>({});
   const [submittedDocs, setSubmittedDocs] = useState<number[]>([]);
 
   const [docFilter, setDocFilter] = useState<'submitted' | 'not_submitted' | ''>('');
@@ -94,6 +95,7 @@ const StudentDocument: React.FC = () => {
     setQuotaName('');
     setSelectedDocs([]);
     setSubmittedDocs([]);
+    setUploadedFiles({});
 
     try {
       const response = await axiosInstance.get(`/api/student/${studentId}/`);
@@ -143,28 +145,39 @@ const StudentDocument: React.FC = () => {
     );
   };
 
+  const handleFileChange = (id: number, file: File | null) => {
+    if (file) {
+      setUploadedFiles((prev) => ({ ...prev, [id]: file }));
+    }
+  };
+
   const handleSubmitDocuments = async () => {
     if (!student?.STUDENT_ID) return;
 
     try {
-      const documentsToSubmit = selectedDocs.map((docId) => {
+      const submissions = selectedDocs.map(async (docId) => {
         const doc = checklistDocs.find((d) => d.RECORD_ID === docId);
-        return {
-          STUDENT_ID: student.STUDENT_ID,
-          DOCUMENT_ID: doc?.RECORD_ID,
-          DOC_NAME: doc?.NAME,
-        };
+        const formData = new FormData();
+        formData.append('STUDENT_ID', student.STUDENT_ID || '');
+        formData.append('DOCUMENT_ID', doc?.RECORD_ID.toString() || '');
+        formData.append('DOC_NAME', doc?.NAME || '');
+        if (uploadedFiles[docId]) {
+          formData.append('DOC_IMAGES', uploadedFiles[docId]);
+        }
+
+        return axiosInstance.post('/api/master/document-submission/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
       });
 
-      await Promise.all(
-        documentsToSubmit.map((doc) =>
-          axiosInstance.post('/api/master/document-submission/', doc)
-        )
-      );
+      await Promise.all(submissions);
 
       alert('✅ Documents submitted successfully!');
-      fetchSubmittedDocs(student.STUDENT_ID); // Refresh after submission
+      fetchSubmittedDocs(student.STUDENT_ID); // Refresh
       setSelectedDocs([]);
+      setUploadedFiles({});
     } catch (err: any) {
       if (err.response) {
         const status = err.response.status;
@@ -257,8 +270,9 @@ const StudentDocument: React.FC = () => {
             <Paper elevation={1} sx={{ p: 2 }}>
               <Grid container sx={{ fontWeight: 'bold', borderBottom: '2px solid #ccc', pb: 1 }}>
                 <Grid item xs={1}>ADD</Grid>
-                <Grid item xs={7}>Document Name</Grid>
-                <Grid item xs={4}>Mandatory</Grid>
+                <Grid item xs={5}>Document Name</Grid>
+                <Grid item xs={2}>Mandatory</Grid>
+                <Grid item xs={4}>Upload Scan</Grid>
               </Grid>
 
               {checklistDocs
@@ -283,13 +297,21 @@ const StudentDocument: React.FC = () => {
                         onChange={() => handleCheckboxChange(doc.RECORD_ID)}
                       />
                     </Grid>
-                    <Grid item xs={7}>
+                    <Grid item xs={5}>
                       <Typography>{doc.NAME}</Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={2}>
                       <Typography color={doc.IS_MANDATORY ? 'error' : 'textSecondary'}>
                         {doc.IS_MANDATORY ? 'Mandatory' : 'Optional'}
                       </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      {selectedDocs.includes(doc.RECORD_ID) && (
+                        <input
+                          type="file"
+                          onChange={(e) => handleFileChange(doc.RECORD_ID, e.target.files?.[0] || null)}
+                        />
+                      )}
                     </Grid>
                   </Grid>
                 ))}

@@ -1,7 +1,7 @@
 from django.db import models
 from core.models import AuditModel
 from django.utils import timezone
-from accounts.models import BRANCH, PROGRAM
+from accounts.models import BRANCH, PROGRAM, INSTITUTE, SEMESTER, YEAR
 from academic.models import ACADEMIC_YEAR, EXAMINATION, CURRICULUM
 
 class STUDENT(AuditModel):
@@ -210,12 +210,30 @@ class STUDENT_MASTER(AuditModel):
 
     def __str__(self):
         return f"{self.STUDENT_ID} - {self.NAME} {self.SURNAME}"
-    
+
+      
+class STUDENT_ROLL_NUMBER_DETAILS(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
+    INSTITUTE = models.ForeignKey(INSTITUTE, on_delete=models.PROTECT, db_column='INSTITUTE_ID')
+    BRANCH = models.ForeignKey(BRANCH, on_delete=models.PROTECT, db_column='BRANCH_ID')
+    YEAR = models.ForeignKey(YEAR, on_delete=models.PROTECT, db_column='YEAR_ID')
+    STUDENT = models.ForeignKey(STUDENT, on_delete=models.PROTECT, db_column='STUDENT_ID')
+    ACADEMIC_YEAR = models.ForeignKey(ACADEMIC_YEAR, on_delete=models.PROTECT, db_column='ACADEMIC_YEAR_ID')
+    ROLL_NO = models.CharField(max_length=20, db_column='ROLLNO')  # Fixed max_length
+    SEMESTER = models.ForeignKey(SEMESTER, on_delete=models.PROTECT, db_column='SEMESTER_ID')
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_ROLL_NUMBER_DETAILS"'  # Removed schema to avoid Django issues
+        verbose_name = 'Student Roll Number Details'
+        verbose_name_plural = 'Student Roll Number Details'
+
+    def __str__(self):
+        return f"{self.STUDENT.ENROLLMENT_NO} - {self.ROLL_NO}"
 
 class STUDENT_DETAILS(AuditModel):
     RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
 
-    STUDENT_ID = models.OneToOneField(
+    STUDENT_ID = models.ForeignKey(
         'STUDENT_MASTER',
         to_field='STUDENT_ID', 
         on_delete=models.CASCADE, 
@@ -278,6 +296,29 @@ class STUDENT_DETAILS(AuditModel):
         ]
 
     def __str__(self):
+        return f"Details of {self.STUDENT_ID}"    
+    
+class STUDENT_ACADEMIC_RECORD(AuditModel):
+    RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')
+    STUDENT_ID = models.CharField(max_length=20, db_column='STUDENT_ID')
+    INSTITUTE_ID = models.CharField(max_length=20, db_column='INSTITUTE_ID')
+    CATEGORY = models.IntegerField(db_column='CATEGORY')
+    BATCH = models.CharField(max_length=4, db_column='BATCH')
+    ACADEMIC_YEAR = models.CharField(max_length=10, db_column='ACADEMIC_YEAR')
+    CLASS_YEAR = models.IntegerField(db_column='CLASS_YEAR')
+    ADMISSION_DATE = models.DateField(db_column='ADMISSION_DATE')
+    FORM_NO = models.IntegerField(db_column='FORM_NO')
+    QUOTA_ID = models.IntegerField(db_column='QUOTA_ID')
+    STATUS = models.CharField(max_length=20, db_column='STATUS', default='ACTIVE')  # A for Active, you can customize
+    FEE_CATEGORY_ID = models.IntegerField(db_column='FEE_CATEGORY_ID')
+
+    class Meta:
+        db_table = '"STUDENT"."STUDENT_ACADEMIC_RECORD"'
+        verbose_name = 'Student Academic Record'
+        verbose_name_plural = 'Student Academic Records'
+
+    def __str__(self):
+        return f"{self.STUDENT_ID} - {self.ACADEMIC_YEAR}"
         return f"Details of {self.STUDENT_ID}"
 
 class CHECK_LIST_DOCUMENTS(AuditModel):
@@ -291,6 +332,12 @@ class CHECK_LIST_DOCUMENTS(AuditModel):
 
     def _str_(self):
         return f"{self.NAME} - {self.RECORD_ID}"
+
+from django.db import models
+
+def student_document_upload_path(instance, filename):
+    # Customize the upload path as needed
+    return f'student_documents/{instance.STUDENT_ID.STUDENT_ID}/{filename}'
 
 class STUDENT_DOCUMENTS(AuditModel):
     RECORDID = models.AutoField(primary_key=True)
@@ -329,7 +376,15 @@ class STUDENT_DOCUMENTS(AuditModel):
 
     TEMPRETURN = models.CharField(max_length=1, blank=True, null=True, db_column='TEMPRETURN')
     RETURN = models.CharField(max_length=1, blank=True, null=True, db_column='RETURN')
-    DOC_IMAGES = models.CharField(max_length=50, blank=True, null=True, db_column='DOC_IMAGES')
+
+    # Updated to handle actual file uploads
+    DOC_IMAGES = models.FileField(
+        upload_to=student_document_upload_path,
+        blank=True,
+        null=True,
+        db_column='DOC_IMAGES'
+    )
+
     VERIFIED = models.CharField(max_length=1, default='V', blank=True, null=True, db_column='VERIFIED')
     ORIGINAL = models.CharField(max_length=1, blank=True, null=True, db_column='ORIGINAL')
     PHOTOCOPY = models.CharField(max_length=1, blank=True, null=True, db_column='PHOTOCOPY')
@@ -341,7 +396,6 @@ class STUDENT_DOCUMENTS(AuditModel):
         verbose_name = 'Student Documents'
         verbose_name_plural = 'Student Documents'
         unique_together = ('STUDENT_ID', 'DOCUMENT_ID')
-
 
     def __str__(self):
         return f"Student Document Record {self.RECORDID}"
