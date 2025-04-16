@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from core.models import AuditModel
 from django.utils import timezone
@@ -336,8 +337,11 @@ class CHECK_LIST_DOCUMENTS(AuditModel):
 from django.db import models
 
 def student_document_upload_path(instance, filename):
-    # Customize the upload path as needed
-    return f'student_documents/{instance.STUDENT_ID.STUDENT_ID}/{filename}'
+        ext = filename.split('.')[-1]
+        student_id = instance.STUDENT_ID.STUDENT_ID if instance.STUDENT_ID else 'UNKNOWN'
+        doc_id = instance.DOCUMENT_ID.RECORD_ID if instance.DOCUMENT_ID else '0'
+        new_filename = f"{student_id}_{doc_id}.{ext}"
+        return os.path.join('student_documents', new_filename)
 
 class STUDENT_DOCUMENTS(AuditModel):
     RECORDID = models.AutoField(primary_key=True)
