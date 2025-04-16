@@ -9,6 +9,8 @@ import MasterTableView from "./MasterTableView";
 import { TableView } from "@mui/icons-material";
 import ChecklistDocument from "./pages/CheckListDocumentEntryForm";
 import CheckListDocumentEntryForm from "./pages/CheckListDocumentEntryForm";
+import AdmissionQuotaEntryForm from "./pages/AdmissionQuotaEntryForm";
+import QuotaEntryForm from "./pages/QuotaEntryForm";
 
 const NameEntryForm = () => {
   const [selectedAction, setSelectedAction] = useState<"create" | "view">("create");
@@ -52,8 +54,8 @@ const NameEntryForm = () => {
             </div>
             <div className="card-body p-2">
               {selectedForm === "caste" && <CasteEntryForm />}
-               {/* {selectedForm === "quota" && <QuotaEntryForm />}
-              {selectedForm === "admission_quota" && <AdmissionQuotaEntryForm />}  */}
+               {selectedForm === "quota" && <QuotaEntryForm />}
+              {selectedForm === "admission_quota" && <AdmissionQuotaEntryForm />} 
               {selectedForm === "check_list_documents" && <CheckListDocumentEntryForm />} 
             </div>
           </div>
