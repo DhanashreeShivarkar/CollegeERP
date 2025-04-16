@@ -2,22 +2,18 @@ import React, { useState } from "react";
 import { Paper } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
-// Import forms and tables
 import CasteEntryForm from "./pages/CasteEntryForm";
 import MasterTableView from "./MasterTableView";
-import QuotaEntryForm from "./pages/QuotaEntryForm";
-import AdmissionQuotaEntryForm from "./pages/AdmissionQuotaEntryForm";
+// import QuotaEntryForm from "./pages/QuotaEntryForm";
+// import AdmissionQuotaEntryForm from "./pages/AdmissionQuotaEntryForm";
 import { TableView } from "@mui/icons-material";
 import ChecklistDocument from "./pages/CheckListDocumentEntryForm";
 import CheckListDocumentEntryForm from "./pages/CheckListDocumentEntryForm";
 
-
-
-const MasterEntryForm = () => {
-  const [selectedForm, setSelectedForm] = useState<string>("caste"); // Default selection
+const NameEntryForm = () => {
   const [selectedAction, setSelectedAction] = useState<"create" | "view">("create");
   const navigate = useNavigate();
+  const [selectedForm, setSelectedForm] = useState<string>("caste");
 
   return (
     <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
@@ -38,13 +34,13 @@ const MasterEntryForm = () => {
             className={`btn ${selectedAction === "create" ? "btn-primary" : "btn-outline-primary"} btn-sm`}
             onClick={() => setSelectedAction("create")}
           >
-            Create {selectedForm.replace("_", " ").charAt(0).toUpperCase() + selectedForm.slice(1)}
+            Create Caste
           </button>
           <button
             className={`btn ${selectedAction === "view" ? "btn-primary" : "btn-outline-primary"} btn-sm`}
             onClick={() => setSelectedAction("view")}
           >
-            View {selectedForm.replace("_", " ").charAt(0).toUpperCase() + selectedForm.slice(1)}
+            View Caste
           </button>
         </div>
 
@@ -52,12 +48,12 @@ const MasterEntryForm = () => {
         {selectedAction === "create" && (
           <div className="card mt-3">
             <div className="card-header py-2">
-              <h6 className="mb-0">{selectedForm.replace("_", " ").charAt(0).toUpperCase() + selectedForm.slice(1)} Master</h6>
+              <h6 className="mb-0">Caste Master</h6>
             </div>
             <div className="card-body p-2">
               {selectedForm === "caste" && <CasteEntryForm />}
-               {selectedForm === "quota" && <QuotaEntryForm />}
-              {selectedForm === "admission_quota" && <AdmissionQuotaEntryForm />} 
+               {/* {selectedForm === "quota" && <QuotaEntryForm />}
+              {selectedForm === "admission_quota" && <AdmissionQuotaEntryForm />}  */}
               {selectedForm === "check_list_documents" && <CheckListDocumentEntryForm />} 
             </div>
           </div>
@@ -67,7 +63,7 @@ const MasterEntryForm = () => {
         {selectedAction === "view" && (
           <div className="card mt-3">
             <div className="card-header py-2 d-flex justify-content-between align-items-center">
-              <h6 className="mb-0">{selectedForm.replace("_", " ").charAt(0).toUpperCase() + selectedForm.slice(1)} List</h6>
+              <h6 className="mb-0">Caste List</h6>
             </div>
             <div className="card-body p-2">
               {selectedForm === "caste" && <MasterTableView masterType={"caste"} />}
@@ -82,4 +78,4 @@ const MasterEntryForm = () => {
   );
 };
 
-export default MasterEntryForm;
+export default NameEntryForm;

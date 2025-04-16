@@ -16,21 +16,30 @@ const StudentReturnForm = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
 
-  const fetchDocumentsByStudentId = async (studentId: string) => {
+  const fetchDocumentsByStudentId = async (studId: string) => {
     try {
-      const response = await axiosInstance.get(`/api/master/document-submission/${studentId}`);
-      if (response.data && Array.isArray(response.data)) {
-        const updatedDocs = response.data.map((doc: any) => ({
-          ...doc,
-          selected: false,
-        }));
-        setDocuments(updatedDocs);
-      }
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      alert('Failed to fetch documents for the student.');
+      const res = await axiosInstance.get(`/api/master/document-submission/?student_id=${studId}`);
+  
+      // Filter out documents that match the given student ID
+      const filteredDocs = res.data.filter((doc: any) => doc.STUDENT_ID === studId);
+  
+      // Map filtered documents
+      const docs = filteredDocs.map((doc: any) => ({
+        STUDENT_ID: doc.STUDENT_ID,
+        DOCUMENT_ID: doc.DOCUMENT_ID,
+        DOC_NAME: doc.DOC_NAME || 'Unknown Document',
+        selected: false,
+      }));
+  
+      setDocuments(docs);
+    } catch (err) {
+      console.error('Error fetching submitted documents:', err);
+      setDocuments([]);
+      alert('Error fetching submitted documents.');
     }
   };
+  
+  
 
   const handleBlur = async () => {
     if (!studentId.trim()) return;
@@ -198,3 +207,7 @@ const StudentReturnForm = () => {
 };
 
 export default StudentReturnForm;
+function setSubmittedDocs(docIds: any) {
+  throw new Error('Function not implemented.');
+}
+

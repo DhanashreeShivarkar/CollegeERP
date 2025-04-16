@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         },
       ],
     },
-    { //stablishment
+    {
       icon: "bi-building-fill",
       text: "Establishment",
       children: [
@@ -171,6 +171,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "System Settings",
       path: "/dashboard/settings",
     },
+    // {
+    //   icon: "bi-building",
+    //   text: "Master University",
+    //   path: "/dashboard/master/university",
+    // },
+    // {
+    //   icon: "bi-building",
+    //   text: "Master Institute",
+    //   path: "/dashboard/master/institute",
+    // },
     {
       icon: "bi-calendar",
       text: "Academic Year Master",

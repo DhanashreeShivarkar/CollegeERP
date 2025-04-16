@@ -151,6 +151,7 @@ class SemesterDurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = SEMESTER_DURATION
         fields = ['SEMESTER', 'START_DATE', 'END_DATE', 'IS_ACTIVE', 'CREATED_BY', 'UPDATED_BY']
+        
 
 class CasteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -167,5 +168,4 @@ class AdmissionQuotaSerializer(serializers.ModelSerializer):
     class Meta:
         model =ADMISSION_QUOTA_MASTER
         fields =['ADMN_QUOTA_ID','NAME']
-
 
