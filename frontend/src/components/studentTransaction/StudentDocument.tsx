@@ -239,7 +239,7 @@ const StudentDocument: React.FC = () => {
         {student && (
           <>
             <Grid item xs={12} sm={6}>
-              <TextField label="Full Name" value={`${student.NAME} ${student.SURNAME}`} fullWidth InputProps={{ readOnly: true }} />
+              <TextField label="Full Name" value={`${student.NAME} ${student.PARENT_NAME} ${student.SURNAME}`} fullWidth InputProps={{ readOnly: true }} />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField label="Institute" value={student.INSTITUTE} fullWidth InputProps={{ readOnly: true }} />
