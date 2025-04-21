@@ -120,7 +120,7 @@ const StudentDocument: React.FC = () => {
           .then((res) => setBranchName(res.data.name || res.data.NAME || 'Unknown Branch'))
           .catch(() => setBranchName('Unknown Branch'));
       }
-
+    // year api
       if (student.YEAR_SEM_ID) {
         axiosInstance
           .get(`/api/master/year/${student.YEAR_SEM_ID}/`)
