@@ -379,7 +379,7 @@ class STUDENT_DOCUMENTS(AuditModel):
     )
 
     TEMPRETURN = models.CharField(max_length=1, blank=True, null=True, db_column='TEMPRETURN')
-    RETURN = models.CharField(max_length=1, blank=True, null=True, db_column='RETURN')
+    RETURN = models.CharField(max_length=1, default='N', blank=True, null=True, db_column='RETURN')
 
     # Updated to handle actual file uploads
     DOC_IMAGES = models.FileField(
