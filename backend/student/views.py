@@ -310,3 +310,7 @@ class StudentDocumentsViewSet(ModelViewSet):  # or BaseModelViewSet if customize
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True  # ALLOWS partial updates via PATCH
+        return super().update(request, *args, **kwargs)

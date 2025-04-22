@@ -3,8 +3,9 @@ import { getStudentById } from '../../api/studentService';
 import axiosInstance from '../../api/axios';
 
 type StudentDocument = {
-  DOCUMENT_ID: number;
   DOC_NAME: string;
+  DOCUMENT_ID: number;
+  RETURN: string; // added
   selected: boolean;
 };
 
@@ -19,18 +20,13 @@ const StudentReturnForm = () => {
   const fetchDocumentsByStudentId = async (studId: string) => {
     try {
       const res = await axiosInstance.get(`/api/master/document-submission/?student_id=${studId}`);
-  
-      // Filter out documents that match the given student ID
       const filteredDocs = res.data.filter((doc: any) => doc.STUDENT_ID === studId);
-  
-      // Map filtered documents
       const docs = filteredDocs.map((doc: any) => ({
-        STUDENT_ID: doc.STUDENT_ID,
-        DOCUMENT_ID: doc.DOCUMENT_ID,
         DOC_NAME: doc.DOC_NAME || 'Unknown Document',
+        DOCUMENT_ID: doc.DOCUMENT_ID,
+        RETURN: doc.RETURN || 'N', // include RETURN value
         selected: false,
       }));
-  
       setDocuments(docs);
     } catch (err) {
       console.error('Error fetching submitted documents:', err);
@@ -38,12 +34,9 @@ const StudentReturnForm = () => {
       alert('Error fetching submitted documents.');
     }
   };
-  
-  
 
   const handleBlur = async () => {
     if (!studentId.trim()) return;
-
     setLoading(true);
     try {
       const student = await getStudentById(studentId);
@@ -65,22 +58,28 @@ const StudentReturnForm = () => {
   };
 
   const handleSave = async () => {
-    const payload = {
-      STUDENT_ID: studentId,
-      NAME: name,
-      TEMPORARY_RETURN: returnType === 'TEMPORARY',
-      PERMANENT_RETURN: returnType === 'PERMANENT',
-      DOCUMENTS: documents.filter(doc => doc.selected).map(doc => doc.DOCUMENT_ID),
-    };
-
     try {
-      await axiosInstance.post('/api/student-return', payload);
-      alert('Data saved successfully!');
+      const selectedDocs = documents.filter(doc => doc.selected && doc.RETURN === 'N'); // only update 'N'
+      await Promise.all(
+        selectedDocs.map(doc =>
+          axiosInstance.patch(`/api/master/document-submission/${doc.DOCUMENT_ID}/`, {
+            RETURN: 'Y',
+            STUDENT_ID: studentId,
+            DOC_NAME: doc.DOC_NAME,
+          })
+        )
+      );
+  
+      alert('Selected documents updated as returned!');
+  
+      // Optionally refresh list after update:
+      await fetchDocumentsByStudentId(studentId);
     } catch (error) {
-      console.error('Error saving data:', error);
-      alert('Error saving data');
+      console.error('Error updating documents:', error);
+      alert('Error updating documents');
     }
   };
+  
 
   const handlePrint = () => {
     window.print();
@@ -92,9 +91,9 @@ const StudentReturnForm = () => {
     setSelectAll(!selectAll);
   };
 
-  const handleDocSelect = (id: number) => {
-    const updated = documents.map(doc =>
-      doc.DOCUMENT_ID === id ? { ...doc, selected: !doc.selected } : doc
+  const handleDocSelect = (index: number) => {
+    const updated = documents.map((doc, idx) =>
+      idx === index ? { ...doc, selected: !doc.selected } : doc
     );
     setDocuments(updated);
     setSelectAll(updated.every(doc => doc.selected));
@@ -160,7 +159,7 @@ const StudentReturnForm = () => {
           </div>
 
           {documents.length > 0 && (
-            <div className="form-check mb-2" style={{ marginTop: '30px' }}>
+            <div className="form-check mb-2 mt-4">
               <input
                 className="form-check-input"
                 type="checkbox"
@@ -180,21 +179,19 @@ const StudentReturnForm = () => {
                 <tr>
                   <th style={{ width: '10%' }}>Select</th>
                   <th>Documents Submitted</th>
-                  <th style={{ width: '20%' }}>Document ID</th>
                 </tr>
               </thead>
               <tbody>
-                {documents.map((doc) => (
-                  <tr key={doc.DOCUMENT_ID}>
+                {documents.map((doc, index) => (
+                  <tr key={index}>
                     <td>
                       <input
                         type="checkbox"
                         checked={doc.selected}
-                        onChange={() => handleDocSelect(doc.DOCUMENT_ID)}
+                        onChange={() => handleDocSelect(index)}
                       />
                     </td>
                     <td>{doc.DOC_NAME}</td>
-                    <td>{doc.DOCUMENT_ID}</td>
                   </tr>
                 ))}
               </tbody>
@@ -207,7 +204,3 @@ const StudentReturnForm = () => {
 };
 
 export default StudentReturnForm;
-function setSubmittedDocs(docIds: any) {
-  throw new Error('Function not implemented.');
-}
-

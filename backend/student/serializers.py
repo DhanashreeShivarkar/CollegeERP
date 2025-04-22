@@ -175,3 +175,6 @@ class StudentDocumentsSerializer(serializers.ModelSerializer):
         if not data.get('DOC_NAME'):
             raise serializers.ValidationError({'DOC_NAME': 'Document name is required'})
         return data
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
