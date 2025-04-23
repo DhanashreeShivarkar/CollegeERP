@@ -314,3 +314,24 @@ class StudentDocumentsViewSet(ModelViewSet):  # or BaseModelViewSet if customize
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True  # ALLOWS partial updates via PATCH
         return super().update(request, *args, **kwargs)
+
+# ---------------------------------------------------- # 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import STUDENT_DOCUMENTS
+
+@api_view(['PUT'])
+def return_documents(request):
+    student_id = request.data.get('student_id')
+    document_ids = request.data.get('document_ids', [])
+
+    if not student_id or not document_ids:
+        return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+
+    STUDENT_DOCUMENTS.objects.filter(
+        STUDENT_ID=student_id,
+        DOCUMENT_ID__in=document_ids
+    ).update(RETURN='Y')
+
+    return Response({'message': 'Documents marked as returned'})

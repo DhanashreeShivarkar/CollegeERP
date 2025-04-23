@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { getStudentById } from '../../api/studentService';
 import axiosInstance from '../../api/axios';
+import { markDocumentsReturned } from "../../api/DocumentReturnAPI";
+// import { studentReturnService } from '../../api/studentReturnService'; // Adjust the import path as necessary
 
 type StudentDocument = {
   DOC_NAME: string;
@@ -59,21 +61,19 @@ const StudentReturnForm = () => {
 
   const handleSave = async () => {
     try {
-      const selectedDocs = documents.filter(doc => doc.selected && doc.RETURN === 'N'); // only update 'N'
-      await Promise.all(
-        selectedDocs.map(doc =>
-          axiosInstance.patch(`/api/master/document-submission/${doc.DOCUMENT_ID}/`, {
-            RETURN: 'Y',
-            STUDENT_ID: studentId,
-            DOC_NAME: doc.DOC_NAME,
-          })
-        )
-      );
+      const selectedDocs = documents
+        .filter(doc => doc.selected && doc.RETURN === 'N')
+        .map(doc => String(doc.DOCUMENT_ID)); // Convert number to string
   
-      alert('Selected documents updated as returned!');
+      if (selectedDocs.length === 0) {
+        alert('No new documents selected for return.');
+        return;
+      }
   
-      // Optionally refresh list after update:
-      await fetchDocumentsByStudentId(studentId);
+      await markDocumentsReturned(studentId, selectedDocs);
+  
+      alert('Selected documents marked as returned!');
+      await fetchDocumentsByStudentId(studentId); // refresh list
     } catch (error) {
       console.error('Error updating documents:', error);
       alert('Error updating documents');
