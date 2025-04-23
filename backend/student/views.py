@@ -7,7 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
 from .models import STUDENT_MASTER, BRANCH , STUDENT_ROLL_NUMBER_DETAILS
 from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS
-from .serializers import StudentMasterSerializer, CheckListDoumentsSerializer, StudentDocumentsSerializer
+from .serializers import StudentMasterSerializer, CheckListDoumentsSerializer, StudentDocumentsSerializer, StudentRollNumberDetailsSerializer
 from django.conf import settings
 import logging
 from django.http import Http404
