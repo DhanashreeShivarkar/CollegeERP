@@ -66,6 +66,7 @@ const StudentRollForm = () => {
   const [years, setYears] = useState<Year[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   interface Student {
+    ROLL_NO: any;
     STUDENT_ID: number;
     NAME: string;
     FATHER_NAME: string;
@@ -219,7 +220,7 @@ const StudentRollForm = () => {
         setStudents(response.data.data);
         
         const rollResponse = await axiosInstance.get(
-          `/api/student/rollnumbers/?branch_id=${formData.branchId}&academic_year=${formData.academicYear}`
+          `/api/master/rollnumbers/?branch_id=${formData.branchId}&academic_year=${formData.academicYear}`
         );
         if (rollResponse.status === 200) {
           const rollData = rollResponse.data.reduce((acc: { [x: string]: any; }, student: { STUDENT_ID: string | number; ROLL_NUMBER: string; }) => {
@@ -243,22 +244,24 @@ const StudentRollForm = () => {
   const handleSave = async () => {
     try {
       const payload = students.map((student) => ({
-        STUDENT_ID: student.STUDENT_ID,
-        ROLLNO: rollNumbers[student.STUDENT_ID] || "",
-        ACADEMIC_YEAR_ID: parseInt(formData.academicYear),
-        BRANCH_ID: parseInt(formData.branchId),
-        INSTITUTE_ID: parseInt(formData.instituteId),
-        SEMESTER_ID: parseInt(formData.semesterId),
-        YEAR_ID: parseInt(formData.yearId),
+        student: student.STUDENT_ID,
+        roll_no: rollNumbers[student.ROLL_NO] || "",
+        academic_year: parseInt(formData.academicYear),
+        branch: parseInt(formData.branchId),
+        institute: parseInt(formData.instituteId),
+        semester: parseInt(formData.semesterId),
+        year: parseInt(formData.yearId),
       }));
   
-      await axiosInstance.post("/api/student/rollnumbers/", payload);
+      await axiosInstance.post("/api/master/rollnumbers/", payload);
       alert("Roll numbers saved successfully!");
     } catch (error) {
-      console.error("Error saving roll numbers:", error);
+      console.error("Error saving roll numbers:");
       alert("Failed to save roll numbers.");
     }
   };
+  
+  
 
   return (
     <div className="container mt-4">

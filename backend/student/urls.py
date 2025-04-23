@@ -4,7 +4,7 @@ from .views import StudentMasterViewSet, StudentRollNumberDetailsViewSet
 
 router = DefaultRouter()
 router.register('student', StudentMasterViewSet, basename='student')  # Changed from '' to 'student'
-router.register('student/rollnumbers', StudentRollNumberDetailsViewSet, basename='rollnumbers')  # Added this line
+router.register('master/rollnumbers', StudentRollNumberDetailsViewSet, basename='rollnumbers')  # Added this line
 urlpatterns = [
     path('', include(router.urls)),  # Changed from 'student/' to ''
    

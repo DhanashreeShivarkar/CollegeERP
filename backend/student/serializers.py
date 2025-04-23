@@ -123,7 +123,7 @@ class StudentRollNumberDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = STUDENT_ROLL_NUMBER_DETAILS
         fields = [
-            'RECORD_ID', 'INSTITUTE', 'PROGRAM', 'BRANCH', 'YEAR', 'STUDENT',
+            'RECORD_ID', 'INSTITUTE', 'BRANCH', 'YEAR', 'STUDENT',
             'ACADEMIC_YEAR', 'ROLL_NO', 'SEMESTER'
         ]
 
@@ -136,7 +136,6 @@ class StudentRollNumberDetailsSerializer(serializers.ModelSerializer):
         }
         representation['ACADEMIC_YEAR'] = instance.ACADEMIC_YEAR.ACADEMIC_YEAR
         representation['INSTITUTE'] = instance.INSTITUTE.NAME
-        representation['PROGRAM'] = instance.PROGRAM.NAME
         representation['BRANCH'] = instance.BRANCH.NAME
         representation['YEAR'] = instance.YEAR.YEAR
         representation['SEMESTER'] = instance.SEMESTER.SEMESTER
