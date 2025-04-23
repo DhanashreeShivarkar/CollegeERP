@@ -615,3 +615,4 @@ const AcademicQualification: React.FC = () => {
 };
 
 export default AcademicQualification;
+// new
