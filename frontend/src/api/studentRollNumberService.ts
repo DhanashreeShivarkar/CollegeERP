@@ -7,11 +7,11 @@ export const studentRollNumberService = {
 
   // Get existing roll numbers for a specific branch and academic year
   getStudentRollNumbers: (branchId: string, academicYear: string) =>
-    axios.get(`/api/student/rollnumbers/?branch_id=${branchId}&academic_year=${academicYear}`),
+    axios.get(`/api/master/rollnumbers/?branch_id=${branchId}&academic_year=${academicYear}`),
 
   // Save student roll number entries (bulk save)
   saveStudentRollNumbers: (data: any[]) =>
-    axios.post("/api/student/rollnumbers/", data),
+    axios.post("/api/master/rollnumbers/", data),
 };
 
 export default studentRollNumberService;

@@ -245,7 +245,7 @@ class StudentRollNumberDetailsViewSet(viewsets.ModelViewSet):
     serializer_class = StudentRollNumberDetailsSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
