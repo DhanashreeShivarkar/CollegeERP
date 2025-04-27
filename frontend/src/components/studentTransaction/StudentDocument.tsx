@@ -156,7 +156,7 @@ const StudentDocument: React.FC = () => {
 
     try {
       const submissions = selectedDocs.map(async (docId) => {
-        const doc = checklistDocs.find((d) => d.RECORD_ID === docId);
+        const doc = checklistDocs.find((d) => d.RECORD_ID === docId); //RECORD_ID is the DOCUMENT_ID 
         const formData = new FormData();
         formData.append('STUDENT_ID', student.STUDENT_ID || '');
         formData.append('DOCUMENT_ID', doc?.RECORD_ID.toString() || '');
