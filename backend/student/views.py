@@ -7,7 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
 from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, STUDENT_ACADEMIC_RECORD
 from .serializers import StudentMasterSerializer
-from .models import STUDENT_MASTER, BRANCH , STUDENT_ROLL_NUMBER_DETAILS
+from .models import STUDENT_MASTER, BRANCH ,STUDENT_ROLL_NUMBER_DETAILS
 from .models import STUDENT_MASTER, BRANCH, STUDENT_DETAILS, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS
 from .serializers import StudentMasterSerializer, CheckListDoumentsSerializer, StudentDocumentsSerializer, StudentRollNumberDetailsSerializer
 from django.conf import settings
@@ -259,16 +259,55 @@ class StudentRollNumberDetailsViewSet(viewsets.ModelViewSet):
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
         return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'])
-    def get_students_with_roll_numbers(self, request):
-        branch_id = request.query_params.get('branch_id')
-        academic_year = request.query_params.get('academic_year')
-        if not branch_id or not academic_year:
-            return Response({"status": "error", "message": "Branch ID and Academic Year are required."}, status=status.HTTP_400_BAD_REQUEST)
+#     @action(detail=False, methods=['get'])
+#     def get_students_with_roll_numbers(self, request):
+#         branch_id = request.query_params.get('branch_id')
+#         academic_year = request.query_params.get('academic_year_id')
+#         if not branch_id or not academic_year:
+#             return Response({"status": "error", "message": "Branch ID and Academic Year are required."}, status=status.HTTP_400_BAD_REQUEST)
         
-        students = STUDENT_ROLL_NUMBER_DETAILS.objects.filter(BRANCH=branch_id, ACADEMIC_YEAR__ACADEMIC_YEAR=academic_year)
-        serializer = self.get_serializer(students, many=True)
-        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+#         students = STUDENT_ROLL_NUMBER_DETAILS.objects.filter(BRANCH=branch_id, ACADEMIC_YEAR__ACADEMIC_YEAR=academic_year)
+#         serializer = self.get_serializer(students, many=True)
+#         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    
+# from rest_framework.decorators import api_view
+# @api_view(['POST'])
+# def save_roll_numbers(request):
+#     if request.method == 'POST':
+#         # Extract the list of roll numbers from the request data
+#         roll_numbers_data = request.data
+        
+#         # Prepare a list to store the created records
+#         created_records = []
+        
+#         # Process each roll number entry and save to the database
+#         for roll_data in roll_numbers_data:
+#             student_id = roll_data.get('STUDENT')
+#             roll_no = roll_data.get('ROLL_NO')
+#             institute_id = roll_data.get('INSTITUTE')
+#             branch_id = roll_data.get('BRANCH')
+#             year_id = roll_data.get('YEAR')
+#             academic_year_id = roll_data.get('ACADEMIC_YEAR')
+#             semester_id = roll_data.get('SEMESTER')
+
+#             if student_id and roll_no:
+#                 # Create a new record for each student
+#                 new_roll_number = STUDENT_ROLL_NUMBER_DETAILS.objects.create(
+#                     INSTITUTE_id=institute_id,
+#                     BRANCH_id=branch_id,
+#                     YEAR_id=year_id,
+#                     STUDENT_id=student_id,
+#                     ACADEMIC_YEAR_id=academic_year_id,
+#                     ROLL_NO=roll_no,
+#                     SEMESTER_id=semester_id
+#                 )
+#                 created_records.append(new_roll_number)
+        
+#         # Serialize the created records and return a success response
+#         serializer = StudentRollNumberDetailsSerializer(created_records, many=True)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     return Response({"detail": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CheckListDocumnetsCreateView(BaseModelViewSet):
      queryset = CHECK_LIST_DOCUMENTS.objects.all()   
