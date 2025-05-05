@@ -218,18 +218,26 @@ class STUDENT_ROLL_NUMBER_DETAILS(AuditModel):
     INSTITUTE = models.ForeignKey(INSTITUTE, on_delete=models.PROTECT, db_column='INSTITUTE_ID')
     BRANCH = models.ForeignKey(BRANCH, on_delete=models.PROTECT, db_column='BRANCH_ID')
     YEAR = models.ForeignKey(YEAR, on_delete=models.PROTECT, db_column='YEAR_ID')
-    STUDENT = models.ForeignKey(STUDENT, on_delete=models.PROTECT, db_column='STUDENT_ID')
-    ACADEMIC_YEAR = models.ForeignKey(ACADEMIC_YEAR, on_delete=models.PROTECT, db_column='ACADEMIC_YEAR_ID')
-    ROLL_NO = models.CharField(max_length=20, db_column='ROLLNO')  # Fixed max_length
+    STUDENT_ID = models.ForeignKey(
+        'STUDENT_MASTER',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        to_field='STUDENT_ID',
+        db_column='STUDENT_ID',
+        related_name='roll_number_details'
+    )
+    ACADEMIC_YEAR = models.CharField(ACADEMIC_YEAR, max_length=10, db_column='ACADEMIC_YEAR')
+    ROLL_NO = models.CharField(max_length=20, db_column='ROLLNO')
     SEMESTER = models.ForeignKey(SEMESTER, on_delete=models.PROTECT, db_column='SEMESTER_ID')
 
     class Meta:
-        db_table = '"STUDENT"."STUDENT_ROLL_NUMBER_DETAILS"'  # Removed schema to avoid Django issues
+        db_table = '"STUDENT"."STUDENT_ROLL_NUMBER_DETAILS"'
         verbose_name = 'Student Roll Number Details'
         verbose_name_plural = 'Student Roll Number Details'
 
-    def __str__(self):
-        return f"{self.STUDENT.ENROLLMENT_NO} - {self.ROLL_NO}"
+    def _str_(self):
+        return f"{self.STUDENT_ID_id} - {self.ROLL_NO}"
 
 class STUDENT_DETAILS(AuditModel):
     RECORD_ID = models.AutoField(primary_key=True, db_column='RECORD_ID')

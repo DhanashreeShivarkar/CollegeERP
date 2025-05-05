@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import STUDENT_MASTER, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS, STUDENT_ROLL_NUMBER_DETAILS
+from .models import STUDENT_MASTER, CHECK_LIST_DOCUMENTS, STUDENT_DOCUMENTS,STUDENT_ROLL_NUMBER_DETAILS
 from django.utils import timezone
 
 # Define required fields at module level
@@ -122,26 +122,39 @@ class StudentMasterSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class StudentRollNumberDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
+    
+    #  STUDENT = serializers.SlugRelatedField(
+    #     slug_field='STUDENT_ID',
+    #     queryset=STUDENT_MASTER.objects.all()
+    # )
+     class Meta:
         model = STUDENT_ROLL_NUMBER_DETAILS
         fields = [
-            'RECORD_ID', 'INSTITUTE', 'BRANCH', 'YEAR', 'STUDENT',
+            'RECORD_ID', 'INSTITUTE', 'BRANCH', 'YEAR', 'STUDENT_ID',
             'ACADEMIC_YEAR', 'ROLL_NO', 'SEMESTER'
         ]
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['STUDENT'] = {
-            'STUDENT_ID': instance.STUDENT.STUDENT_ID,
-            'ENROLLMENT_NO': instance.STUDENT.ENROLLMENT_NO,
-            'NAME': instance.STUDENT.NAME
-        }
-        representation['ACADEMIC_YEAR'] = instance.ACADEMIC_YEAR.ACADEMIC_YEAR
-        representation['INSTITUTE'] = instance.INSTITUTE.NAME
-        representation['BRANCH'] = instance.BRANCH.NAME
-        representation['YEAR'] = instance.YEAR.YEAR
-        representation['SEMESTER'] = instance.SEMESTER.SEMESTER
-        return representation
+    #  def create(self, validated_data):
+    #     # Avoid manually looking up related fields
+    #     return STUDENT_ROLL_NUMBER_DETAILS.objects.create(**validated_data)
+
+    #  def update(self, instance, validated_data):
+    #     # Simplify update process
+    #     for attr, value in validated_data.items():
+    #         setattr(instance, attr, value)
+    #     instance.save()
+    #     return instance
+        def create(self, validated_data):
+            # Strip out unwanted fields manually if needed
+            validated_data.pop('ACADEMIC_YEAR_ID', None)
+            validated_data.pop('BRANCH_ID', None)
+            validated_data.pop('INSTITUTE_ID', None)
+            validated_data.pop('SEMESTER_ID', None)
+            validated_data.pop('YEAR_ID', None)
+    
+            return STUDENT_ROLL_NUMBER_DETAILS.objects.create(**validated_data)
+    
+
       
 class CheckListDoumentsSerializer(serializers.ModelSerializer):
     class Meta:
