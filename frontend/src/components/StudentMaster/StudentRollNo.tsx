@@ -310,7 +310,7 @@ const StudentRollForm = () => {
 
         let errorMessage = "Failed to save roll numbers. Please check your data and try again.";
 
-        // Try to extract specific error messages from response
+        // Try to extract specific error messages from response for form
         if (error.response.data && error.response.data.errors) {
           const errorDetails = JSON.stringify(error.response.data.errors, null, 2);
           errorMessage = `Validation errors: ${errorDetails}`;
@@ -342,7 +342,7 @@ const StudentRollForm = () => {
             >
               <option value="">Select Academic Year</option>
               {academicYears.map((year) => (
-                <option key={year.ACADEMIC_YEAR_ID} value={year.ACADEMIC_YEAR}>
+                <option key={year.ACADEMIC_YEAR_ID} value={year.ACADEMIC_YEAR}>  
                   {year.ACADEMIC_YEAR}
                 </option>
               ))}
