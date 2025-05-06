@@ -192,6 +192,62 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    def update(self, request, *args, **kwargs):
+        try:
+            student_id = kwargs.get(self.lookup_field)
+            if not student_id:
+                return Response({
+                'status': 'error',
+                'message': 'Student ID is required for update.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+                    
+            try:
+                student_instance = self.get_queryset().get(STUDENT_ID=student_id)
+            except STUDENT_MASTER.DoesNotExist:
+                return Response({
+                'status': 'error',
+                'message': 'Student not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+            # Convert request data to mutable dictionary
+            data = request.data.copy()
+
+            # Optional: Validate fields if needed before updating
+            # E.g., validate if BRANCH_ID is valid if provided
+            branch_id = data.get('BRANCH_ID')
+            if branch_id:
+                try:
+                    branch = BRANCH.objects.get(BRANCH_ID=branch_id)
+                except BRANCH.DoesNotExist:
+                  return Response({
+                    'status': 'error',
+                    'message': 'Invalid Branch ID'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = self.get_serializer(student_instance, data=data, partial=True)
+            if serializer.is_valid():
+                updated_student = serializer.save()
+
+                return Response({
+                        'status': 'success',
+                        'message': 'Student updated successfully.',
+                        'data': serializer.data
+                    }, status=status.HTTP_200_OK)
+            else:
+              return Response({
+                'status': 'error',
+                'message': 'Validation failed.',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+         logger.error(f"Error updating student: {str(e)}", exc_info=True)
+         return Response({
+            'status': 'error',
+            'message': str(e)
+         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
     @action(detail=False, methods=['get'])
     def search(self, request):
@@ -223,7 +279,22 @@ class StudentMasterViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            
+    @action(detail=False, methods=['get'], url_path='student-ids')
+    def student_ids(self, request):
+        try:
+            student_ids = STUDENT_MASTER.objects.filter(IS_ACTIVE='YES').values_list('STUDENT_ID', flat=True)
+            return Response({
+                'status': 'success',
+                'data': list(student_ids)
+            })
+        except Exception as e:
+            logger.error(f"Error fetching student IDs: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)        
+    
 class CheckListDocumnetsCreateView(BaseModelViewSet):
      queryset = CHECK_LIST_DOCUMENTS.objects.all()   
      serializer_class = CheckListDoumentsSerializer

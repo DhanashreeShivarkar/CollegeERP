@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       ],
     },
     {
-      icon: "bi-building-fill",
+      icon: "bi bi-person-badge",
       text: "Student Section",
       children: [
         {
@@ -105,19 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         },
         {
           icon: "bi-database-fill",
-          text: "Transaction",
-          children: [
-            {
-              icon: "bi-table",
-              text: "Document Collection",
-              path: "/dashboard/student-section/document",
-              exact: true,
-            }
-          ],
-        },
-        {
-          icon: "bi bi-person-badge",
-          text: "Student Master",
+          text: "Transactions",
           children: [
             {
               icon: "bi bi-people",
@@ -125,8 +113,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               path: "/dashboard/student-master/student",
               exact: true,
             },
+            {
+              icon: "bi-table",
+              text: "Document Collection",
+              path: "/dashboard/student-section/document",
+              exact: true,
+            },
+            {
+              icon: "bi-card-list",
+              text: "Student Info All",
+              path: "/dashboard/student-master/student-info-all",
+              exact: true,
+            },
           ],
         },
+
       ],
      },
      {
