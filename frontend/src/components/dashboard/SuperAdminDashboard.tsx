@@ -21,7 +21,14 @@ import StudentInfoAll from "../studentMaster/StudentInfoAll";
 import EmployeeDetail from "../employeeDetails/employeedetail";
 import AcademicQualification from "../employeeDetails/academicQualification";
 import AdmissionTable from "../Admission/AdmissionTable";
+
+import StudentRollNo from "../studentMaster/StudentRollNo";
+
+import StudentDocument from "../studentTransaction/StudentDocument";
 import CollegeExamTypeTableView from "../Exam/CollegeExamTypeTableView";
+import StudentReturnForm from "../studentMaster/DocumentReturn"; // Corrected path or filename
+
+
 
 const DashboardHome = () => (
   <div className="container-fluid p-4">
@@ -85,17 +92,27 @@ const SuperAdminDashboard = ({ user }: any) => {
             <Route path="/dashboardmaster" element={<DashboardMaster />} />
             <Route path="/settings" element={<SettingsPanel />} />
             <Route path="/employee" element={<EmployeeTypeEntry />} />
+            {/* <Route path="/StudentRollForm" element={<StudentRollNo />} /> */}
             <Route
               path="/master-employee/create"
               element={<CreateEmployee />}
+            />
+             <Route
+              path="/student-master/studentrollno"
+              element={<StudentRollNo />}
             />
             <Route
               path="/student-master/student"
               element={<StudentInfoForm />}
             />
             <Route
+
               path="/student-master/student-info-all"
-              element={<StudentInfoAll />}
+              element={<StudentInfoAll />}  
+            />
+            <Route
+              path="/student-master/documents-return"
+              element={<StudentReturnForm />} 
             />
             <Route path="/courseMaster" element={<ProgramTable />} />
             <Route 
@@ -107,6 +124,7 @@ const SuperAdminDashboard = ({ user }: any) => {
               element={<AcademicQualification />} 
             />
             <Route path="/student-section" element={<AdmissionTable />} />
+            <Route path="/student-section/document" element={<StudentDocument />} />
             <Route path="/exam/college-exam-type" element={<CollegeExamTypeTableView />} />
           </Routes>
         </div>

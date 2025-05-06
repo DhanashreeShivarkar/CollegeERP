@@ -24,7 +24,9 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('api/establishment/', include('establishments.urls')),  # Changed from employee to establishment
     path('api/', include('student.urls')),
-    path('api/', include('exam.urls'))
+    path('api/', include('exam.urls')),
+    path('student/', include('student.urls')),  # ✅ Add this line
+
 ]
 
 

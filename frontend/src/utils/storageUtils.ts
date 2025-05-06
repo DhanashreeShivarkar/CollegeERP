@@ -28,3 +28,4 @@ export const loadFromLocalStorage = (key: string, defaultValue: any) => {
     return defaultValue;
   }
 };
+// new

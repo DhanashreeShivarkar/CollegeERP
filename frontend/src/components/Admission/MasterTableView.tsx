@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axios";
 import { Button, Table } from "react-bootstrap"; // React-Bootstrap Components
 import { Paper } from "@mui/material"; // MUI Component
-import EditModal from "./EditModal"; // Ensure this path is correct
+import EditModal from "./EditModal";
+// import EditModal from "../EditModal"; // Ensure this path is correct
 
 interface MasterTableViewProps {
   masterType: string;
@@ -98,7 +99,7 @@ const MasterTableView: React.FC<MasterTableViewProps> = ({ masterType }) => {
         </tbody>
       </Table>
 
-      {/* Edit Modal */}
+      Edit Modal
       {selectedItem && (
         <EditModal
           open={editModalOpen}

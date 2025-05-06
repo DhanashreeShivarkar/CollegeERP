@@ -105,7 +105,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         },
         {
           icon: "bi-database-fill",
+
           text: "Transactions",
+
+          children: [
+            {
+              icon: "bi-table",
+              text: "Document Collection",
+              path: "/dashboard/student-section/document",
+              exact: true,
+            },
+            {
+              icon: "bi-file-earmark-arrow-up",
+              text: "Documents Return",
+              path: "/dashboard/student-master/documents-return",
+              exact: true,
+            },
+          ],
+        },
+        {
+          icon: "bi bi-person-badge",
+          text: "Student Master",
+
           children: [
             {
               icon: "bi bi-people",
@@ -114,6 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               exact: true,
             },
             {
+
               icon: "bi-table",
               text: "Document Collection",
               path: "/dashboard/student-section/document",
@@ -125,6 +147,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               path: "/dashboard/student-master/student-info-all",
               exact: true,
             },
+            {
+              icon: "bi bi-person-lines-fill",
+              text: "Student Roll No",
+              path: "/dashboard/student-master/studentrollno",
+              exact: true,
+            },
+
+
           ],
         },
 
@@ -165,6 +195,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       text: "System Settings",
       path: "/dashboard/settings",
     },
+    // {
+    //   icon: "bi-building",
+    //   text: "Master University",
+    //   path: "/dashboard/master/university",
+    // },
+    // {
+    //   icon: "bi-building",
+    //   text: "Master Institute",
+    //   path: "/dashboard/master/institute",
+    // },
     {
       icon: "bi-calendar",
       text: "Academic Year Master",
